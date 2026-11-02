@@ -1,5 +1,5 @@
-name = "StocFormalization"
-defaultTargets = ["Stoc"]
+name = "ContractDesignPolymatroids"
+defaultTargets = ["ContractDesignPolymatroids"]
 
 [leanOptions]
 autoImplicit = false
@@ -11,4 +11,4 @@ git = "https://github.com/leanprover-community/mathlib4"
 rev = "v4.34.1"
 
 [[lean_lib]]
-name = "Stoc"
+name = "ContractDesignPolymatroids"

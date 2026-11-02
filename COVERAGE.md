@@ -1,6 +1,6 @@
 # Paper-to-Lean coverage
 
-This table is copied from the STOC paper sync manifest at source commit `c385cfd63f31929e95d6fbf1e86849b615223ba5`. It records how the Lean declarations relate to each numbered result in the paper. Statuses such as *partly* are deliberate; consult the notes before attributing a complete formalization to a result.
+This table is copied from the STOC paper sync manifest at source commit `c385cfd63f31929e95d6fbf1e86849b615223ba5`. It records how the Lean declarations relate to each numbered result in the paper. The library directory is `ContractDesignPolymatroids/`; declaration names retain the `Stoc` namespace. Statuses such as *partly* are deliberate; consult the notes before attributing a complete formalization to a result.
 
 | Paper result | Status | Main Lean declaration | Scope note |
 |---|---|---|---|
