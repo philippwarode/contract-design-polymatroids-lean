@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: "Please cite the version of this formalization used."
 type: software
 title: "Lean formalization of The Complexity of Continuous Contract Design over Polymatroids"
-version: 1.1.0
-date-released: 2026-11-02
+version: 1.2.0
+date-released: 2026-11-03
 repository-code: "https://github.com/philippwarode/contract-design-polymatroids-lean"
 authors:
   - family-names: Klimm

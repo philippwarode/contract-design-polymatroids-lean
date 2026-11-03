@@ -1,4 +1,4 @@
--- stamp r8 2026-11-02
+-- stamp r9 2026-11-03
 import ContractDesignPolymatroids.Subclasses.Laminar
 import ContractDesignPolymatroids.Subclasses.KKT
 
@@ -8,7 +8,7 @@ import ContractDesignPolymatroids.Subclasses.KKT
 The STOC version, Appendix B.8 (`sec:A-subclasses`), Lemma `lem:E-laminarformula`
 (`stoc-sections/appB-quadratic.tex:770-833`): let `I` be a pinning interval with support `W`; for
 every `α ∈ I` and `e ∈ W`, `x*_e(α) = (α m_e − Π_{ℓ(e)}(α)) / β_e`; moreover every `π_L ≢ −∞` is
-concave, piecewise linear and strictly increasing (`laminarformula`).
+concave, piecewise linear, and strictly increasing (`laminarformula`).
 
 The proof follows the STOC version. It first shows the second claim:
 
@@ -19,7 +19,7 @@ The proof follows the STOC version. It first shows the second claim:
 3. otherwise, `π_L(α)` is the minimum of `(α t(U) + c − f(L))/β⁻¹(U)` over the functions with
    `U ≠ ∅` (steps (1)-(3): `pressure_eq_inf'`),
 4. a minimum of finitely many affine functions of `α` whose slopes `t(U)/β⁻¹(U)` are positive, as
-   `m_e > 0` for every `e ∈ W`; so `π_L` is concave, piecewise linear and strictly increasing
+   `m_e > 0` for every `e ∈ W`; so `π_L` is concave, piecewise linear, and strictly increasing
    (`pressure_properties`).
 
 Then it fixes `α ∈ I`:
@@ -191,7 +191,7 @@ theorem kinks_pressure_finite (h𝓚 : IsLaminar 𝓚) (hβ : ∀ e, 0 < β e) {
 
 /-- **Step (4)** of the proof of `lem:E-laminarformula` (`appB-quadratic.tex:785-788`): "… a
 minimum of finitely many affine functions of `α` whose slopes `t(U)/β⁻¹(U)` are positive, as
-`m_e > 0` for every `e ∈ W`. So `π_L` is concave, piecewise linear and strictly increasing." Here
+`m_e > 0` for every `e ∈ W`. So `π_L` is concave, piecewise linear, and strictly increasing." Here
 for `π_L ≢ −∞`; and `π_L(α) > −∞` for every `α` (step (3)). -/
 theorem pressure_properties (h𝓚 : IsLaminar 𝓚) (hβ : ∀ e, 0 < β e) (hm : ∀ e ∈ W, 0 < m e)
     {L : Finset E} (hL : L ∈ 𝓚) (hLW : (L ∩ W).Nonempty) (hgood : ¬ ∀ α, PiBot 𝓚 W f m β L α) :
@@ -533,7 +533,7 @@ theorem bestResponse_eq_candidate (hf : IsRankFunction f) {𝓛 : Finset (Finset
 /-- **`lem:E-laminarformula`** (Lemma B.20, `stoc-sections/appB-quadratic.tex:770-833`): let `I` be
 a pinning interval with support `W`. For every `α ∈ I` and every `e ∈ W`,
 `x*_e(α) = (α m_e − Π_{ℓ(e)}(α)) / β_e`. Moreover, every `π_L ≢ −∞` is concave, piecewise linear
-(finitely many kinks) and strictly increasing (and `π_L(α) > −∞` for every `α`). Here `𝓛_W` is
+(finitely many kinks), and strictly increasing (and `π_L(α) > −∞` for every `α`). Here `𝓛_W` is
 `meeting 𝓛 W`, `π_L` is `pressure`, `Π_V` is `PiUp` and `ℓ(e)` is `ell`; `π_L ≢ −∞` is
 `¬ ∀ α, PiBot L α`.
 

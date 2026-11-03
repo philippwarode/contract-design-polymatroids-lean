@@ -1,4 +1,4 @@
--- stamp r9 2026-11-02
+-- stamp r10 2026-11-03
 import ContractDesignPolymatroids.Hardness.CutForms
 import ContractDesignPolymatroids.Hardness.Combs
 
@@ -6,7 +6,7 @@ import ContractDesignPolymatroids.Hardness.Combs
 # The base
 
 The STOC version's `prop:base` (Appendix C.5, `sec:D-base`, "The base",
-`stoc-sections/appD-hardness.tex`: the statement at lines 457-500, the proof at lines 502-549).
+`stoc-sections/appD-hardness.tex`: the statement at lines 455-498, the proof at lines 500-547).
 
 On `E₀ = {C₀, C₁, C₂}` (here `0, 1, 2 : Fin 3`) with `m = (5, 12, 4)` and `β = (1, 4, 4)`, the set
 function `f₀` is given by its eight values (`Base.f₀`). The proposition says that `f₀` is a
@@ -134,7 +134,7 @@ lemma form_fn (S : Finset (Fin 3)) :
 
 /-! ### The cut form: step (1) of the proof -/
 
-/-- Step (1) of the proof of `prop:base` (`stoc-sections/appD-hardness.tex:503-510`), "We first
+/-- Step (1) of the proof of `prop:base` (`stoc-sections/appD-hardness.tex:501-508`), "We first
 show that the cut form gives `f₀`": the cut form gives the eight values of `f₀`, and as the weights
 are at least the capacities entering their nodes, `f₀` is a polymatroid rank function by
 `lem:cutforms`(b). -/
@@ -271,7 +271,7 @@ lemma levelSet_eq {ρ : Fin 3 → ℝ} {θ : ℝ} (A : Finset (Fin 3)) (h0 : θ 
   · simpa using h1
   · simpa using h2
 
-/-- Step (2) of the proof of `prop:base` (`stoc-sections/appD-hardness.tex:512-537`), "Next we show
+/-- Step (2) of the proof of `prop:base` (`stoc-sections/appD-hardness.tex:510-535`), "Next we show
 that the rows of the table are the full-plane marginals": on each piece `I` with row `ρ_I`,
 `y = αt − ρ_I(α)/β` is `ξ^{(0)}(α)`, by the level criterion `lem:fullplane`(a) (`xi_of_listed`).
 The step's sentences: (1) the second table gives `y` and the
@@ -574,7 +574,7 @@ theorem base_rows :
   · rw [hc (t₅ α h), Fin.sum_univ_three]; simp [yOf, row₅, m, β]; ring
 
 /-- The differences of step (3) of the proof of `prop:base`
-(`stoc-sections/appD-hardness.tex:539-544`), "Finally, we derive (B1)–(B3)": on the four pieces
+(`stoc-sections/appD-hardness.tex:537-542`), "Finally, we derive (B1)–(B3)": on the four pieces
 right of `−1/6`, the difference `L₀(α) − r(ξ^{(0)}(α))` equals `ζ₁ − α`, `7(α − ζ₁)`,
 `(14/5)(ζ₂ − α)` and `7(α − ζ₂)`. -/
 theorem base_gap_pieces :
@@ -589,8 +589,8 @@ theorem base_gap_pieces :
   · rw [(r₄ α h1 h2).2, L₀, p₀, q₀, ζ₂]; ring
   · rw [(r₅ α h).2, L₀, p₀, q₀, ζ₂]; ring
 
-/-- **`prop:base`** (Proposition C.10, `stoc-sections/appD-hardness.tex:457-500`, proof lines
-502-549): `f₀` is a polymatroid rank function, given by the cut form `form`; its full-plane best
+/-- **`prop:base`** (Proposition C.10, `stoc-sections/appD-hardness.tex:455-498`, proof lines
+500-547): `f₀` is a polymatroid rank function, given by the cut form `form`; its full-plane best
 response `ξ^{(0)} = ξ^{f₀}` has the marginals `ρ^{f₀}` and the reward `r(ξ^{(0)}(α))` of the table
 (`base_rows`); and
 * (B1) the slopes of `α ↦ r(ξ^{(0)}(α))` on the five pieces are `0, 8, 0, 49/5, 0`;

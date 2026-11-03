@@ -1,4 +1,4 @@
--- stamp r8 2026-11-02
+-- stamp r9 2026-11-03
 import Mathlib
 import ContractDesignPolymatroids.OptimalShare.Tracing
 import ContractDesignPolymatroids.Subclasses.Partition
@@ -28,8 +28,8 @@ polymatroids, polynomial bounds on `B` instead yield polynomial-time exact optim
 after at most `(n + 2)²(N + 1)` iterations, each with one best-response computation, and returns an
 optimal contract), and, for the classes of `rem:subclasses`, `Stoc.Tracing.polynomial_partition`
 and `polynomial_laminar`. The work of an iteration (one water-filling computation and the procedure
-of `lem:continuation`) is counted in `Stoc.Tracing.pieces_theorem`, without the arithmetic
-operations.
+of `lem:continuation`) is counted in `Stoc.Tracing.pieces_theorem`, with its arithmetic operations
+(`Stoc.Tracing.piecesC`).
 
 Taken over on 2026-10-21 from `Paper/Subclasses/PolynomialClasses.lean` (the long paper's
 `cor:polynomial-classes`) for the STOC version (`stoc.tex`); from then on this copy follows the STOC

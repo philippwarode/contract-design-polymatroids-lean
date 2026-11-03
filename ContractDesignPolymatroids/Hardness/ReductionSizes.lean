@@ -1,12 +1,12 @@
--- stamp r5 2026-11-02
+-- stamp r6 2026-11-03
 import ContractDesignPolymatroids.Hardness.GadgetSizes
 import ContractDesignPolymatroids.Hardness.Reduction
 
 /-!
 # The reduction runs in polynomial time: the sizes in the proof of NP-hardness in `thm:nphard`
 
-The STOC version's proof of `thm:nphard` (Appendix C.8, `stoc-sections/appD-hardness.tex:1886-1906`)
-first establishes NP-hardness (lines 1887-1892): "The reduction of `def:reduction` runs in time
+The STOC version's proof of `thm:nphard` (Appendix C.8, `stoc-sections/appD-hardness.tex:1883-1903`)
+first establishes NP-hardness (lines 1884-1889): "The reduction of `def:reduction` runs in time
 polynomial in the encoding length of `(a, T)`. Indeed, the algorithm of `thm:gadget` computes `N_0`
 and both combs in polynomial time, as its inputs have `log μ_k, log μ'_k = O(k + log(2 + ∑_i a_i))`
 and the integers `N_0` and `N_0 + T` have bit lengths bounded in the same way (`lem:sizes`, the
@@ -734,7 +734,7 @@ end SubsetSum
 /-! ### The reduction runs in polynomial time -/
 
 /-- **The sizes in the proof of NP-hardness in `thm:nphard`**
-(`stoc-sections/appD-hardness.tex:1888-1890`): "The reduction of `def:reduction` runs in time
+(`stoc-sections/appD-hardness.tex:1885-1887`): "The reduction of `def:reduction` runs in time
 polynomial in the encoding length of `(a, T)`". For every instance `(a, T)` of Subset Sum, the
 output `(Î, ϑ)` of `def:reduction` is a rational instance whose data is a cut form (`RatInst`,
 `RatInst.IsCutForm`; its real image the output `fHat`, `mHat`, `βHat`) and a rational `ϑ`, with

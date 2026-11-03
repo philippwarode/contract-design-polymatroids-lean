@@ -1,4 +1,4 @@
--- stamp r7 2026-11-02
+-- stamp r8 2026-11-03
 import ContractDesignPolymatroids.Approximation.Scheme
 
 /-!
@@ -16,22 +16,22 @@ instance (`prop:sharesets`) and the query lower bound for deterministic algorith
   best response breaks ties in favor of the principal (`IsPBR`); `isPBR_unit_iff` identifies this
   with the model's best response (`Convex.IsPBR`) on `P₊(oneF T)` for the cost `c(x) = c₁(x_e)`
   (`unitCost`).
-* `eq:E-largest` (appE-halfrule.tex:118-121): for `c(z) = ∫_0^z c'` with a nondecreasing `c'`
-  (`cost`), `α z − c(z)` is nondecreasing in `z` as long as `c' ≤ α` to the left of `z`, and
-  decreasing afterwards (`agentU_le_of_le`, `agentU_lt_of_lt`), so the largest maximizer is
-  `sup{z ∈ [0, f({e})] : c'(y) ≤ α for all y < z}` (`largest`, `largest_isMax`), the best response
-  at every share `α < 1` (`isPBR_iff_eq_largest`); at `α = 1` the maximizer is unique in both
-  constructions (`isPBR_one_iff`); `largest_eq` evaluates the supremum.
+* `eq:E-largest` (appE-halfrule.tex:118-121): for `c(z) = ∫_0^z g(y) dy` with a nondecreasing `g`
+  (`cost`), `α z − c(z)` is nondecreasing in `z` as long as `g ≤ α` to the left of `z`, and
+  decreasing afterwards (`agentU_le_of_le`, `agentU_lt_of_lt`; `m_e = 1`), so the largest maximizer
+  is `sup{z ∈ [0, f({e})] : g(y) ≤ α for all 0 ≤ y < z}` (`largest`, `largest_isMax`), the best
+  response at every share `α < 1` (`isPBR_iff_eq_largest`); at `α = 1` the maximizer is unique in
+  both constructions (`isPBR_one_iff`); `largest_eq` evaluates the supremum.
 * `prop:sharesets` (`sharesets`): steps (1) `grossValue_oneF` (by `isPBR_iff_eq_largest` and
   `isPBR_one_iff`), (2) `optimal_oneF`, (3) `mem_Ico_of_optimal` (with `frac_monotoneOn`), (4) in
   `sharesets`; the remark after the proof is `sharesets_remark`. Section 5.1 cites it: "The `1/ε`
   dependence for fixed grids is optimal up to constants, already for one quadratic activity
   (`prop:sharesets`)" (08-approximation.tex:45).
 * `prop:querylb` (`querylb`): deterministic algorithms (`Algorithm`, `Runs`), assumed correct only
-  on the instances with one element, `m_e = 1`, `f({e}) = 1/(1 − ᾱ)` and convex costs for which `ᾱ`
-  is a share bound; step (0) `zeroCost_isPBR_iff`, `isShareBound_zeroCost`; step (1) `gammaQ` (`γ`),
-  `lsh`, `Kq`, `lsh_Kq_le`; step (2) `g0`, `gk` and their properties; step (3) `x0`, `xk`,
-  `isPBR_x0`, `isPBR_xk`, `maximisers_window`, `x0_le_xk`; step (4) `profit_x0_low`,
+  on the instances with one element, `m_e = 1`, `f({e}) = 1/(1 − ᾱ)`, and convex costs for which
+  `ᾱ` is a share bound; step (0) `zeroCost_isPBR_iff`, `isShareBound_zeroCost`; step (1) `gammaQ`
+  (`γ`), `lsh`, `Kq`, `lsh_Kq_le`; step (2) `g0`, `gk` and their properties; step (3) `x0`, `xk`,
+  `isPBR_x0`, `slopes_ck`, `isPBR_xk`, `maximisers_window`, `x0_le_xk`; step (4) `profit_x0_low`,
   `profit_x0_mid`, `profit_x0_high`, `opt_x0`, `isShareBound_x0`, `profit_xk_window`, `opt_xk`,
   `isShareBound_xk`, `not_optimal_xk`, `probeAlpha_x0`, `probeAlpha_xk`; step (5) `window_disjoint`,
   `exists_free_window`, `Runs.congr`; step (6) `Kq_bound`. `OPT`, share bounds and
@@ -101,7 +101,7 @@ lemma isPBR_unit_iff {T : ℝ} {c₁ : ℝ → ℝ} {α : ℝ} {x : Unit → ℝ
 
 /-! ### Costs with a nondecreasing marginal cost (`eq:E-largest`) -/
 
-/-- The cost `c(z) = ∫_0^z c'(y) dy` of the marginal cost `c' = g`. -/
+/-- The cost `c(z) = ∫_0^z g(y) dy` of `eq:E-largest` (appE-halfrule.tex:118). -/
 def cost (g : ℝ → ℝ) (z : ℝ) : ℝ := ∫ y in (0 : ℝ)..z, g y
 
 variable {g : ℝ → ℝ}
@@ -110,7 +110,7 @@ lemma cost_zero (g : ℝ → ℝ) : cost g 0 = 0 := by
   unfold cost
   exact intervalIntegral.integral_same
 
-/-- A cost with a nonnegative marginal cost is nonnegative on `[0, ∞)`. -/
+/-- A cost with `g ≥ 0` is nonnegative on `[0, ∞)`. -/
 lemma cost_nonneg (hg0 : ∀ y, 0 ≤ y → 0 ≤ g y) {z : ℝ} (hz : 0 ≤ z) : 0 ≤ cost g z := by
   unfold cost
   exact intervalIntegral.integral_nonneg hz fun u hu => hg0 u hu.1
@@ -121,7 +121,7 @@ lemma intervalIntegrable_of_monotoneOn (hg : MonotoneOn g (Ici 0)) {a b : ℝ} (
     rcases Set.mem_uIcc.1 hu with h | h
     exacts [ha.trans h.1, hb.trans h.1])
 
-/-- `U_A(b | α) − U_A(a | α) = (b − a) α − ∫_a^b c'`. -/
+/-- `U_A(b | α) − U_A(a | α) = (b − a) α − ∫_a^b g`. -/
 lemma agentU_sub (hg : MonotoneOn g (Ici 0)) (α : ℝ) {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
     agentU (cost g) α b - agentU (cost g) α a = (b - a) * α - ∫ y in a..b, g y := by
   have := intervalIntegral.integral_interval_sub_left
@@ -130,8 +130,8 @@ lemma agentU_sub (hg : MonotoneOn g (Ici 0)) (α : ℝ) {a b : ℝ} (ha : 0 ≤ 
   simp only [agentU, cost]
   linarith
 
-/-- `eq:E-largest`, "`α z − c(z)` is nondecreasing in `z` as long as `c' ≤ α` to the left of `z`":
-if `c' ≤ α` on `(a, b)`, then `U_A(a) ≤ U_A(b)`. -/
+/-- `eq:E-largest`, "`α m_e z − c(z)` is nondecreasing in `z` as long as `g ≤ α m_e` to the left of
+`z`" (`m_e = 1`): if `g ≤ α` on `(a, b)`, then `U_A(a) ≤ U_A(b)`. -/
 lemma agentU_le_of_le (hg : MonotoneOn g (Ici 0)) {α a b : ℝ} (ha : 0 ≤ a) (hab : a ≤ b)
     (h : ∀ y ∈ Ioo a b, g y ≤ α) : agentU (cost g) α a ≤ agentU (cost g) α b := by
   have h1 := agentU_sub hg α ha (ha.trans hab)
@@ -141,7 +141,7 @@ lemma agentU_le_of_le (hg : MonotoneOn g (Ici 0)) {α a b : ℝ} (ha : 0 ≤ a) 
   rw [intervalIntegral.integral_const, smul_eq_mul] at h2
   linarith
 
-/-- If `c' ≥ α` on `(a, b)`, then `U_A(b) ≤ U_A(a)`. -/
+/-- If `g ≥ α` on `(a, b)`, then `U_A(b) ≤ U_A(a)`. -/
 lemma agentU_le_of_ge (hg : MonotoneOn g (Ici 0)) {α a b : ℝ} (ha : 0 ≤ a) (hab : a ≤ b)
     (h : ∀ y ∈ Ioo a b, α ≤ g y) : agentU (cost g) α b ≤ agentU (cost g) α a := by
   have h1 := agentU_sub hg α ha (ha.trans hab)
@@ -151,7 +151,7 @@ lemma agentU_le_of_ge (hg : MonotoneOn g (Ici 0)) {α a b : ℝ} (ha : 0 ≤ a) 
   rw [intervalIntegral.integral_const, smul_eq_mul] at h2
   linarith
 
-/-- The strict form: if `c' < α` on `(a, b)` and `a < b`, then `U_A(a) < U_A(b)`. -/
+/-- The strict form: if `g < α` on `(a, b)` and `a < b`, then `U_A(a) < U_A(b)`. -/
 lemma agentU_lt_of_gt (hg : MonotoneOn g (Ici 0)) {α a b : ℝ} (ha : 0 ≤ a) (hab : a < b)
     (h : ∀ y ∈ Ioo a b, g y < α) : agentU (cost g) α a < agentU (cost g) α b := by
   have hb : 0 ≤ b := ha.trans hab.le
@@ -165,7 +165,7 @@ lemma agentU_lt_of_gt (hg : MonotoneOn g (Ici 0)) {α a b : ℝ} (ha : 0 ≤ a) 
     smul_eq_mul] at h2
   linarith
 
-/-- `eq:E-largest`, "and decreasing afterwards": if `c' > α` on `(a, b)` and `a < b`, then
+/-- `eq:E-largest`, "and decreasing afterwards": if `g > α` on `(a, b)` and `a < b`, then
 `U_A(b) < U_A(a)`. -/
 lemma agentU_lt_of_lt (hg : MonotoneOn g (Ici 0)) {α a b : ℝ} (ha : 0 ≤ a) (hab : a < b)
     (h : ∀ y ∈ Ioo a b, α < g y) : agentU (cost g) α b < agentU (cost g) α a := by
@@ -179,9 +179,9 @@ lemma agentU_lt_of_lt (hg : MonotoneOn g (Ici 0)) {α a b : ℝ} (ha : 0 ≤ a) 
     intervalIntegrable_const, intervalIntegral.integral_const, smul_eq_mul] at h2
   linarith
 
-/-- A cost with a nondecreasing marginal cost is convex on `[0, ∞)` (not in the paper: it
-asserts the convexity of `c₀` and `c_k`): the slope of `c` on `[x, y]` is at most `c'(y)`, and that
-on `[y, z]` at least `c'(y)`. -/
+/-- A cost `∫_0^z g` with a nondecreasing `g` is convex on `[0, ∞)` (not in the paper: it asserts
+the convexity of `c₀` and `c_k`): the slope of `c` on `[x, y]` is at most `g(y)`, and that on
+`[y, z]` at least `g(y)`. -/
 lemma convexOn_cost (hg : MonotoneOn g (Ici 0)) : ConvexOn ℝ (Ici 0) (cost g) := by
   refine convexOn_of_slope_mono_adjacent (convex_Ici 0) ?_
   intro x y z hx hz hxy hyz
@@ -210,10 +210,10 @@ lemma convexOn_cost (hg : MonotoneOn g (Ici 0)) : ConvexOn ℝ (Ici 0) (cost g) 
   have p2 := mul_le_mul_of_nonneg_right i2 (sub_pos.2 hxy).le
   linarith
 
-/-- The set `{z ∈ [0, T] : c'(y) ≤ α for all y < z}` of `eq:E-largest`. -/
+/-- The set `{z ∈ [0, T] : g(y) ≤ α for all 0 ≤ y < z}` of `eq:E-largest` (`m_e = 1`). -/
 def largestSet (g : ℝ → ℝ) (T α : ℝ) : Set ℝ := {z | z ∈ Icc 0 T ∧ ∀ y ∈ Ico 0 z, g y ≤ α}
 
-/-- `sup{z ∈ [0, T] : c'(y) ≤ α for all y < z}`, the right-hand side of `eq:E-largest`. -/
+/-- `sup{z ∈ [0, T] : g(y) ≤ α for all 0 ≤ y < z}`, the right-hand side of `eq:E-largest`. -/
 def largest (g : ℝ → ℝ) (T α : ℝ) : ℝ := sSup (largestSet g T α)
 
 section Largest
@@ -225,7 +225,7 @@ lemma largestSet_nonempty (hT : 0 ≤ T) : (largestSet g T α).Nonempty :=
 
 lemma bddAbove_largestSet : BddAbove (largestSet g T α) := ⟨T, fun _ hz => hz.1.2⟩
 
-/-- The supremum belongs to the set: `c' ≤ α` on `[0, z₁)` for `z₁ = sup{…}`. -/
+/-- The supremum belongs to the set: `g ≤ α` on `[0, z₁)` for `z₁ = sup{…}`. -/
 lemma largest_mem (hT : 0 ≤ T) : largest g T α ∈ largestSet g T α := by
   have hne := largestSet_nonempty (g := g) (α := α) hT
   refine ⟨⟨(hne.some_mem.1.1).trans (le_csSup bddAbove_largestSet hne.some_mem),
@@ -233,7 +233,7 @@ lemma largest_mem (hT : 0 ≤ T) : largest g T α ∈ largestSet g T α := by
   obtain ⟨z, hz, hyz⟩ := exists_lt_of_lt_csSup hne hy.2
   exact hz.2 y ⟨hy.1, hyz⟩
 
-/-- `c' > α` on `(z₁, T]` for `z₁ = sup{…}`, as `c'` is nondecreasing. -/
+/-- `g > α` on `(z₁, T]` for `z₁ = sup{…}`, as `g` is nondecreasing. -/
 lemma lt_of_largest_lt (hg : MonotoneOn g (Ici 0)) (hT : 0 ≤ T) {y : ℝ}
     (hy : y ∈ Ioc (largest g T α) T) : α < g y := by
   have h0 : 0 ≤ largest g T α := (largest_mem (g := g) (α := α) hT).1.1
@@ -243,10 +243,10 @@ lemma lt_of_largest_lt (hg : MonotoneOn g (Ici 0)) (hT : 0 ≤ T) {y : ℝ}
     ⟨⟨h0.trans hy.1.le, hy.2⟩, fun y' hy' => (hg hy'.1 (h0.trans hy.1.le) hy'.2.le).trans hle⟩
   exact absurd (le_csSup bddAbove_largestSet hmem) (not_le.2 hy.1)
 
-/-- **`eq:E-largest`** (appE-halfrule.tex:118-121): with `z₁ = sup{z ∈ [0, T] : c'(y) ≤ α for all
-y < z}`, "`α z − c(z)` is nondecreasing in `z` as long as `c' ≤ α` to the left of `z`, and
-decreasing afterwards": `z₁` maximizes `U_A(· | α)` over `[0, T]`, and every maximizer is at most
-`z₁`. -/
+/-- **`eq:E-largest`** (appE-halfrule.tex:118-121): with `z₁ = sup{z ∈ [0, T] : g(y) ≤ α for all
+0 ≤ y < z}` (`m_e = 1`), "If `c(z) = ∫_0^z g(y) dy` for a nondecreasing function `g`, then
+`α m_e z − c(z)` is nondecreasing in `z` as long as `g ≤ α m_e` to the left of `z`, and decreasing
+afterwards": `z₁` maximizes `U_A(· | α)` over `[0, T]`, and every maximizer is at most `z₁`. -/
 theorem largest_isMax (hg : MonotoneOn g (Ici 0)) (hT : 0 ≤ T) :
     (∀ y ∈ Icc 0 T, agentU (cost g) α y ≤ agentU (cost g) α (largest g T α)) ∧
       ∀ y ∈ Icc 0 T, agentU (cost g) α y = agentU (cost g) α (largest g T α) →
@@ -263,8 +263,10 @@ theorem largest_isMax (hg : MonotoneOn g (Ici 0)) (hT : 0 ≤ T) :
   · by_contra h
     exact (key y hy (not_le.1 h)).ne heq
 
-/-- **`eq:E-largest`**: for `α < 1`, the best response, the largest maximizer as ties are broken in
-favor of the principal, is `x*(α) = sup{z ∈ [0, T] : c'(y) ≤ α for all y < z}`. -/
+/-- **`eq:E-largest`**: for `α < 1`, "the best response `x*(α)` is the largest maximizer of
+`α m_e z − c(z)` over this interval, as ties are broken in favor of the principal"
+(appE-halfrule.tex:118), and so
+"`x*(α) = sup{z ∈ [0, f({e})] : g(y) ≤ α m_e for all 0 ≤ y < z}`" (here `f({e}) = T`, `m_e = 1`). -/
 theorem isPBR_iff_eq_largest (hg : MonotoneOn g (Ici 0)) (hT : 0 ≤ T) (hα : α < 1) {z : ℝ} :
     IsPBR (cost g) T α z ↔ z = largest g T α := by
   obtain ⟨hmax, hlarge⟩ := largest_isMax (α := α) hg hT
@@ -279,7 +281,7 @@ theorem isPBR_iff_eq_largest (hg : MonotoneOn g (Ici 0)) (hT : 0 ≤ T) (hα : �
   · rintro rfl
     exact ⟨hz₁, hmax, fun y hy heq => mul_le_mul_of_nonneg_left (hlarge y hy heq) hpos.le⟩
 
-/-- At the share `1`, if `c' < 1` on `[0, T)`, the maximizer is unique, namely `T` ("at `α = 1` the
+/-- At the share `1`, if `g < 1` on `[0, T)`, the maximizer is unique, namely `T` ("at `α = 1` the
 maximizer is unique in both constructions", appE-halfrule.tex:118; not in the paper: it
 asserts this without proof). -/
 lemma isPBR_one_iff {g : ℝ → ℝ} (hg : MonotoneOn g (Ici 0)) {T : ℝ} (hT : 0 ≤ T)
@@ -295,16 +297,16 @@ lemma isPBR_one_iff {g : ℝ → ℝ} (hg : MonotoneOn g (Ici 0)) {T : ℝ} (hT 
   · rintro rfl
     exact ⟨⟨hT, le_rfl⟩, hmax, fun y _ _ => by simp⟩
 
-/-- Evaluating the supremum of `eq:E-largest`: if `v ∈ [0, T]`, `c' ≤ α` on `[0, v)` and `c' > α` on
-`(v, T]`, then `sup{z ∈ [0, T] : c'(y) ≤ α for all y < z} = v` (not in the paper: it
-evaluates the supremum of `eq:E-largest` without proof, for `x*(α) = min{α, u}`, `x₀` and `x_k`). -/
+/-- Evaluating the supremum of `eq:E-largest`: if `v ∈ [0, T]`, `g ≤ α` on `[0, v)` and `g > α` on
+`(v, T]`, then `sup{z ∈ [0, T] : g(y) ≤ α for all 0 ≤ y < z} = v` (not in the paper: it evaluates
+the supremum of `eq:E-largest` without proof, for `x*(α) = min{α, u}`, `x₀` and `x_k`). -/
 lemma largest_eq (hT : 0 ≤ T) {v : ℝ} (hv : v ∈ Icc 0 T)
     (hle : ∀ y ∈ Ico 0 v, g y ≤ α) (hgt : ∀ y ∈ Ioc v T, α < g y) : largest g T α = v := by
   have hmem := largest_mem (g := g) (α := α) hT
   have h1 : v ≤ largest g T α := le_csSup bddAbove_largestSet ⟨hv, hle⟩
   by_contra hne
   have hlt : v < largest g T α := lt_of_le_of_ne h1 (Ne.symm hne)
-  -- a point `y ∈ (v, z₁)` has `c'(y) ≤ α`, as `z₁` is in the set, and `c'(y) > α`
+  -- a point `y ∈ (v, z₁)` has `g(y) ≤ α`, as `z₁` is in the set, and `g(y) > α`
   obtain ⟨y, hvy, hyz⟩ := exists_between hlt
   have := hmem.2 y ⟨hv.1.trans hvy.le, hyz⟩
   exact absurd (hgt y ⟨hvy, hyz.le.trans hmem.1.2⟩) (not_lt.2 this)
@@ -313,7 +315,7 @@ end Largest
 
 /-! ### `prop:sharesets` -/
 
-/-- The quadratic cost `c(z) = z²/2` (`β_e = 1`) has the marginal cost `c'(y) = y`. -/
+/-- The quadratic cost `c(z) = z²/2` (`β_e = 1`) is `∫_0^z g(y) dy` for `g(y) = y`. -/
 lemma cost_id : cost (fun y => y) = fun z => z ^ 2 / 2 := by
   funext z
   simp only [cost, integral_id]
@@ -332,7 +334,7 @@ lemma quadCost_one_unit : quadCost (1 : Unit → ℝ) = fun v => cost (fun y => 
 `x*(α) = min{α, u}`". The
 best response `x*(α)` of the quadratic model is the model's best response for the cost
 `c(z) = z²/2 = ∫_0^z y dy`, ties broken in favor of the principal (`isPBR_bestResponse`); for
-`α < 1` it is `sup{z ∈ [0, u] : y ≤ α for all y < z} = min{α, u}` by `eq:E-largest`
+`α < 1` it is `sup{z ∈ [0, u] : y ≤ α for all 0 ≤ y < z} = min{α, u}` by `eq:E-largest`
 (`isPBR_iff_eq_largest`, `largest_eq`), and at `α = 1` the maximizer is unique, `u = min{1, u}`
 (`isPBR_one_iff`, appE-halfrule.tex:118). -/
 lemma grossValue_oneF {u : ℝ} (hu : 0 < u) (hu1 : u ≤ 1) {α : ℝ} (hα : α ∈ Icc (0 : ℝ) 1) :
@@ -346,7 +348,7 @@ lemma grossValue_oneF {u : ℝ} (hu : 0 < u) (hu1 : u ≤ 1) {α : ℝ} (hα : �
     exact isPBR_unit_iff.1 h
   rw [grossValue, reward_one_unit]
   rcases hα.2.lt_or_eq with hlt | rfl
-  · -- "By `eq:E-largest`": `x*(α) = sup{z ∈ [0, u] : y ≤ α for all y < z} = min{α, u}`
+  · -- "By `eq:E-largest`": `x*(α) = sup{z ∈ [0, u] : y ≤ α for all 0 ≤ y < z} = min{α, u}`
     rw [(isPBR_iff_eq_largest monotoneOn_id' hu.le hlt).1 hpbr]
     exact largest_eq hu.le ⟨le_min hα.1 hu.le, min_le_right α u⟩
       (fun y hy => (lt_of_lt_of_le hy.2 (min_le_left α u)).le) fun y hy => by
@@ -492,7 +494,7 @@ theorem mem_Ico_of_optimal {ε u : ℝ} (hε : ε ∈ Ioo (0 : ℝ) 1) (hu : 0 <
 
 /-- **`prop:sharesets`** (Proposition D.3, appE-halfrule.tex:123-125, proof 127-133): let
 `ε ∈ (0, 1)`, and let `A ⊆ [0, 1]` contain a `(1 − ε)`-optimal contract (`IsApproxOptimal`) of every
-instance with one element `e`, `m_e = β_e = 1` and quadratic costs (the instances are the rank
+instance with one element `e`, `m_e = β_e = 1`, and quadratic costs (the instances are the rank
 functions `f` of one element; their reward of success `r̄`, 02-preliminaries.tex:12, does not enter
 `U_P`; the best response is that of the quadratic model, `grossValue f 1 1`). Then
 `|A| ≥ ⌊1/(5ε)⌋`.
@@ -880,7 +882,7 @@ def x0 (ε ᾱ : ℝ) (α : ℝ) : ℝ :=
 /-- The cost `c(x) = c₁(x_e)` of one element as a function on `ℝ^{e}`. -/
 def unitCost (c₁ : ℝ → ℝ) (v : Unit → ℝ) : ℝ := c₁ (v ())
 
-/-- A cost `∫_0^z c'` with `c' ≥ 0` nondecreasing is a cost of the model, convex on `ℝ^{e}_{≥0}`. -/
+/-- A cost `∫_0^z g` with `g ≥ 0` nondecreasing is a cost of the model, convex on `ℝ^{e}_{≥0}`. -/
 lemma unitCost_cost {g : ℝ → ℝ} (hg : MonotoneOn g (Ici 0)) (hg0 : ∀ y, 0 ≤ y → 0 ≤ g y) :
     IsCost (unitCost (cost g)) ∧ ConvexOn ℝ (Ici 0) (unitCost (cost g)) := by
   refine ⟨⟨fun v hv => cost_nonneg hg0 (hv ()), by simp [unitCost, cost_zero]⟩,
@@ -1135,8 +1137,8 @@ lemma isPBR_x0 (R : Regime ε ᾱ) {α : ℝ} (hα : α ∈ Icc (0 : ℝ) 1) {z 
 
 /-! ### `prop:querylb`: the variants `I_k` of `I₀` -/
 
-/-- The marginal cost `c_k'` of `I_k` (appE-halfrule.tex:147): `c₀'`, except
-`c_k' = l_{k−1}` on `[1/(1 − l_{k−1}), 1/(1 − l_k))`. -/
+/-- The function `g_k` of `I_k`, whose cost is `c_k(z) = ∫_0^z g_k(y) dy` (appE-halfrule.tex:147):
+"`g_k` equals `c₀'`, except that `g_k := l_{k−1}` on `[1/(1 − l_{k−1}), 1/(1 − l_k))`". -/
 def gk (ε ᾱ : ℝ) (k : ℕ) (y : ℝ) : ℝ :=
   if 1 / (1 - lsh ε (k - 1)) ≤ y ∧ y < 1 / (1 - lsh ε k) then lsh ε (k - 1) else g0 ε ᾱ y
 
@@ -1213,7 +1215,7 @@ lemma lsh_lt_g0 (R : Regime ε ᾱ) (hk1 : 1 ≤ k) (hkK : k ≤ Kq ε ᾱ) {y :
   have := (one_div_lt hy0 hp).2 hy.1
   linarith
 
-/-- `c_k' ≤ c₀'` on `[0, ∞)`. -/
+/-- `g_k ≤ c₀'` on `[0, ∞)`. -/
 lemma gk_le_g0 (R : Regime ε ᾱ) (hk1 : 1 ≤ k) (hkK : k ≤ Kq ε ᾱ) {y : ℝ} (hy : 0 ≤ y) :
     gk ε ᾱ k y ≤ g0 ε ᾱ y := by
   unfold gk
@@ -1222,7 +1224,7 @@ lemma gk_le_g0 (R : Regime ε ᾱ) (hk1 : 1 ≤ k) (hkK : k ≤ Kq ε ᾱ) {y : 
     exact monotoneOn_g0 R (one_div_one_sub_lsh_pos R.hε (k - 1)).le hy hw.1
   · exact le_rfl
 
-/-- `prop:querylb`, step (2): "There `c₀'` increases from `l_{k−1}` to `l_k`, so `c_k'` is still
+/-- `prop:querylb`, step (2): "There `c₀'` increases from `l_{k−1}` to `l_k`, so `g_k` is still
 nondecreasing". -/
 lemma monotoneOn_gk (R : Regime ε ᾱ) (hk1 : 1 ≤ k) (hkK : k ≤ Kq ε ᾱ) :
     MonotoneOn (gk ε ᾱ k) (Ici 0) := by
@@ -1249,7 +1251,7 @@ lemma monotoneOn_gk (R : Regime ε ᾱ) (hk1 : 1 ≤ k) (hkK : k ≤ Kq ε ᾱ) 
     · rw [ite_eq_right h1, ite_eq_right h2]
       exact hg hy hy' hyy'
 
-/-- `prop:querylb`, step (2): `c_k' ≥ 0`. -/
+/-- `prop:querylb`, step (2): `g_k ≥ 0`. -/
 lemma gk_nonneg (R : Regime ε ᾱ) (hk1 : 1 ≤ k) (hkK : k ≤ Kq ε ᾱ) {y : ℝ} (hy : 0 ≤ y) :
     0 ≤ gk ε ᾱ k y := by
   unfold gk
@@ -1274,16 +1276,80 @@ lemma xk_mem (R : Regime ε ᾱ) (hk1 : 1 ≤ k) (hkK : k ≤ Kq ε ᾱ) {α : �
   · exact ⟨(one_div_one_sub_lsh_pos R.hε k).le, (window_actions R hk1 hkK).2.2⟩
   · exact x0_mem R hα
 
-/-- `prop:querylb`, step (3): "that of `I_k` is the function `x_k`", for `α ∈ [0, 1)`:
-`eq:E-largest` with `c_k'` (not in the paper: it leaves the evaluation of the supremum of
-`eq:E-largest` for `I_k` implicit). -/
+/-- `prop:querylb`, step (3) (appE-halfrule.tex:153): "At `z = 1/(1 − l_k)` the left and right
+slopes of `c_k` are `l_{k−1}` and `l_k`, respectively": `c_k = ∫_0 g_k` has the left derivative
+`l_{k−1}` and the right derivative `l_k` at `v = 1/(1 − l_k)`. Left of `v`, `c_k` is affine with the
+slope `l_{k−1}` on `[1/(1 − l_{k−1}), v]`, as `g_k = l_{k−1}` on `[1/(1 − l_{k−1}), v)`; right of
+`v`, `g_k = c₀'`, which is continuous with `c₀'(v) = l_k` (`continuousOn_g0`, `g0_q`). -/
+lemma slopes_ck (R : Regime ε ᾱ) (hk1 : 1 ≤ k) (hkK : k ≤ Kq ε ᾱ) :
+    HasDerivWithinAt (cost (gk ε ᾱ k)) (lsh ε (k - 1)) (Iic (1 / (1 - lsh ε k)))
+        (1 / (1 - lsh ε k)) ∧
+      HasDerivWithinAt (cost (gk ε ᾱ k)) (lsh ε k) (Ici (1 / (1 - lsh ε k)))
+        (1 / (1 - lsh ε k)) := by
+  have hg := monotoneOn_gk R hk1 hkK
+  obtain ⟨-, hpv, -⟩ := window_actions R hk1 hkK
+  have hp0 := one_div_one_sub_lsh_pos R.hε (k - 1)
+  set p := 1 / (1 - lsh ε (k - 1))
+  set v := 1 / (1 - lsh ε k)
+  have hv0 : 0 < v := hp0.trans hpv
+  -- `g_k = l_{k−1}` on `[p, v)`, and `g_k = c₀'` from `v` on (the definition of `g_k`)
+  have hleft : ∀ y ∈ Ico p v, gk ε ᾱ k y = lsh ε (k - 1) := fun y hy => by
+    unfold gk
+    rw [ite_eq_left ⟨hy.1, hy.2⟩]
+  have hright : ∀ y, v ≤ y → gk ε ᾱ k y = g0 ε ᾱ y := fun y hy => by
+    unfold gk
+    rw [ite_eq_right fun h => absurd h.2 (not_lt.2 hy)]
+  constructor
+  · -- the left slope: `c_k` is affine with the slope `l_{k−1}` on `[p, v]`
+    have haff : ∀ z ∈ Icc p v,
+        cost (gk ε ᾱ k) z = cost (gk ε ᾱ k) p + lsh ε (k - 1) * (z - p) := by
+      intro z hz
+      have hz0 : 0 ≤ z := hp0.le.trans hz.1
+      have e := intervalIntegral.integral_interval_sub_left
+        (intervalIntegrable_of_monotoneOn hg le_rfl hz0)
+        (intervalIntegrable_of_monotoneOn hg le_rfl hp0.le)
+      have hI := intervalIntegrable_of_monotoneOn hg hp0.le hz0
+      have h1 : ∫ y in p..z, gk ε ᾱ k y ≤ ∫ _ in p..z, lsh ε (k - 1) :=
+        intervalIntegral.integral_mono_on_of_le_Ioo hz.1 hI intervalIntegrable_const
+          fun y hy => (hleft y ⟨hy.1.le, hy.2.trans_le hz.2⟩).le
+      have h2 : ∫ _ in p..z, lsh ε (k - 1) ≤ ∫ y in p..z, gk ε ᾱ k y :=
+        intervalIntegral.integral_mono_on_of_le_Ioo hz.1 intervalIntegrable_const hI
+          fun y hy => (hleft y ⟨hy.1.le, hy.2.trans_le hz.2⟩).ge
+      rw [intervalIntegral.integral_const, smul_eq_mul] at h1 h2
+      simp only [cost] at e ⊢
+      linarith
+    have hd : HasDerivAt (fun z => cost (gk ε ᾱ k) p + lsh ε (k - 1) * (z - p))
+        (lsh ε (k - 1)) v := by
+      simpa using (((hasDerivAt_id v).sub_const p).const_mul (lsh ε (k - 1))).const_add
+        (cost (gk ε ᾱ k) p)
+    refine hd.hasDerivWithinAt.congr_of_eventuallyEq ?_ (haff v ⟨hpv.le, le_rfl⟩)
+    filter_upwards [Icc_mem_nhdsLE hpv] with z hz using haff z hz
+  · -- the right slope: `g_k = c₀'` is continuous from the right at `v`, with `c₀'(v) = l_k`
+    have hsub : Ioi v ⊆ Ici 0 := fun y hy => (hv0.trans hy).le
+    have hcont : ContinuousOn (gk ε ᾱ k) (Ioi v) :=
+      ((continuousOn_g0 R).mono hsub).congr fun y hy => hright y (le_of_lt hy)
+    have hcw : ContinuousWithinAt (gk ε ᾱ k) (Ioi v) v :=
+      (((continuousOn_g0 R) v hv0.le).mono hsub).congr (fun y hy => hright y (le_of_lt hy))
+        (hright v le_rfl)
+    have hd := intervalIntegral.integral_hasDerivWithinAt_right (s := Ici v) (t := Ioi v)
+      (intervalIntegrable_of_monotoneOn hg le_rfl hv0.le)
+      (hcont.stronglyMeasurableAtFilter_nhdsWithin measurableSet_Ioi v) hcw
+    rw [hright v le_rfl, g0_q R hk1 hkK] at hd
+    exact hd
+
+/-- `prop:querylb`, step (3): "Thus the best response of `I_k` is the function `x_k`", for
+`α ∈ [0, 1)`: the supremum of `eq:E-largest` with `g_k` is `x_k(α)`. The paper derives `x_k` from
+the slopes of `c_k` at `1/(1 − l_k)` (`slopes_ck`) and leaves the evaluation of the supremum
+implicit (not in the paper): on the window `[l_{k−1}, l_k)`, `g_k ≤ l_{k−1} ≤ α` before
+`1/(1 − l_k)` and `g_k = c₀' > l_k > α` after it, as the left and right slopes say; outside the
+window, `g_k` is at most `α` before `x₀(α)` and larger after it, as `c₀'` is. -/
 lemma largest_gk (R : Regime ε ᾱ) (hk1 : 1 ≤ k) (hkK : k ≤ Kq ε ᾱ) {α : ℝ}
     (hα : α ∈ Ico (0 : ℝ) 1) : largest (gk ε ᾱ k) (1 / (1 - ᾱ)) α = xk ε ᾱ k α := by
   have hT : (0 : ℝ) ≤ 1 / (1 - ᾱ) := by have := R.one_sub_pos; positivity
   obtain ⟨hw1, hw2, hw3⟩ := window_sub R hk1 hkK
   obtain ⟨ha1, ha2, ha3⟩ := window_actions R hk1 hkK
   refine largest_eq hT (xk_mem R hk1 hkK ⟨hα.1, hα.2.le⟩) (fun y hy => ?_) (fun y hy => ?_)
-  · -- `c_k' ≤ α` on `[0, x_k(α))`
+  · -- `g_k ≤ α` on `[0, x_k(α))`
     unfold xk at hy
     split_ifs at hy with hw
     · unfold gk
@@ -1294,7 +1360,7 @@ lemma largest_gk (R : Regime ε ᾱ) (hk1 : 1 ≤ k) (hkK : k ≤ Kq ε ᾱ) {α
           exact hyw ⟨not_lt.1 hc, hy.2⟩
         exact (g0_lt_p R hk1 hkK ⟨hy.1, hyp⟩).le.trans hw.1
     · exact (gk_le_g0 R hk1 hkK hy.1).trans (g0_le_of_lt_x0 R hy)
-  · -- `c_k' > α` on `(x_k(α), 1/(1 − ᾱ)]`
+  · -- `g_k > α` on `(x_k(α), 1/(1 − ᾱ)]`
     unfold xk at hy
     split_ifs at hy with hw
     · have hyw : ¬ (1 / (1 - lsh ε (k - 1)) ≤ y ∧ y < 1 / (1 - lsh ε k)) :=
@@ -1314,13 +1380,14 @@ lemma largest_gk (R : Regime ε ᾱ) (hk1 : 1 ≤ k) (hkK : k ≤ Kq ε ᾱ) {α
           exact absurd hyw.2 (not_lt.2 (this.trans hy.1.le))
       · exact lt_g0_of_x0_lt R hα hy
 
-/-- `c_k' < 1`, so the maximizer of `I_k` at the share `1` is unique. -/
+/-- `g_k < 1`, so the maximizer of `I_k` at the share `1` is unique. -/
 lemma gk_lt_one (R : Regime ε ᾱ) (hk1 : 1 ≤ k) (hkK : k ≤ Kq ε ᾱ) {y : ℝ} (hy : 0 ≤ y) :
     gk ε ᾱ k y < 1 :=
   ((gk_le_g0 R hk1 hkK hy).trans (g0_le R y)).trans_lt (by linarith [R.one_sub_pos])
 
-/-- `prop:querylb`, step (3): the best response of `I_k` is `x_k` at every share `α ∈ [0, 1]` (for
-`α < 1` by `eq:E-largest`, at `α = 1` the maximizer is unique). -/
+/-- `prop:querylb`, step (3): "Thus the best response of `I_k` is the function `x_k` that equals
+`x₀` outside the window `[l_{k−1}, l_k)` and equals `1/(1 − l_k)` on it", at every share
+`α ∈ [0, 1]` (for `α < 1` by `eq:E-largest`, `largest_gk`; at `α = 1` the maximizer is unique). -/
 lemma isPBR_xk (R : Regime ε ᾱ) (hk1 : 1 ≤ k) (hkK : k ≤ Kq ε ᾱ) {α : ℝ}
     (hα : α ∈ Icc (0 : ℝ) 1) {z : ℝ} :
     IsPBR (cost (gk ε ᾱ k)) (1 / (1 - ᾱ)) α z ↔ z = xk ε ᾱ k α := by
@@ -1354,7 +1421,7 @@ lemma maximisers_window (R : Regime ε ᾱ) (hk1 : 1 ≤ k) (hkK : k ≤ Kq ε �
     rw [ite_eq_left ⟨le_rfl, hw2⟩]
   obtain ⟨hmax, hlarge⟩ := largest_isMax (α := α) hg hT
   rw [hl] at hmax hlarge
-  -- `U_A` is constant on `[p, v]`, where `c_k' = α`, and increases strictly before `p`
+  -- `U_A` is constant on `[p, v]`, where `g_k = α`, and increases strictly before `p`
   have hconst : ∀ y ∈ Icc p v, agentU (cost (gk ε ᾱ k)) α y = agentU (cost (gk ε ᾱ k)) α v := by
     intro y hy
     refine le_antisymm (hmax y ⟨hp0.le.trans hy.1, hy.2.trans ha3⟩)
@@ -1584,7 +1651,7 @@ lemma isShareBound_zeroCost {ᾱ : ℝ} (hᾱ : ᾱ ∈ Ioo (0 : ℝ) 1) :
 learns about the costs only from best responses at shares of its choice, with ties broken in favor
 of the principal as in `sec:model` (`Algorithm`, `Runs`, `Convex.IsPBR`), and returns a
 `(1 − ε)`-optimal contract (`IsApproxOptimal`) for every instance with one element, `m_e = 1`,
-`f({e}) = 1/(1 − ᾱ)` and convex costs for which `ᾱ` is a share bound. Then `A` needs more than
+`f({e}) = 1/(1 − ᾱ)`, and convex costs for which `ᾱ` is a share bound. Then `A` needs more than
 `ln(1/(1 − ᾱ))/(2ε) − 3` best-response computations on one of these instances, on which the share
 bound `ᾱ_a` of `cor:probe` satisfies `ᾱ_a ≤ ᾱ` for every `a ∈ [ε, ᾱ]` (`probeAlpha`). (An
 instance of this class is the polymatroid `oneF (1/(1 − ᾱ))` of one element with `m = 1`, a cost
@@ -1597,16 +1664,16 @@ The proof: (0) "If `ᾱ < ε`, … the bound is negative and there is nothing to
 Lean exhibits the instance with the cost `0`, `zeroCost_isPBR_iff`, `isShareBound_zeroCost`);
 (1) `γ := 1 + 2ε` (`gammaQ`), `l_j` (`lsh`) and `K` (`Kq`), and `ε = l_0 < l_1 < ⋯ < l_K ≤ ᾱ`;
 (2) "We now define a base instance `I₀` and `K` variants `I_1, …, I_K` of it" (`g0`, `gk`), with
-convex costs; (3) "Next we compute the best responses of these instances": `x₀` (`isPBR_x0`) and
-`x_k` (`isPBR_xk`), by `eq:E-largest`, the maximizers at `l_{k−1}` (`maximisers_window`), and
-`x_k ≥ x₀`, `x_k(1) = x₀(1) = 1/(1 − ᾱ)` (`x0_le_xk`); (4) "Then we show that `ᾱ` is a share
-bound for all these instances and that every `(1 − ε)`-optimal contract of `I_k` lies in its window"
-(`opt_x0`,
+convex costs; (3) "Next we compute the best responses of these instances": `x₀` (`isPBR_x0`), by
+`eq:E-largest`, the left and right slopes of `c_k` at `1/(1 − l_k)` (`slopes_ck`), "Thus" `x_k`
+(`isPBR_xk`), the maximizers at `l_{k−1}` (`maximisers_window`), and `x_k ≥ x₀`,
+`x_k(1) = x₀(1) = 1/(1 − ᾱ)` (`x0_le_xk`); (4) "Then we show that `ᾱ` is a share bound for all
+these instances and that every `(1 − ε)`-optimal contract of `I_k` lies in its window" (`opt_x0`,
 `profit_xk_window`, `opt_xk`, `isShareBound_x0`, `isShareBound_xk`, `not_optimal_xk`,
 `probeAlpha_x0`, `probeAlpha_xk`); (5) "Now we show that `A` needs at least `K − 1` best-response
 computations on `I₀`" (`exists_free_window`, `Runs.congr`); (6) "Finally, we bound `K` from below"
-(`Kq_bound`). The claims of steps (3) and (4) that the conclusion does not use (`maximisers_window`,
-`x0_le_xk`, `probeAlpha_xk`) are recorded in `have`s. -/
+(`Kq_bound`). The claims of steps (3) and (4) that the conclusion does not use (`slopes_ck`,
+`maximisers_window`, `x0_le_xk`, `probeAlpha_xk`) are recorded in `have`s. -/
 theorem querylb {ε ᾱ : ℝ} (hε : ε ∈ Ioo (0 : ℝ) (1 / 2)) (hᾱ : ᾱ ∈ Ioo (0 : ℝ) 1)
     (A : Algorithm)
     (hA : ∀ (c : (Unit → ℝ) → ℝ) (x : ℝ → Unit → ℝ), IsCost c → ConvexOn ℝ (Ici 0) c →
@@ -1663,19 +1730,35 @@ theorem querylb {ε ᾱ : ℝ} (hε : ε ∈ Ioo (0 : ℝ) (1 / 2)) (hᾱ : ᾱ 
     ⟨lsh_zero, lsh_strictMono R.hε, lsh_Kq_le R⟩
   -- (2) "We now define a base instance `I₀` and `K` variants `I_1, …, I_K` of it. All instances
   -- have one element `e` with `m_e = 1` and `f({e}) = 1/(1 − ᾱ)`, so `r(z) = z`, and they differ
-  -- only in the costs." `c₀` "is convex with `c₀(0) = 0` and `c₀ ≥ 0`", and so is `c_k`.
-  -- "The pieces agree where they meet, so `c₀'` is continuous, nonnegative and nondecreasing"
+  -- only in the costs. The base instance `I₀` has the cost `c₀(z) := ∫_0^z c₀'(y) dy` with" `c₀'`
+  -- (`g0`). "The pieces agree where they meet, so `c₀'` is continuous, nonnegative, and
+  -- nondecreasing, and `c₀` is convex with `c₀(0) = 0` and `c₀ ≥ 0`."
   have _hcont0 : ContinuousOn (g0 ε ᾱ) (Ici 0) := continuousOn_g0 R
   have hc0 := unitCost_cost (monotoneOn_g0 R) fun y hy => g0_nonneg R hy
+  -- "For `k ∈ [K]`, the instance `I_k` has the cost `c_k(z) := ∫_0^z g_k(y) dy`, where `g_k`
+  -- equals `c₀'`, except that `g_k := l_{k−1}` on
+  -- `[1/(1 − l_{k−1}), 1/(1 − l_k)) ⊆ [1/(1 − ε), 1/(1 − ᾱ)]`" (`gk`, `window_actions`). "There
+  -- `c₀'` increases from `l_{k−1}` to `l_k`, so `g_k` is still nondecreasing, and `c_k` is convex
+  -- with `c_k(0) = 0` and `c_k ≥ 0`."
   have hck : ∀ k, 1 ≤ k → k ≤ Kq ε ᾱ →
       IsCost (unitCost (cost (gk ε ᾱ k))) ∧ ConvexOn ℝ (Ici 0) (unitCost (cost (gk ε ᾱ k))) :=
     fun k hk1 hkK => unitCost_cost (monotoneOn_gk R hk1 hkK) fun y hy => gk_nonneg R hk1 hkK hy
   -- (3) "Next we compute the best responses of these instances. By `eq:E-largest`, the best
-  -- response of `I₀` is `x₀`, and that of `I_k` is the function `x_k`".
+  -- response of `I₀` is" `x₀`.
   have hBR0 : ∀ α ∈ Icc (0 : ℝ) 1, ∀ v : Unit → ℝ,
       Convex.IsPBR (indepPoly (oneF (1 / (1 - ᾱ)))) 1 (unitCost (cost (g0 ε ᾱ))) α v ↔
         v () = x0 ε ᾱ α :=
     fun α hα _ => isPBR_unit_iff.trans (isPBR_x0 R hα)
+  -- "At `z = 1/(1 − l_k)` the left and right slopes of `c_k` are `l_{k−1}` and `l_k`,
+  -- respectively."
+  have _hslopes : ∀ k, 1 ≤ k → k ≤ Kq ε ᾱ →
+      HasDerivWithinAt (cost (gk ε ᾱ k)) (lsh ε (k - 1)) (Iic (1 / (1 - lsh ε k)))
+          (1 / (1 - lsh ε k)) ∧
+        HasDerivWithinAt (cost (gk ε ᾱ k)) (lsh ε k) (Ici (1 / (1 - lsh ε k)))
+          (1 / (1 - lsh ε k)) :=
+    fun k hk1 hkK => slopes_ck R hk1 hkK
+  -- "Thus the best response of `I_k` is the function `x_k` that equals `x₀` outside the window
+  -- `[l_{k−1}, l_k)` and equals `1/(1 − l_k)` on it."
   have hBRk : ∀ k, 1 ≤ k → k ≤ Kq ε ᾱ → ∀ α ∈ Icc (0 : ℝ) 1, ∀ v : Unit → ℝ,
       Convex.IsPBR (indepPoly (oneF (1 / (1 - ᾱ)))) 1 (unitCost (cost (gk ε ᾱ k))) α v ↔
         v () = xk ε ᾱ k α :=

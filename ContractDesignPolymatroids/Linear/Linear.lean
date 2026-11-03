@@ -1,5 +1,7 @@
--- stamp r8 2026-11-02
+-- stamp r10 2026-11-03
 import ContractDesignPolymatroids.Preliminaries.Greedy
+import ContractDesignPolymatroids.Preliminaries.CountedSort
+import ContractDesignPolymatroids.Preliminaries.CountedTime
 
 /-!
 # Linear costs
@@ -28,20 +30,28 @@ without it.
   candidate breakpoints in `[0, 1]` with `0` and `1`, without duplicates) and their sorted
   enumeration `cand`, `0 = α^(0) < ⋯ < α^(K) = 1` with `K = numK m c`.
 * `candidates_lemma`: `lem:A-candidates`.
-* `lineartime`: `lem:A-lineartime`, with the shares that its proof evaluates (`evalShares`),
-  without the running time.
-* `linear`: `thm:linear`, without the running time, for every `n` (Section 2 assumes a nonempty
-  ground set, and Appendix A.2 settles `E = ∅` in a parenthetical); `linear_of_isEmpty` is that
-  case.
-* `const_on_intervals`: the warm-up's sentence on the intervals between consecutive candidate
-  shares (`stoc-sections/04-linear.tex:5`), which `thm:linear` no longer states.
+* `lineartime`: `lem:A-lineartime`, with the shares that its proof evaluates (`evalShares`) and
+  the counted procedure of its proof, `lineartimeC` (`lineartimeC_spec`).
+* `linear`: `thm:linear`, with the counts of `lem:A-lineartime`, for every `n` (Section 2 assumes
+  a nonempty ground set, and Appendix A.2 settles `E = ∅` in a parenthetical);
+  `linear_of_isEmpty` is that case.
+* `const_on_intervals`: the warm-up's sentences on the response at and between crossings
+  (`stoc-sections/04-linear.tex:5`), on the intervals between consecutive candidate shares, which
+  `thm:linear` no longer states.
 
 Indices from 0: `perm m c α i` is the STOC version's `e_{π(i+1)}`.
 
-The running times of `lem:A-lineartime` and `thm:linear` are not formalised (Lean has no cost
-model): the greedy algorithm is the construction (`eq:A-greedy`) itself, and of the optimal contract
-the Lean proves that a share of maximum utility among the at most `n(n + 1)/2 + 1` shares that the
-proof of `lem:A-lineartime` evaluates is optimal.
+The operation counts (not in the paper: the paper counts in prose). Of the optimal contract the
+Lean proves that a share of maximum utility among the at most `n(n + 1)/2 + 1` shares that the proof
+of `lem:A-lineartime` evaluates is optimal. The counted procedure `lineartimeC` performs the steps
+of that proof in the cost model of `Stoc.Counted`, which counts arithmetic operations (comparisons
+included), submodular minimizations and evaluations of `f`: it generates the candidate breakpoints
+and keeps those in `[0, 1)` (`sharesC`), computes for each share the greedy response (`greedyC`,
+with the order `π(α)` by the counted merge sort of `Stoc.Counted.msortC`) and the principal's
+utility (`utilC`), and retains a share of maximum utility (`bestC`). It returns such a share, with
+no minimizations, `n + 1` evaluations of `f` for each evaluated share and at most
+`3n³⌈log₂ n⌉ + 7n³ + 7n² + 3n⌈log₂ n⌉ + 11n + 2` further arithmetic operations: the
+`O(n³)·FO + O(n³ log n)` of `lem:A-lineartime` and `thm:linear` (`lineartimeC_spec`).
 
 Taken over on 2026-10-20 from `Paper/Linear/Linear.lean` (the paper at Overleaf f035b19) for the
 STOC version (`stoc.tex`); from then on this copy follows the STOC version. Rewritten on
@@ -49,7 +59,9 @@ STOC version (`stoc.tex`); from then on this copy follows the STOC version. Rewr
 final STOC version (repository 429ca68): `thm:linear` states only that an optimal contract can be
 computed, so `linear` states that a retained share is an optimal contract of the model, and its
 former parts on the intervals are the warm-up's sentence (`const_on_intervals`); `thm:greedy` is
-cited as Edmonds' greedy theorem (`Stoc.greedy`).
+cited as Edmonds' greedy theorem (`Stoc.greedy`). Extended on 2026-11-03 with the counted procedure
+`lineartimeC`, which proves the operation counts of `lem:A-lineartime` and `thm:linear` and leaves
+their proofs as they were.
 -/
 
 namespace Stoc
@@ -898,12 +910,503 @@ theorem cand_mem_evalShares {i : ℕ} (hi : i < numK m c) : cand m c i ∈ evalS
   · exact absurd h hlt1.ne
   · exact Multiset.mem_cons_of_mem (Multiset.mem_filter.2 ⟨h, h0, hlt1⟩)
 
+/-! #### The operation counts
+
+The proof of `lem:A-lineartime` counts the work (`stoc-sections/appA-proofs.tex:178-184`):
+"Generating the candidate breakpoints and keeping those in `[0, 1)` requires `O(n²)` arithmetic
+operations. [...] For each share, the greedy construction (`eq:A-greedy`) takes
+`O(n log n) + O(n)·FO` time, and computing the principal's utility takes an additional `O(n)`
+time. Evaluating all these shares and retaining one with maximum utility therefore gives the
+stated running time." The counted procedure `lineartimeC` performs these steps in the cost model
+of `Stoc.Counted`, in which `FO` is one evaluation of `f` (`evalF`):
+
+* `sharesC`: the Type 1 and Type 2 candidate breakpoints, generated from the fixed enumeration
+  `e₁, …, e_n` (`enumList`) and its pairs, and those in `[0, 1)` kept (`sharesC_spec`);
+* `greedyC`: the greedy response `x*(α)` at one share: the coefficients `ρ_e(α)`, the order
+  `π(α)` by the counted merge sort `msortC` of `ContractDesignPolymatroids/Preliminaries/CountedSort.lean`, with three
+  comparisons for each comparison of keys (`keyLE`), and the walk along `π(α)` (`greedyWalkC`)
+  with one evaluation of `f` at each prefix set `S^π_i`, `f(∅)` included (`greedyC_spec`);
+* `utilC`: the principal's utility `U_P(α) = (1 − α) mᵀx*(α)` at one share (`utilC_spec`);
+* `bestC`: the shares in turn, each compared with the best share so far (`bestC_spec`,
+  `bestC_cost`); `lineartimeC` starts with `α^(0) = 0` and goes on with the kept breakpoints.
+
+`lineartimeC_spec` shows that `lineartimeC` returns a share of maximum utility among the evaluated
+shares `evalShares`, with no submodular minimizations, `n + 1` evaluations of `f` for each
+evaluated share, and at most `3n³⌈log₂ n⌉ + 7n³ + 7n² + 3n⌈log₂ n⌉ + 11n + 2` further arithmetic
+operations, comparisons included. The insertion of an element into a prefix set counts as one of
+these operations, as the membership tests of `Stoc.Counted.sdiff` do. (Not in the paper: the paper
+counts in prose.) -/
+
+section Counts
+
+open Counted
+
+variable (E) in
+/-- The fixed enumeration `e₁, …, e_n` of `E` (the linear order on `E`) as a list. -/
+def enumList : List E :=
+  (univ : Finset E).sort (· ≤ ·)
+
+/-- The comparison of the keys of `π(α)` (`sortKey`) for the coefficients `ρ`: `keyLE m ρ e e'`
+holds if `e` is `e'` or comes before it in the order by nonincreasing `ρ_e`, ties by
+nonincreasing `m_e` and the remaining ties by the enumeration. It compares `ρ`, then `m`, then the
+enumeration: at most three comparisons, each telling `<`, `=` or `>` (with comparisons that only
+tell `≤` or `>` it would be at most five, which changes only the constant). -/
+def keyLE (m ρ : E → ℝ) (e e' : E) : Bool :=
+  decide (toLex (-ρ e, toLex (-m e, e)) ≤ toLex (-ρ e', toLex (-m e', e')))
+
+/-- The greedy construction (`eq:A-greedy`) along the rest `l` of an order, counted: from the
+prefix set `S` with the value `fS = f(S)` and the response `x` built so far, for the next element
+`e` the prefix set `S ∪ {e}` (one insertion), one evaluation of `f` at it, and
+`x_e = f(S ∪ {e}) − f(S)` if `ρ_e ≥ 0` and `x_e = 0` otherwise (one comparison and one
+subtraction). -/
+def greedyWalkC (f : Finset E → ℝ) (ρ : E → ℝ) :
+    List E → Finset E → ℝ → (E → ℝ) → Counted (E → ℝ)
+  | [], _, _, x => ret x
+  | e :: l, S, fS, x =>
+      ops 1 (insert e S) >>=ᶜ fun S' =>
+      evalF (f S') >>=ᶜ fun fS' =>
+      ops 2 (if 0 ≤ ρ e then fS' - fS else 0) >>=ᶜ fun v =>
+      greedyWalkC f ρ l S' fS' (Function.update x e v)
+
+/-- The greedy response `x*(α)` of (`eq:A-greedy`), counted: the coefficients
+`ρ_e(α) = α m_e − c_e` (one multiplication and one subtraction for each element), the order
+`π = π(α)` by merge sort of the enumeration with the keys of `π(α)` (`msortC` with `keyLE`, three
+comparisons for each comparison of keys), the value `f(S^π_0) = f(∅)`, and the walk along `π`
+(`greedyWalkC`). -/
+def greedyC (f : Finset E → ℝ) (m c : E → ℝ) (α : ℝ) : Counted (E → ℝ) :=
+  ops (2 * Fintype.card E) (rho m c α) >>=ᶜ fun ρ =>
+  msortC (keyLE m ρ) 3 (enumList E) >>=ᶜ fun σ =>
+  evalF (f ∅) >>=ᶜ fun f₀ =>
+  greedyWalkC f ρ σ ∅ f₀ 0
+
+/-- The principal's utility `U_P(α) = (1 − α) mᵀx*(α)`, counted: the greedy response
+(`greedyC`), the sum `mᵀx*(α)` (one multiplication and one addition for each element), and one
+subtraction and one multiplication. -/
+def utilC (f : Finset E → ℝ) (m c : E → ℝ) (α : ℝ) : Counted ℝ :=
+  greedyC f m c α >>=ᶜ fun x =>
+  Counted.sum univ (fun e => ops 1 (m e * x e)) >>=ᶜ fun r =>
+  ops 2 ((1 - α) * r)
+
+/-- The candidate breakpoints, generated and kept in `[0, 1)`, counted: the Type 1 candidate
+breakpoints `α_e = c_e/m_e` (the test `m_e > 0`, one comparison for each element, and one division
+for each element that passes it), the Type 2 candidate breakpoints
+`α_{e,e'} = (c_e − c_{e'})/(m_e − m_{e'})` (the test `m_e > m_{e'}`, one comparison for each
+ordered pair `(e, e')`, `n²` in all, and two subtractions and one division for each pair that passes
+it), and the test `0 ≤ β < 1`
+(two comparisons) for each of them. -/
+def sharesC (m c : E → ℝ) : Counted (List ℝ) :=
+  filterL (enumList E) 1 (fun e => decide (0 < m e)) >>=ᶜ fun P₁ =>
+  mapL P₁ (fun e => ops 1 (c e / m e)) >>=ᶜ fun t₁ =>
+  filterL (enumList E ×ˢ enumList E) 1 (fun p => decide (m p.2 < m p.1)) >>=ᶜ fun P₂ =>
+  mapL P₂ (fun p => ops 3 ((c p.1 - c p.2) / (m p.1 - m p.2))) >>=ᶜ fun t₂ =>
+  filterL (t₁ ++ t₂) 2 (fun β => decide (0 ≤ β ∧ β < 1))
+
+/-- Retaining a share of maximum utility, counted: the shares of the list `l` in turn, each with
+its utility (`utilC`) and one comparison with the utility `b.2` of the best share `b.1` so far,
+which it replaces if it is larger. -/
+def bestC (f : Finset E → ℝ) (m c : E → ℝ) : List ℝ → ℝ × ℝ → Counted (ℝ × ℝ)
+  | [], b => ret b
+  | β :: l, b =>
+      utilC f m c β >>=ᶜ fun u =>
+      ops 1 (if b.2 < u then (β, u) else b) >>=ᶜ fun b' =>
+      bestC f m c l b'
+
+/-- The procedure of the proof of `lem:A-lineartime`, counted: the candidate breakpoints, generated
+and kept in `[0, 1)` (`sharesC`), the share `α^(0) = 0` with its utility, the kept breakpoints in
+turn (`bestC`), and the retained share. -/
+def lineartimeC (f : Finset E → ℝ) (m c : E → ℝ) : Counted ℝ :=
+  sharesC m c >>=ᶜ fun l =>
+  utilC f m c 0 >>=ᶜ fun u =>
+  bestC f m c l (0, u) >>=ᶜ fun b =>
+  ret b.1
+
+omit [DecidableEq E] in
+/-- The enumeration lists every element of `E` once (not in the paper). -/
+theorem coe_enumList : (enumList E : Multiset E) = (univ : Finset E).val :=
+  Finset.sort_eq _ _
+
+omit [DecidableEq E] in
+/-- The enumeration has `n` elements (not in the paper). -/
+theorem length_enumList : (enumList E).length = Fintype.card E := by
+  rw [enumList, Finset.length_sort, card_univ]
+
+omit [DecidableEq E] in
+/-- The Type 1 candidate breakpoints, generated from the enumeration (not in the paper). -/
+theorem type1_eq : type1 m c =
+    ((((enumList E).filter fun e => decide (0 < m e)).map fun e => c e / m e : List ℝ) :
+      Multiset ℝ) := by
+  rw [type1, filter_val, ← coe_enumList, Multiset.filter_coe, Multiset.map_coe]
+
+omit [DecidableEq E] in
+/-- The Type 2 candidate breakpoints, generated from the pairs of the enumeration (not in the
+paper). -/
+theorem type2_eq : type2 m c =
+    ((((enumList E ×ˢ enumList E).filter fun p => decide (m p.2 < m p.1)).map
+      fun p => (c p.1 - c p.2) / (m p.1 - m p.2) : List ℝ) : Multiset ℝ) := by
+  rw [type2, filter_val, ← univ_product_univ, product_val, ← coe_enumList, Multiset.coe_product,
+    Multiset.filter_coe, Multiset.map_coe]
+
+omit [DecidableEq E] in
+/-- Step (3) of the proof of `lem:A-lineartime`, counted (not in the paper: the paper counts in
+prose): `sharesC` returns the evaluated shares other than `α^(0) = 0`, at most `n(n + 1)/2` of
+them, with no minimizations or evaluations of `f` and at most `4n² + 4n` operations, the `O(n²)`
+of the proof. -/
+theorem sharesC_spec :
+    ((0 :: (sharesC m c).val : List ℝ) : Multiset ℝ) = evalShares m c ∧
+      (sharesC m c).val.length ≤ Fintype.card E * (Fintype.card E + 1) / 2 ∧
+      (sharesC m c).cost.2 = 0 ∧
+      (sharesC m c).cost.1 ≤ 4 * Fintype.card E ^ 2 + 4 * Fintype.card E := by
+  have h₁ := card_type1_le (m := m) (c := c)
+  have h₂ := card_type2_le (m := m) (c := c)
+  have hP₁ : ((enumList E).filter fun e => decide (0 < m e)).length =
+      Multiset.card (type1 m c) := by
+    rw [type1_eq, Multiset.coe_card, List.length_map]
+  have hP₂ : ((enumList E ×ˢ enumList E).filter fun p => decide (m p.2 < m p.1)).length =
+      Multiset.card (type2 m c) := by
+    rw [type2_eq, Multiset.coe_card, List.length_map]
+  have hcount := count_eq (Fintype.card E)
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · rw [evalShares, type1_eq, type2_eq, Multiset.coe_add, Multiset.filter_coe, Multiset.cons_coe]
+    simp only [sharesC, val_bind, val_filterL, val_mapL, val_ops]
+  · simp only [sharesC, val_bind, val_filterL, val_mapL, val_ops]
+    refine (List.length_filter_le _ _).trans ?_
+    rw [List.length_append, List.length_map, List.length_map, hP₁, hP₂]
+    omega
+  · simp only [sharesC, cost_bind, val_filterL, val_mapL, cost_filterL, cost_mapL_ops,
+      Prod.snd_add]
+    rfl
+  · simp only [sharesC, cost_bind, val_filterL, val_mapL, cost_filterL, cost_mapL_ops,
+      Prod.fst_add, List.length_append, List.length_map, List.length_product, length_enumList,
+      hP₁, hP₂]
+    set n := Fintype.card E
+    have hX : n * (n - 1) / 2 * 2 ≤ n * (n - 1) := Nat.div_mul_le_self _ 2
+    have hY : n * (n - 1) ≤ n * n := Nat.mul_le_mul_left n (Nat.sub_le n 1)
+    have hsq : n ^ 2 = n * n := sq n
+    omega
+
+omit [DecidableEq E] in
+/-- The merge sort of the enumeration with the keys of `π(α)` is the order `π(α)`, as the keys are
+distinct (not in the paper). -/
+theorem mergeSort_enumList (m c : E → ℝ) (α : ℝ) :
+    (enumList E).mergeSort (keyLE m (rho m c α)) = List.ofFn (perm m c α) := by
+  have hle : ∀ e e', keyLE m (rho m c α) e e' = true ↔ sortKey m c α e ≤ sortKey m c α e' :=
+    fun e e' => decide_eq_true_iff
+  refine List.Perm.eq_of_pairwise (le := fun e e' => keyLE m (rho m c α) e e' = true)
+    (fun a b _ _ hab hba => sortKey_injective m c α (le_antisymm ((hle a b).1 hab)
+      ((hle b a).1 hba))) ?_ ?_ ?_
+  · refine List.pairwise_mergeSort (fun a b d hab hbd => ?_) (fun a b => ?_) _
+    · exact (hle a d).2 (((hle a b).1 hab).trans ((hle b d).1 hbd))
+    · rcases le_total (sortKey m c α a) (sortKey m c α b) with h | h
+      · simp [(hle a b).2 h]
+      · simp [(hle b a).2 h]
+  · exact List.pairwise_ofFn.2 fun i j hij =>
+      (hle _ _).2 ((sortEquiv_lt_iff (sortKey_injective m c α)).2 hij).le
+  · refine (List.mergeSort_perm _ _).trans ((List.perm_ext_iff_of_nodup
+      (Finset.sort_nodup _ _) (List.nodup_ofFn.2 (perm m c α).injective)).2 fun a => ?_)
+    exact ⟨fun _ => List.mem_ofFn.2 ((perm m c α).surjective a),
+      fun _ => (Finset.mem_sort _).2 (mem_univ a)⟩
+
+omit [DecidableEq E] [LinearOrder E] in
+/-- `S^π_0 = ∅` (not in the paper). -/
+theorem prefixSet_zero {n : ℕ} (π : Fin n ≃ E) : prefixSet π 0 = ∅ := by
+  ext e
+  simp [prefixSet]
+
+omit [LinearOrder E] in
+/-- `S^π_{k+1} = S^π_k ∪ {e_{π(k+1)}}` (not in the paper). -/
+theorem insert_prefixSet {n : ℕ} (π : Fin n ≃ E) {k : ℕ} (hk : k < n) :
+    insert (π ⟨k, hk⟩) (prefixSet π k) = prefixSet π (k + 1) := by
+  have h := prefixSet_succ_eq_insert_before π (π ⟨k, hk⟩)
+  rw [← prefixSet_eq_before, Equiv.symm_apply_apply] at h
+  exact h.symm
+
+omit [LinearOrder E] in
+/-- The walk along `π` returns the greedy construction (`eq:A-greedy`) for `π` and `ρ`: from the
+position `k`, with the prefix set `S^π_k`, its value, and a response that is the greedy
+construction at the first `k` positions, it makes `n − k` evaluations of `f` and `3(n − k)`
+operations (not in the paper). -/
+theorem greedyWalkC_spec {n : ℕ} (π : Fin n ≃ E) (ρ : E → ℝ) (j : ℕ) :
+    ∀ k, n - k = j → k ≤ n → ∀ x : E → ℝ,
+      (∀ e, (π.symm e : ℕ) < k → x e = greedyResp f π ρ e) →
+      (greedyWalkC f ρ ((List.ofFn π).drop k) (prefixSet π k) (f (prefixSet π k)) x).val =
+          greedyResp f π ρ ∧
+        (greedyWalkC f ρ ((List.ofFn π).drop k) (prefixSet π k) (f (prefixSet π k)) x).cost =
+          (3 * (n - k), 0, n - k) := by
+  induction j with
+  | zero =>
+    intro k hj hk x hx
+    obtain rfl : k = n := by omega
+    rw [List.drop_eq_nil_of_le (by simp)]
+    exact ⟨funext fun e => hx e (π.symm e).2, by
+      simp only [greedyWalkC, cost_ret, Nat.sub_self, mul_zero]
+      rfl⟩
+  | succ j ih =>
+    intro k hj hk x hx
+    have hkn : k < n := by omega
+    rw [List.drop_eq_getElem_cons (by simpa using hkn), List.getElem_ofFn]
+    have hv : greedyResp f π ρ (π ⟨k, hkn⟩) = if 0 ≤ ρ (π ⟨k, hkn⟩) then
+        f (prefixSet π (k + 1)) - f (prefixSet π k) else 0 := by
+      simp [greedyResp]
+    have hx' : ∀ e, (π.symm e : ℕ) < k + 1 →
+        Function.update x (π ⟨k, hkn⟩) (greedyResp f π ρ (π ⟨k, hkn⟩)) e =
+          greedyResp f π ρ e := by
+      intro e he
+      by_cases h : e = π ⟨k, hkn⟩
+      · rw [h, Function.update_self]
+      · rw [Function.update_of_ne h]
+        refine hx e (lt_of_le_of_ne (Nat.lt_succ_iff.1 he) fun h' => h ?_)
+        rw [← Equiv.symm_apply_eq]
+        exact Fin.ext h'
+    obtain ⟨h₁, h₂⟩ := ih (k + 1) (by omega) hkn _ hx'
+    simp only [greedyWalkC, val_bind, cost_bind, val_ops, val_evalF, cost_ops, cost_evalF,
+      insert_prefixSet π hkn, ← hv, h₁, h₂, true_and]
+    simp only [Prod.mk_add_mk, Prod.mk.injEq]
+    exact ⟨by omega, trivial, by omega⟩
+
+/-- The greedy construction (`eq:A-greedy`) at one share, counted (step (4) of the proof of
+`lem:A-lineartime`; not in the paper: the paper counts in prose): `greedyC` returns `x*(α)`, with
+no minimizations, `n + 1` evaluations of `f` and at most `3n⌈log₂ n⌉ + 5n` operations, the
+`O(n log n) + O(n)·FO` of the proof. -/
+theorem greedyC_spec (α : ℝ) :
+    (greedyC f m c α).val = xstar f m c α ∧ (greedyC f m c α).cost.2.1 = 0 ∧
+      (greedyC f m c α).cost.2.2 = Fintype.card E + 1 ∧
+      (greedyC f m c α).cost.1 ≤
+        3 * Fintype.card E * Nat.clog 2 (Fintype.card E) + 5 * Fintype.card E := by
+  have hsort := msortC_val (keyLE m (rho m c α)) 3 (enumList E)
+  rw [mergeSort_enumList] at hsort
+  obtain ⟨hs₂, hs₁⟩ := msortC_cost (keyLE m (rho m c α)) 3 (enumList E)
+  rw [length_enumList] at hs₁
+  obtain ⟨hw₁, hw₂⟩ := greedyWalkC_spec (f := f) (perm m c α) (rho m c α) _ 0 rfl
+    (Nat.zero_le _) 0 fun e h => absurd h (Nat.not_lt_zero _)
+  rw [List.drop_zero, prefixSet_zero] at hw₁ hw₂
+  have hcost : (greedyC f m c α).cost = (2 * Fintype.card E, 0, 0) +
+      ((msortC (keyLE m (rho m c α)) 3 (enumList E)).cost +
+        ((0, 0, 1) + (3 * (Fintype.card E - 0), 0, Fintype.card E - 0))) := by
+    simp only [greedyC, cost_bind, val_ops, cost_ops, cost_evalF, val_evalF, hsort, hw₂]
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · simp only [greedyC, val_bind, val_ops, val_evalF, hsort, hw₁]
+    rfl
+  · rw [hcost]
+    simp only [Prod.snd_add, hs₂]
+    rfl
+  · rw [hcost]
+    simp only [Prod.snd_add, hs₂, zero_add, Nat.sub_zero]
+    omega
+  · rw [hcost]
+    simp only [Prod.fst_add]
+    have h3 := Nat.mul_assoc 3 (Fintype.card E) (Nat.clog 2 (Fintype.card E))
+    omega
+
+/-- The principal's utility at one share, counted (step (4) of the proof of `lem:A-lineartime`;
+not in the paper: the paper counts in prose): `utilC` returns `U_P(α)`, with no minimizations,
+`n + 1` evaluations of `f` and at most `3n⌈log₂ n⌉ + 7n + 2` operations: the greedy construction
+and the additional `O(n)` of the proof. -/
+theorem utilC_spec (α : ℝ) :
+    (utilC f m c α).val = utilP f m c α ∧ (utilC f m c α).cost.2.1 = 0 ∧
+      (utilC f m c α).cost.2.2 = Fintype.card E + 1 ∧
+      (utilC f m c α).cost.1 ≤
+        3 * Fintype.card E * Nat.clog 2 (Fintype.card E) + 7 * Fintype.card E + 2 := by
+  obtain ⟨hv, h₁, h₂, h₃⟩ := greedyC_spec (f := f) (m := m) (c := c) α
+  have hcost : (utilC f m c α).cost = (greedyC f m c α).cost +
+      ((2 * Fintype.card E, 0, 0) + (2, 0, 0)) := by
+    simp only [utilC, cost_bind, cost_sum, cost_ops, sum_const, card_univ, Prod.smul_mk,
+      smul_eq_mul, mul_one, mul_zero, Prod.mk_add_mk, add_zero]
+    congr 2
+    omega
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · simp only [utilC, val_bind, val_sum, val_ops, hv]
+    rfl
+  · rw [hcost]
+    simp [h₁]
+  · rw [hcost]
+    simp [h₂]
+  · rw [hcost]
+    simp only [Prod.fst_add]
+    omega
+
+/-- Retaining a share of maximum utility (step (5) of the proof of `lem:A-lineartime`; not in the
+paper): from a share `b.1` with its utility `b.2`, `bestC` returns a share of `b.1 :: l` with its
+utility, and no share of `b.1 :: l` has a larger utility. -/
+theorem bestC_spec : ∀ (l : List ℝ) (b : ℝ × ℝ), b.2 = utilP f m c b.1 →
+    (bestC f m c l b).val.2 = utilP f m c (bestC f m c l b).val.1 ∧
+      (bestC f m c l b).val.1 ∈ b.1 :: l ∧
+      ∀ β ∈ b.1 :: l, utilP f m c β ≤ (bestC f m c l b).val.2
+  | [], b, hb => by
+    simp only [bestC, val_ret, List.mem_singleton, forall_eq, hb, le_refl, and_true]
+  | β :: l, b, hb => by
+    have hu := (utilC_spec (f := f) (m := m) (c := c) β).1
+    set b' : ℝ × ℝ := if b.2 < utilP f m c β then (β, utilP f m c β) else b with hb'
+    have hb'u : b'.2 = utilP f m c b'.1 := by
+      rw [hb']
+      split_ifs
+      · rfl
+      · exact hb
+    have hb'mem : b'.1 = β ∨ b'.1 = b.1 := by
+      rw [hb']
+      split_ifs
+      · exact Or.inl rfl
+      · exact Or.inr rfl
+    have hb'ge : b.2 ≤ b'.2 ∧ utilP f m c β ≤ b'.2 := by
+      rw [hb']
+      split_ifs with h
+      · exact ⟨h.le, le_rfl⟩
+      · exact ⟨le_rfl, not_lt.1 h⟩
+    obtain ⟨ih₁, ih₂, ih₃⟩ := bestC_spec l b' hb'u
+    have hval : (bestC f m c (β :: l) b).val = (bestC f m c l b').val := by
+      simp only [bestC, val_bind, val_ops, hu, hb']
+    have hb'le := ih₃ b'.1 List.mem_cons_self
+    rw [← hb'u] at hb'le
+    rw [hval]
+    refine ⟨ih₁, ?_, ?_⟩
+    · rcases List.mem_cons.1 ih₂ with h | h
+      · rcases hb'mem with h' | h'
+        · rw [h, h']
+          exact List.mem_cons_of_mem _ List.mem_cons_self
+        · rw [h, h']
+          exact List.mem_cons_self
+      · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ h)
+    · intro γ hγ
+      rcases List.mem_cons.1 hγ with rfl | hγ
+      · rw [← hb]
+        exact hb'ge.1.trans hb'le
+      rcases List.mem_cons.1 hγ with rfl | hγ
+      · exact hb'ge.2.trans hb'le
+      · exact ih₃ γ (List.mem_cons_of_mem _ hγ)
+
+/-- The work of retaining a share of maximum utility (step (5) of the proof of `lem:A-lineartime`;
+not in the paper): for each share of `l`, its utility (`utilC_spec`) and one comparison. -/
+theorem bestC_cost : ∀ (l : List ℝ) (b : ℝ × ℝ),
+    (bestC f m c l b).cost.2.1 = 0 ∧
+      (bestC f m c l b).cost.2.2 = l.length * (Fintype.card E + 1) ∧
+      (bestC f m c l b).cost.1 ≤
+        l.length * (3 * Fintype.card E * Nat.clog 2 (Fintype.card E) + 7 * Fintype.card E + 3)
+  | [], b => by simp [bestC]
+  | β :: l, b => by
+    obtain ⟨-, h₁, h₂, h₃⟩ := utilC_spec (f := f) (m := m) (c := c) β
+    obtain ⟨ih₁, ih₂, ih₃⟩ := bestC_cost l
+      (if b.2 < (utilC f m c β).val then (β, (utilC f m c β).val) else b)
+    refine ⟨?_, ?_, ?_⟩ <;>
+      simp only [bestC, cost_bind, val_ops, cost_ops, Prod.fst_add, Prod.snd_add, h₁, h₂, ih₁,
+        ih₂, List.length_cons]
+    · ring
+    · nlinarith
+
+/-- The counted procedure of `lem:A-lineartime` (steps (3)-(5) of its proof; not in the paper:
+the paper counts in prose): `lineartimeC` returns a share of maximum utility among the evaluated
+shares (`evalShares`), with no submodular minimizations, `n + 1` evaluations of `f` for each
+evaluated share, at most `(n(n + 1)/2 + 1)(n + 1)` in all (the `O(n³)·FO` of the lemma), and at
+most `3n³⌈log₂ n⌉ + 7n³ + 7n² + 3n⌈log₂ n⌉ + 11n + 2` further arithmetic operations, comparisons
+included (the `O(n³ log n)` of the lemma). -/
+theorem lineartimeC_spec :
+    (lineartimeC f m c).val ∈ evalShares m c ∧
+      (∀ β ∈ evalShares m c, utilP f m c β ≤ utilP f m c (lineartimeC f m c).val) ∧
+      (lineartimeC f m c).cost.2.1 = 0 ∧
+      (lineartimeC f m c).cost.2.2 = Multiset.card (evalShares m c) * (Fintype.card E + 1) ∧
+      (lineartimeC f m c).cost.2.2 ≤
+        (Fintype.card E * (Fintype.card E + 1) / 2 + 1) * (Fintype.card E + 1) ∧
+      (lineartimeC f m c).cost.1 ≤
+        3 * Fintype.card E ^ 3 * Nat.clog 2 (Fintype.card E) + 7 * Fintype.card E ^ 3 +
+          7 * Fintype.card E ^ 2 + 3 * Fintype.card E * Nat.clog 2 (Fintype.card E) +
+          11 * Fintype.card E + 2 := by
+  obtain ⟨hS, hlen, hS₂, hS₁⟩ := sharesC_spec (m := m) (c := c)
+  obtain ⟨hu, hu₁, hu₂, hu₃⟩ := utilC_spec (f := f) (m := m) (c := c) 0
+  set l := (sharesC m c).val with hl
+  set b₀ : ℝ × ℝ := (0, (utilC f m c 0).val) with hb₀
+  obtain ⟨hb₀', hb₁, hb₂⟩ := bestC_spec (f := f) (m := m) (c := c) l b₀ (by rw [hb₀, hu])
+  obtain ⟨hc₁, hc₂, hc₃⟩ := bestC_cost (f := f) (m := m) (c := c) l b₀
+  have hval : (lineartimeC f m c).val = (bestC f m c l b₀).val.1 := by
+    simp only [lineartimeC, val_bind, val_ret, hl, hb₀]
+  have hcost : (lineartimeC f m c).cost =
+      (sharesC m c).cost + ((utilC f m c 0).cost + ((bestC f m c l b₀).cost + 0)) := by
+    simp only [lineartimeC, cost_bind, cost_ret, hl, hb₀]
+  have hcard : Multiset.card (evalShares m c) = l.length + 1 := by
+    rw [← hS, Multiset.coe_card, List.length_cons]
+  have hmem : ∀ β, β ∈ evalShares m c ↔ β ∈ b₀.1 :: l := fun β => by
+    rw [← hS, Multiset.mem_coe]
+  set n := Fintype.card E
+  set L := Nat.clog 2 n
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
+  · rw [hval, hmem]
+    exact hb₁
+  · intro β hβ
+    rw [hval, ← hb₀']
+    exact hb₂ β ((hmem β).1 hβ)
+  · rw [hcost]
+    simp only [Prod.snd_add, Prod.fst_add, hS₂, hu₁, hc₁, Prod.fst_zero, add_zero]
+  · rw [hcost, hcard]
+    simp only [Prod.snd_add, hS₂, hu₂, hc₂, add_zero, zero_add]
+    ring
+  · rw [hcost]
+    simp only [Prod.snd_add, hS₂, hu₂, hc₂, add_zero, zero_add]
+    calc n + 1 + l.length * (n + 1) = (l.length + 1) * (n + 1) := by ring
+      _ ≤ (n * (n + 1) / 2 + 1) * (n + 1) := Nat.mul_le_mul_right _ (by omega)
+  · rw [hcost]
+    simp only [Prod.fst_add, add_zero]
+    have hT : l.length ≤ n ^ 2 := by
+      have h2 : n * (n + 1) ≤ 2 * n ^ 2 := by
+        have := Nat.le_mul_self n
+        rw [sq, Nat.mul_add_one]
+        omega
+      have : n * (n + 1) / 2 ≤ n ^ 2 := Nat.div_le_of_le_mul h2
+      omega
+    have hb : l.length * (3 * n * L + 7 * n + 3) ≤ n ^ 2 * (3 * n * L + 7 * n + 3) :=
+      Nat.mul_le_mul_right _ hT
+    nlinarith
+
+/-- The running time of `lem:A-lineartime` and `thm:linear` from the counts (not in the paper: the
+paper counts in prose), for `n = |E| ≥ 1`: if an evaluation of `f` takes time `FO ≥ 0`, the counted
+procedure `lineartimeC` takes time at most `4n³ · FO + 27n³ lg n`, the `O(n³)·FO + O(n³ log n)` of
+the lemma (`lg n = ⌈log₂ n⌉ + 1`, `Counted.lg`): at most `(n(n + 1)/2 + 1)(n + 1) ≤ 4n³`
+evaluations of `f`, at most `3n³⌈log₂ n⌉ + 7n³ + 7n² + 3n⌈log₂ n⌉ + 11n + 2 ≤ 27n³ lg n` further
+arithmetic operations, and no submodular minimization, so that the time `TS` of a minimization does
+not enter (`lineartimeC_spec`). -/
+theorem lineartimeC_time (hn : 0 < Fintype.card E) (FO TS : ℝ) (hFO : 0 ≤ FO) :
+    Counted.time FO TS (lineartimeC f m c).cost ≤
+      4 * (Fintype.card E : ℝ) ^ 3 * FO +
+        27 * (Fintype.card E : ℝ) ^ 3 * Counted.lg (Fintype.card E) := by
+  obtain ⟨-, -, h0, -, he, ha⟩ := lineartimeC_spec (f := f) (m := m) (c := c)
+  set n := Fintype.card E
+  -- the evaluations of `f`: `(n(n + 1)/2 + 1)(n + 1) ≤ (n² + 1)(n + 1) ≤ 4n³`
+  have hhalf : n * (n + 1) / 2 ≤ n * n :=
+    Nat.div_le_of_le_mul (by nlinarith)
+  have he' : (lineartimeC f m c).cost.2.2 ≤ 4 * n ^ 3 := by
+    have h1 : (n * (n + 1) / 2 + 1) * (n + 1) ≤ (n * n + 1) * (n + 1) :=
+      Nat.mul_le_mul_right _ (by omega)
+    have h2 : (n * n + 1) * (n + 1) ≤ 4 * n ^ 3 := by nlinarith
+    omega
+  -- the arithmetic operations: at most `6n³⌈log₂ n⌉ + 27n³ ≤ 27n³ lg n`
+  have ha' : (lineartimeC f m c).cost.1 ≤ 27 * n ^ 3 * Counted.lg n := by
+    have hc : n * Nat.clog 2 n ≤ n ^ 3 * Nat.clog 2 n :=
+      Nat.mul_le_mul_right _ (by nlinarith)
+    have h2 : n ^ 2 ≤ n ^ 3 := Nat.pow_le_pow_right hn (by norm_num)
+    have h1 : n ≤ n ^ 3 := by simpa using Nat.pow_le_pow_right hn (show 1 ≤ 3 by norm_num)
+    have h0' : 1 ≤ n ^ 3 := Nat.one_le_pow _ _ hn
+    unfold Counted.lg
+    nlinarith
+  unfold Counted.time
+  rw [h0]
+  have hx : ((lineartimeC f m c).cost.2.2 : ℝ) ≤ 4 * (n : ℝ) ^ 3 := by exact_mod_cast he'
+  have hy : ((lineartimeC f m c).cost.1 : ℝ) ≤ 27 * (n : ℝ) ^ 3 * (Counted.lg n : ℝ) := by
+    exact_mod_cast ha'
+  have := mul_le_mul_of_nonneg_left hx hFO
+  push_cast
+  nlinarith
+
+end Counts
+
 /-- **`lem:A-lineartime`** (Lemma A.4, statement `stoc-sections/appA-proofs.tex:167-169`, proof
-:171-185): an optimal contract `α*` can be computed in time `O(n³)·FO + O(n³ log n)`. Without the
-running time, which is not formalised: the shares that the proof evaluates (`evalShares`:
-`α^(0) = 0` and the candidate breakpoints in `[0, 1)`, in any order and with their duplicates) are
-at most `n(n + 1)/2 + 1`, and a share of maximum utility among them exists and is an optimal
-contract.
+:171-185): an optimal contract `α*` can be computed in time `O(n³)·FO + O(n³ log n)`. The shares
+that the proof evaluates (`evalShares`: `α^(0) = 0` and the candidate breakpoints in `[0, 1)`, in
+any order and with their duplicates) are at most `n(n + 1)/2 + 1`, and a share of maximum utility
+among them exists and is an optimal contract. The time is counted in the cost model of
+`Stoc.Counted`, in evaluations of `f` (`FO` each) and arithmetic operations: the counted procedure
+`lineartimeC`, which performs the steps (3)-(5) of the proof, returns a share of maximum utility
+among the evaluated shares, with no submodular minimizations, `n + 1` evaluations of `f` for each
+evaluated share, at most `(n(n + 1)/2 + 1)(n + 1)` in all (the `O(n³)·FO`), and at most
+`3n³⌈log₂ n⌉ + 7n³ + 7n² + 3n⌈log₂ n⌉ + 11n + 2` further arithmetic operations, comparisons
+included (the `O(n³ log n)`) (`lineartimeC_spec`; not in the paper: the paper counts in prose).
+The running time from these counts: if an evaluation of `f` takes time `FO ≥ 0`, `lineartimeC`
+takes time at most `4n³ · FO + 27n³ lg n`, `lg n = ⌈log₂ n⌉ + 1` (`lineartimeC_time`).
 
 The STOC version's proof: (1) there are at most `n` Type 1 and `n(n − 1)/2` Type 2 candidate
 breakpoints; (2) including `α^(0) = 0` and omitting `α^(K) = 1`, as justified in
@@ -915,16 +1418,34 @@ construction (`eq:A-greedy`) takes `O(n log n) + O(n)·FO` time and computing `U
 running time. The Lean has (1); (2); of (3), that the evaluated shares form a multiset (no order,
 duplicates kept) of shares in `[0, 1)` that contains every `α^(i)`, `i < K`
 (`cand_mem_evalShares`); and of (5), that a share of maximum utility among them exists and is
-optimal, as `lem:A-candidates` gives an optimal contract among `α^(0), …, α^(K−1)`. The running
-times of (3)-(5) are not formalised.
+optimal, as `lem:A-candidates` gives an optimal contract among `α^(0), …, α^(K−1)`. The counts of
+(3)-(5) are those of `lineartimeC`: the candidate breakpoints generated and kept in `[0, 1)` with
+at most `4n² + 4n` operations (`sharesC_spec`); for each share the greedy construction with
+`n + 1` evaluations of `f` and at most `3n⌈log₂ n⌉ + 5n` operations, the order `π(α)` by merge
+sort included (`greedyC_spec`), and `U_P` with `2n + 2` more (`utilC_spec`); and one comparison
+for each further share to retain one with maximum utility (`bestC_spec`, `bestC_cost`).
 
-The hypotheses are the STOC version's (`f` a rank function, `m ≥ 0`, `c ≥ 0`, `n ≥ 1`). -/
+The hypotheses are the STOC version's (`f` a rank function, `m ≥ 0`, `c ≥ 0`, `n ≥ 1`); the counts
+use none of them. -/
 theorem lineartime [Nonempty E] (hf : IsRankFunction f) (hm : ∀ e, 0 ≤ m e)
     (hc : ∀ e, 0 ≤ c e) :
     Multiset.card (evalShares m c) ≤ Fintype.card E * (Fintype.card E + 1) / 2 + 1 ∧
       (∃ β ∈ evalShares m c, ∀ β' ∈ evalShares m c, utilP f m c β' ≤ utilP f m c β) ∧
-      ∀ β ∈ evalShares m c, (∀ β' ∈ evalShares m c, utilP f m c β' ≤ utilP f m c β) →
-        β ∈ Set.Icc (0 : ℝ) 1 ∧ ∀ α ∈ Set.Icc (0 : ℝ) 1, utilP f m c α ≤ utilP f m c β := by
+      (∀ β ∈ evalShares m c, (∀ β' ∈ evalShares m c, utilP f m c β' ≤ utilP f m c β) →
+        β ∈ Set.Icc (0 : ℝ) 1 ∧ ∀ α ∈ Set.Icc (0 : ℝ) 1, utilP f m c α ≤ utilP f m c β) ∧
+      ((lineartimeC f m c).val ∈ evalShares m c ∧
+        (∀ β ∈ evalShares m c, utilP f m c β ≤ utilP f m c (lineartimeC f m c).val) ∧
+        (lineartimeC f m c).cost.2.1 = 0 ∧
+        (lineartimeC f m c).cost.2.2 = Multiset.card (evalShares m c) * (Fintype.card E + 1) ∧
+        (lineartimeC f m c).cost.2.2 ≤
+          (Fintype.card E * (Fintype.card E + 1) / 2 + 1) * (Fintype.card E + 1) ∧
+        (lineartimeC f m c).cost.1 ≤
+          3 * Fintype.card E ^ 3 * Nat.clog 2 (Fintype.card E) + 7 * Fintype.card E ^ 3 +
+            7 * Fintype.card E ^ 2 + 3 * Fintype.card E * Nat.clog 2 (Fintype.card E) +
+            11 * Fintype.card E + 2) ∧
+      (∀ FO TS : ℝ, 0 ≤ FO → Counted.time FO TS (lineartimeC f m c).cost ≤
+        4 * (Fintype.card E : ℝ) ^ 3 * FO +
+          27 * (Fintype.card E : ℝ) ^ 3 * Counted.lg (Fintype.card E)) := by
   -- (1) "There are at most `n` Type 1 and `n(n − 1)/2` Type 2 candidate breakpoints."
   have h1 := card_type1_le (m := m) (c := c)
   have h2 := card_type2_le (m := m) (c := c)
@@ -939,35 +1460,52 @@ theorem lineartime [Nonempty E] (hf : IsRankFunction f) (hm : ∀ e, 0 ≤ m e)
     rw [evalShares, Multiset.card_cons]
     omega
   -- (3) "Generating the candidate breakpoints and keeping those in `[0, 1)` requires `O(n²)`
-  -- arithmetic operations" (not formalised). "Their order does not matter, and duplicates do no
-  -- harm": the evaluated shares form a multiset, without an order and with their duplicates. They
-  -- lie in `[0, 1)` (`mem_evalShares_bounds`), and every `α^(i)`, `i < K`, is among them
-  -- (`cand_mem_evalShares`).
+  -- arithmetic operations": at most `4n² + 4n` in `lineartimeC` (`sharesC_spec`). "Their order
+  -- does not matter, and duplicates do no harm": the evaluated shares form a multiset, without an
+  -- order and with their duplicates. They lie in `[0, 1)` (`mem_evalShares_bounds`), and every
+  -- `α^(i)`, `i < K`, is among them (`cand_mem_evalShares`).
   -- (4) "For each share, the greedy construction (`eq:A-greedy`) takes `O(n log n) + O(n)·FO`
-  -- time, and computing the principal's utility takes an additional `O(n)` time." Not formalised.
+  -- time, and computing the principal's utility takes an additional `O(n)` time": `n + 1`
+  -- evaluations of `f` and at most `3n⌈log₂ n⌉ + 5n` operations for `x*(α)` (`greedyC_spec`), and
+  -- `2n + 2` more for `U_P(α)` (`utilC_spec`).
   -- (5) "Evaluating all these shares and retaining one with maximum utility therefore gives the
   -- stated running time": a share of maximum utility among them exists, and it is optimal, as
   -- `lem:A-candidates` gives an optimal contract among `α^(0), …, α^(K−1)`, all of which are
-  -- evaluated. The running time is not formalised.
+  -- evaluated; `lineartimeC` returns one, with the counts of (3) and (4) and one comparison for
+  -- each further share (below).
   obtain ⟨i₀, hi₀, hopt⟩ := (candidates_lemma hf hm hc).2
   refine ⟨hcount, Multiset.exists_max_image (utilP f m c) Multiset.cons_ne_zero,
     fun β hβ hmax => ⟨⟨(mem_evalShares_bounds hβ).1, (mem_evalShares_bounds hβ).2.le⟩,
-      fun α hα => (hopt α hα).trans (hmax _ (cand_mem_evalShares hi₀))⟩⟩
+      fun α hα => (hopt α hα).trans (hmax _ (cand_mem_evalShares hi₀))⟩, ?_⟩
+  -- The counts of (3)-(5): the counted procedure `lineartimeC` (`lineartimeC_spec`), and the
+  -- running time from them, "the stated running time" (`lineartimeC_time`; not in the paper).
+  exact ⟨lineartimeC_spec, fun FO TS hFO => lineartimeC_time Fintype.card_pos FO TS hFO⟩
 
 /-- The case `E = ∅` of `thm:linear`, which Appendix A.2 settles in its standing assumption
 (`stoc-sections/appA-proofs.tex:25-26`): "for `E = ∅`, the only response is `0` and every share is
 optimal" (not in the paper: the STOC version states this without proof). The only response is
 `0`, so it is the greedy response, agent-optimal and of maximum reward, and `U_P = 0`; there are no
 candidate breakpoints, so the only evaluated share is `α^(0) = 0` (`n(n + 1)/2 + 1 = 1`), and it is
-an optimal contract. -/
+an optimal contract. The counts are those of the counted procedure `lineartimeC` for `n = 0`
+(`lineartimeC_spec`): one evaluation of `f`, at `∅`, and at most `2` arithmetic operations. -/
 theorem linear_of_isEmpty [IsEmpty E] (hf : IsRankFunction f) :
     Multiset.card (evalShares m c) ≤ Fintype.card E * (Fintype.card E + 1) / 2 + 1 ∧
       (∃ β ∈ evalShares m c, ∀ β' ∈ evalShares m c, utilP f m c β' ≤ utilP f m c β) ∧
-      ∀ β ∈ evalShares m c, (∀ β' ∈ evalShares m c, utilP f m c β' ≤ utilP f m c β) →
+      (∀ β ∈ evalShares m c, (∀ β' ∈ evalShares m c, utilP f m c β' ≤ utilP f m c β) →
         β ∈ Set.Icc (0 : ℝ) 1 ∧ IsAgentOpt f m c β (xstar f m c β) ∧
           (∀ y, IsAgentOpt f m c β y → reward m y ≤ reward m (xstar f m c β)) ∧
           ∀ α ∈ Set.Icc (0 : ℝ) 1, ∀ y, IsAgentOpt f m c α y →
-            (1 - α) * reward m y ≤ utilP f m c β := by
+            (1 - α) * reward m y ≤ utilP f m c β) ∧
+      ((lineartimeC f m c).val ∈ evalShares m c ∧
+        (∀ β ∈ evalShares m c, utilP f m c β ≤ utilP f m c (lineartimeC f m c).val) ∧
+        (lineartimeC f m c).cost.2.1 = 0 ∧
+        (lineartimeC f m c).cost.2.2 = Multiset.card (evalShares m c) * (Fintype.card E + 1) ∧
+        (lineartimeC f m c).cost.2.2 ≤
+          (Fintype.card E * (Fintype.card E + 1) / 2 + 1) * (Fintype.card E + 1) ∧
+        (lineartimeC f m c).cost.1 ≤
+          3 * Fintype.card E ^ 3 * Nat.clog 2 (Fintype.card E) + 7 * Fintype.card E ^ 3 +
+            7 * Fintype.card E ^ 2 + 3 * Fintype.card E * Nat.clog 2 (Fintype.card E) +
+            11 * Fintype.card E + 2) := by
   -- "the only response is `0`": it is agent-optimal, and every reward is `0`.
   have h0 : ∀ x : E → ℝ, x = 0 := fun x => Subsingleton.elim x 0
   have hopt : ∀ α, IsAgentOpt f m c α (xstar f m c α) := fun α => by
@@ -982,17 +1520,26 @@ theorem linear_of_isEmpty [IsEmpty E] (hf : IsRankFunction f) :
     simp [evalShares, type1, type2]
   refine ⟨by simp [hS], ⟨0, by simp [hS], fun β' _ => by rw [hU, hU]⟩,
     fun β hβ _ => ⟨⟨(mem_evalShares_bounds hβ).1, (mem_evalShares_bounds hβ).2.le⟩, hopt β,
-      fun y _ => by rw [hr, hr], fun α _ y _ => by rw [hr, hU, mul_zero]⟩⟩
+      fun y _ => by rw [hr, hr], fun α _ y _ => by rw [hr, hU, mul_zero]⟩, ?_⟩
+  -- The counts: those of the counted procedure `lineartimeC` for `n = 0` (`lineartimeC_spec`).
+  exact lineartimeC_spec
 
 /-- **`thm:linear`** (Theorem 2.1, `stoc-sections/04-linear.tex:8-12`, proof
 `stoc-sections/appA-proofs.tex:190-192`): for linear costs, an optimal contract can be computed in
-time `O(n³)·FO + O(n³ log n)`. Without the running time, which is not formalised: of the at most
-`n(n + 1)/2 + 1` shares that `lem:A-lineartime` evaluates (`evalShares`), one has maximum utility,
-and every such share `β` is an optimal contract of the model of Section 2
-(`stoc-sections/02-preliminaries.tex:17`): `β ∈ [0, 1]`, its greedy response `x*(β)`
-(`eq:A-greedy`) is a best response that maximizes the reward among the best responses, so that
-`U_P(β) = (1 − β) mᵀx*(β)` is the principal's utility with ties broken in favor of the principal,
-and `(1 − α) r(y) ≤ U_P(β)` for every share `α ∈ [0, 1]` and every best response `y` to `α`.
+time `O(n³)·FO + O(n³ log n)`. Of the at most `n(n + 1)/2 + 1` shares that `lem:A-lineartime`
+evaluates (`evalShares`), one has maximum utility, and every such share `β` is an optimal contract
+of the model of Section 2 (`stoc-sections/02-preliminaries.tex:17`): `β ∈ [0, 1]`, its greedy
+response `x*(β)` (`eq:A-greedy`) is a best response that maximizes the reward among the best
+responses, so that `U_P(β) = (1 − β) mᵀx*(β)` is the principal's utility with ties broken in favor
+of the principal, and `(1 − α) r(y) ≤ U_P(β)` for every share `α ∈ [0, 1]` and every best response
+`y` to `α`. The time is that of `lem:A-lineartime`, counted in the cost model of `Stoc.Counted`:
+the counted procedure `lineartimeC` returns such a share, with no submodular minimizations,
+`n + 1` evaluations of `f` for each evaluated share, at most `(n(n + 1)/2 + 1)(n + 1)` in all (the
+`O(n³)·FO`), and at most `3n³⌈log₂ n⌉ + 7n³ + 7n² + 3n⌈log₂ n⌉ + 11n + 2` further arithmetic
+operations, comparisons included (the `O(n³ log n)`) (`lineartimeC_spec`; not in the paper: the
+paper counts in prose). The running time from these counts, for `n ≥ 1`: if an evaluation of `f`
+takes time `FO ≥ 0`, `lineartimeC` takes time at most `4n³ · FO + 27n³ lg n`,
+`lg n = ⌈log₂ n⌉ + 1` (`lineartimeC_time`).
 
 The hypotheses are the STOC version's: `f` a rank function, `m ≥ 0` (Section 2) and `c ≥ 0`; the
 standing assumption `r̄ > 0` of Section 2 is not used. Appendix A.2 assumes `n ≥ 1` and settles
@@ -1001,21 +1548,35 @@ standing assumption `r̄ > 0` of Section 2 is not used. Appendix A.2 assumes `n 
 (1) by `lem:A-tiebreak`, the greedy response maximizes the principal's reward among the agent's
 best responses; (2) by `lem:A-candidates`, evaluating these responses at the candidate shares finds
 an optimal contract; (3) the running time follows from `lem:A-lineartime`: the Lean has the shares
-it evaluates and their number, and that they contain the candidate shares `α^(0), …, α^(K−1)`
-(`cand_mem_evalShares`), so that a share of maximum utility among them is optimal by (1) and (2);
-not the time. -/
+it evaluates and their number, that they contain the candidate shares `α^(0), …, α^(K−1)`
+(`cand_mem_evalShares`), so that a share of maximum utility among them is optimal by (1) and (2),
+and the counts of the counted procedure `lineartimeC`, which returns such a share. -/
 theorem linear (hf : IsRankFunction f) (hm : ∀ e, 0 ≤ m e) (hc : ∀ e, 0 ≤ c e) :
     Multiset.card (evalShares m c) ≤ Fintype.card E * (Fintype.card E + 1) / 2 + 1 ∧
       (∃ β ∈ evalShares m c, ∀ β' ∈ evalShares m c, utilP f m c β' ≤ utilP f m c β) ∧
-      ∀ β ∈ evalShares m c, (∀ β' ∈ evalShares m c, utilP f m c β' ≤ utilP f m c β) →
+      (∀ β ∈ evalShares m c, (∀ β' ∈ evalShares m c, utilP f m c β' ≤ utilP f m c β) →
         β ∈ Set.Icc (0 : ℝ) 1 ∧ IsAgentOpt f m c β (xstar f m c β) ∧
           (∀ y, IsAgentOpt f m c β y → reward m y ≤ reward m (xstar f m c β)) ∧
           ∀ α ∈ Set.Icc (0 : ℝ) 1, ∀ y, IsAgentOpt f m c α y →
-            (1 - α) * reward m y ≤ utilP f m c β := by
+            (1 - α) * reward m y ≤ utilP f m c β) ∧
+      ((lineartimeC f m c).val ∈ evalShares m c ∧
+        (∀ β ∈ evalShares m c, utilP f m c β ≤ utilP f m c (lineartimeC f m c).val) ∧
+        (lineartimeC f m c).cost.2.1 = 0 ∧
+        (lineartimeC f m c).cost.2.2 = Multiset.card (evalShares m c) * (Fintype.card E + 1) ∧
+        (lineartimeC f m c).cost.2.2 ≤
+          (Fintype.card E * (Fintype.card E + 1) / 2 + 1) * (Fintype.card E + 1) ∧
+        (lineartimeC f m c).cost.1 ≤
+          3 * Fintype.card E ^ 3 * Nat.clog 2 (Fintype.card E) + 7 * Fintype.card E ^ 3 +
+            7 * Fintype.card E ^ 2 + 3 * Fintype.card E * Nat.clog 2 (Fintype.card E) +
+            11 * Fintype.card E + 2) ∧
+      (0 < Fintype.card E → ∀ FO TS : ℝ, 0 ≤ FO → Counted.time FO TS (lineartimeC f m c).cost ≤
+        4 * (Fintype.card E : ℝ) ^ 3 * FO +
+          27 * (Fintype.card E : ℝ) ^ 3 * Counted.lg (Fintype.card E)) := by
   -- The standing assumption `n ≥ 1` of Appendix A.2: "for `E = ∅`, the only response is `0` and
-  -- every share is optimal" (`linear_of_isEmpty`).
+  -- every share is optimal" (`linear_of_isEmpty`); the running time is stated for `n ≥ 1`.
   rcases isEmpty_or_nonempty E with hE | hE
-  · exact linear_of_isEmpty hf
+  · obtain ⟨h₁, h₂, h₃, h₄⟩ := linear_of_isEmpty (m := m) (c := c) hf
+    exact ⟨h₁, h₂, h₃, h₄, fun h => absurd h (by rw [Fintype.card_eq_zero]; exact lt_irrefl 0)⟩
   -- (1) "By `lem:A-tiebreak`, the greedy response maximizes the principal's reward among the
   -- agent's best responses."
   have h1 : ∀ α ∈ Set.Icc (0 : ℝ) 1, IsAgentOpt f m c α (xstar f m c α) ∧
@@ -1026,9 +1587,9 @@ theorem linear (hf : IsRankFunction f) (hm : ∀ e, 0 ≤ m e) (hc : ∀ e, 0 �
   obtain ⟨i₀, hi₀, hopt⟩ := (candidates_lemma hf hm hc).2
   -- (3) "The running time follows from `lem:A-lineartime`": the shares it evaluates, at most
   -- `n(n + 1)/2 + 1`, of which one of maximum utility is retained; they contain `α^(i₀)`. The
-  -- running time is not formalised.
-  obtain ⟨hcount, hex, -⟩ := lineartime hf hm hc
-  refine ⟨hcount, hex, fun β hβ hmax => ?_⟩
+  -- counted procedure `lineartimeC` retains one, with the counts of `lem:A-lineartime`.
+  obtain ⟨hcount, hex, -, htime⟩ := lineartime hf hm hc
+  refine ⟨hcount, hex, fun β hβ hmax => ?_, htime.1, fun _ => htime.2⟩
   have hβ01 : β ∈ Set.Icc (0 : ℝ) 1 :=
     ⟨(mem_evalShares_bounds hβ).1, (mem_evalShares_bounds hβ).2.le⟩
   refine ⟨hβ01, (h1 β hβ01).1, (h1 β hβ01).2, fun α hα y hy => ?_⟩
@@ -1038,12 +1599,14 @@ theorem linear (hf : IsRankFunction f) (hm : ∀ e, 0 ≤ m e) (hc : ∀ e, 0 �
     _ ≤ utilP f m c (cand m c i₀) := hopt α hα
     _ ≤ utilP f m c β := hmax _ (cand_mem_evalShares hi₀)
 
-/-- The warm-up of Section 2 (`stoc-sections/04-linear.tex:5`): "Between two consecutive such
-candidate shares, the response is constant, and the principal's utility is affine and
-nonincreasing, so it suffices to evaluate the left endpoints." For every `i < K`, the response
-`x*(α)` is constant on `[α^(i), α^(i+1))` (`lem:A-candidates`), and `U_P` is affine there with the
-nonpositive slope `−mᵀx*(α^(i))` (the proof of `lem:A-candidates`, `utilP_affine`), so it is
-nonincreasing. -/
+/-- The warm-up of Section 2 (`stoc-sections/04-linear.tex:5`): "At a crossing, the tie rule puts
+the coefficient with larger slope `m_e` first, as does the greedy order immediately to the right.
+Between crossings the response is constant, so the principal's utility is affine and
+nonincreasing." In `[0, 1]`, the crossings are the candidate shares
+(`stoc-sections/appA-proofs.tex:118-119`), and the `α^(i)` add `0` and `1`. For every `i < K`, the
+response `x*(α)` is constant on `[α^(i), α^(i+1))`, its left end included (`lem:A-candidates`),
+and `U_P` is affine there with the nonpositive slope `−mᵀx*(α^(i))` (the proof of
+`lem:A-candidates`, `utilP_affine`), so it is nonincreasing. -/
 theorem const_on_intervals [Nonempty E] (hf : IsRankFunction f) (hm : ∀ e, 0 ≤ m e)
     (hc : ∀ e, 0 ≤ c e) :
     ∀ i < numK m c,

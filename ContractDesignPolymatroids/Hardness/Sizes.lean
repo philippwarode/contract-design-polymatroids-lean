@@ -1,12 +1,13 @@
--- stamp r5 2026-11-02
+-- stamp r7 2026-11-03
 import ContractDesignPolymatroids.Hardness.Encoding
 import ContractDesignPolymatroids.Hardness.OneStep
+import ContractDesignPolymatroids.Preliminaries.CountedTables
 
 /-!
 # Sizes: `lem:sizes`
 
 The STOC version's `lem:sizes` (Lemma C.24, Appendix C.7, `sec:D-alllevels`, "Every level works",
-`stoc-sections/appD-hardness.tex:1547-1552`, proof lines 1554-1660): let
+`stoc-sections/appD-hardness.tex:1545-1550`, proof lines 1552-1658): let
 `μ^in ∈ 𝔉` have length `k`. Every number computed by the parameter rule for the levels
 `1, …, k − 1`, and every value of `g_{k−1}`, is a rational with `O(k + log μ^in_k)` bits, and the
 parameter rule runs in time polynomial in `k + log μ^in_k`.
@@ -25,21 +26,31 @@ for a positive integer `n ≤ 2^B`), and `sizes` gives it for `B = 100(k + ⌊lo
   the items of the list (`sizes_items`), the formula `(*)` for `F_{τ_2}` (`Fτ₂_star`), the formula
   `(†)` for `Δ_p` (`Δp_dagger`), and the memberships `sizes_Fτ₂_den`, `sizes_K_den`, `sizes_g_den`,
   `sizes_p_den` and `sizes_ρbar_den`.
-* The bits (the end of the third paragraph): `𝔇_j`, `𝔗_j` and `𝔓` are at most
+* The bits (the end of the third paragraph): `𝔇_j`, `𝔗_j`, and `𝔓` are at most
   `2^{O(j + log μ^in_1)}` (`sizes_pow`, `sizes_dens`, which bound them by `2^{O(j + log μ^in_k)}`,
   as `μ^in_1 ≤ μ^in_k`; that suffices), so the numbers above have
   `O(k + log μ^in_k)` bits (`sizes_prim`); so do the sums `d_j(E_{j−1})` and `Π`, in `(δ/4)ℤ`, and
-  `a_2`, in `(δ/130)ℤ`, by their magnitudes, and `d̄`, `φ` and `a_0`, which take `O(1)` arithmetic
+  `a_2`, in `(δ/130)ℤ`, by their magnitudes, and `d̄`, `φ`, and `a_0`, which take `O(1)` arithmetic
   operations more (`sizes_step`).
 * `sizes`: the lemma. `RuleNumber μin j x` says that `x` is one of the numbers that the parameter
   rule computes at the step `j → j + 1` (`def:ruleP`, `tab:ruleP`): the numbers of (P1)–(P8), the
   rewards and curvatures of the new level, and `φ`.
-
-Not formalised: the running time, the last paragraph of the proof ("Per level, the parameter rule
-needs `O(|E_{k−1}|)` arithmetic operations on numbers of `O(k + log μ^in_k)` bits. Values of
-`g_{k−1}` are computed recursively, by the formula above, in `O(k|E_{k−1}|)` operations."), as
-Turing machines are not formalised and arithmetic operations are not counted; the formula for `g_j`
-that it uses is `gT_succ_apply`.
+* The running time, the last paragraph of the proof ("Per level, the parameter rule needs
+  `O(|E_{k−1}|)` arithmetic operations on numbers of `O(k + log μ^in_k)` bits. Values of `g_{k−1}`
+  are computed recursively, by the formula above, in `O(k|E_{k−1}|)` operations."), as operation
+  counts (not in the paper: the paper counts in prose): the counted step `Level.stepC` of the
+  parameter rule (`8|E_j| + j + 63` operations at the step `j → j + 1`), the counted rule
+  `ruleC` (`levelsC`) for the levels `1, …, k − 1` (at most `13k² + 52k` operations), which also
+  returns the numbers of the steps that the formula for `g_j` uses (`StepNums`), and the counted
+  evaluation `gTC` (`gTStepC`) of `g_{k−1}` by this formula (`gT_succ_apply`; at most `3k² + 9k`
+  operations). Not formalised, and not argued in the paper either (its proof only says that the
+  rule works "on numbers of `O(k + log μ^in_k)` bits"): the sizes of the intermediate results
+  inside the formulas of the rule and of the formula for `g_j` (such as `μ(m_* − m_e)`, the
+  partial sums of `d(E_k)`, `Π` and `d(S ∖ {b})`, and the values `g_j(S ∩ E_j)` of the lower
+  levels in `gTC`), and of the numbers `δ`, `μ_j`, `R_1^{(j)}` and `8^j` that `ruleC` computes
+  besides those of `RuleNumber` (the numbers of `RuleNumber` and the values of `g_{k−1}` are
+  bounded by `sizes`); and the running time on a Turing machine, which follows from these counts
+  and the sizes by a standard bit-complexity analysis.
 
 Indices: the levels are numbered as in the paper (`lvl μin j` is level `j`, on `Gr j = E_j`), and
 `μin i` is `μ^in_{i+1}`. The paper states the bounds for the step `j − 1 → j` to a level `j ≥ 1`;
@@ -517,7 +528,7 @@ lemma sizes_Δp {k : ℕ} (hF : InF μin k) {j : ℕ} (hj : j + 2 ≤ k) :
   have hM : 0 < M := M_pos (j + 1)
   nlinarith
 
-/-- The proof of `lem:sizes`: "`q_j ≤ ϖ_jM_j²` (`lem:weights`(c)) and
+/-- The proof of `lem:sizes`: "`q_j ≤ ϖ_jM_j²` (`lem:weights`(c)), and
 `|p_j| ≤ p_0 + ∑_{i≤j}|Δ_p^{(i)}| ≤ 10 + 120M_jΩ_j`", for the level `j + 1` with `j + 2 ≤ k`. -/
 lemma sizes_p {k : ℕ} (hF : InF μin k) {j : ℕ} (hj : j + 2 ≤ k) :
     0 < (lvl μin (j + 1)).q ∧ (lvl μin (j + 1)).q ≤ ϖ μin (j + 1) * (lvl μin (j + 1)).M ^ 2 ∧
@@ -793,7 +804,7 @@ lemma R0_add_R1_eq {k : ℕ} (hF : InF μin k) (j : ℕ) :
   refine InZ.add ⟨3 * μin 0, by rw [dδ_cast]; push_cast; ring⟩ (InZ.sum fun i _ => μT_inZ hF _)
 
 /-- The list of the proof of `lem:sizes`, at the step `j → j + 1` (to the level `j + 1`):
-"`w_j, m_{*,j}μ_j ∈ δℤ`, and `d_e` for `e ∈ E_j ∖ {b_j}`, `d_j(E_{j−1})`, `d_j(E_j ∖ {b_j})` and
+"`w_j, m_{*,j}μ_j ∈ δℤ`, and `d_e` for `e ∈ E_j ∖ {b_j}`, `d_j(E_{j−1})`, `d_j(E_j ∖ {b_j})`, and
 `Π` lie in `(δ/4)ℤ`. `s_j, m̄, ψ_j, q_j ∈ (1/13)ℤ`, as `13s_j = 12Δ_j`.
 `ΔF_j ∈ (δ/(48·2490·208^{j−1}))ℤ` by (P5), as `1/s_j = 13/(12Δ_j)`. `a_2 ∈ (δ/130)ℤ`, as
 `μ_j − |𝓡_{j−1}|/2 ∈ (δ/10)ℤ` by `1/15 = (1/5)δμ^in_1`." -/
@@ -994,7 +1005,7 @@ lemma ϖ_ρbar (j : ℕ) : ϖ μin 1 * (lvl μin 0).ρbar = 7 / 8 ∧
 
 /-- The seven terms of `(*)` at the step `j → j + 1`, except the second (`ϖρ̄`, which `ϖ_ρbar`
 splits): "The seven terms lie in `(1/40)ℤ`, in `(1/8)ℤ` or `(1/40)ℤ + (1/𝔈_{j−1})ℤ`, in `(δ/8)ℤ`,
-`(δ/260)ℤ`, `(δ/4)ℤ`, `(δ/(312·415·208^{j−1}))ℤ` and `(1/1300)ℤ`." -/
+`(δ/260)ℤ`, `(δ/4)ℤ`, `(δ/(312·415·208^{j−1}))ℤ`, and `(1/1300)ℤ`." -/
 lemma Fτ₂_terms {k : ℕ} (hF : InF μin k) {j : ℕ} (hj : j + 2 ≤ k) :
     InZ 40 (ϖ μin (j + 1) * R0 * (lvl μin j).mδ) ∧
     InZ 40 (ϖ μin (j + 2) * R0 * (lvl μin j).mδ) ∧
@@ -1182,7 +1193,7 @@ lemma sizes_g_den {k : ℕ} (hF : InF μin k) : ∀ j, j + 1 ≤ k → ∀ S, In
 6ϖ_jΔ_j(R_0 + R_1^{(j−1)})`, and `13m̄ = (4993/2)M_{j−1}`, so (P8) becomes
 `Δ_p^{(j)} = 2497M_{j−1}F_{τ_2}^{(j)} + (4993/2)M_{j−1}ΔF_j − (4993/4)M_{j−1}ϖ_jw_j +
 6m̄ϖ_jΔ_j(R_0 + R_1^{(j−1)})`. As
-`M_{j−1} = 12·208^{j−1}`, the four terms lie in `(δ/(50·13·415))ℤ`, `(δ/(48·415))ℤ`, `(δ/4)ℤ` and
+`M_{j−1} = 12·208^{j−1}`, the four terms lie in `(δ/(50·13·415))ℤ`, `(δ/(48·415))ℤ`, `(δ/4)ℤ`, and
 `(δ/13)ℤ`, hence in `(1/𝔓)ℤ`. As `p_0 = 10`, we get `Δ_p^{(j)}, p_j ∈ (1/𝔓)ℤ`", at the step
 `j → j + 1`. -/
 lemma Δp_dagger {k : ℕ} (hF : InF μin k) {j : ℕ} (hj : j + 2 ≤ k) :
@@ -1325,7 +1336,7 @@ lemma bits_of {B : ℕ} {N x : ℝ} (n : ℕ) (hN : N = n) (hn : 0 < n) (hx : In
   ⟨hmag, n, hn, hnB, hN ▸ hx⟩
 
 /-- The end of the denominator paragraph of the proof of `lem:sizes`, in powers of `2`: "The
-integers `𝔇_j`, `𝔗_j` and `𝔓` have `O(j + log μ^in_1)` bits", and the magnitudes `M_j`, `ϖ_j`,
+integers `𝔇_j`, `𝔗_j`, and `𝔓` have `O(j + log μ^in_1)` bits", and the magnitudes `M_j`, `ϖ_j`,
 `1 + μ_j`, `Ω_j` and `M_jΩ_j`, with `L = ⌊log₂ μ^in_k⌋`, for the level `j + 1` with `j + 2 ≤ k`.
 The Lean bounds the three integers by `2^{O(j + L)}`, through `μ^in_1 ≤ μ^in_k`, not by
 `2^{O(j + log μ^in_1)}`; the bits of `lem:sizes` are in `log μ^in_k` anyway. -/
@@ -1400,6 +1411,311 @@ lemma sizes_pow {k : ℕ} (hF : InF μin k) {j : ℕ} (hj : j + 2 ≤ k) :
 
 /-- `InZ` along an equality of denominators (not in the paper). -/
 lemma InZ.den_eq {N N' x : ℝ} (h : InZ N x) (hN : N = N') : InZ N' x := hN ▸ h
+
+/-! ### The running time
+
+The last paragraph of the proof (`stoc-sections/appD-hardness.tex:1654-1657`): "Finally, we bound
+the running time. Per level, the parameter rule needs `O(|E_{k−1}|)` arithmetic operations on
+numbers of `O(k + log μ^in_k)` bits. Values of `g_{k−1}` are computed recursively, by the formula
+above, in `O(k|E_{k−1}|)` operations." In the cost model of `Stoc.Counted` (with the primitives of
+`ContractDesignPolymatroids/Preliminaries/CountedTables.lean`):
+* `Level.stepC` performs one step of the parameter rule, (P1)–(P8) of `def:ruleP` in their order,
+  and builds the next level; it returns `Level.next` and the numbers `F_{τ_1}`, `F_{τ_2}`, `K` and
+  `d` of the step, which the formula for `g_j` uses (`Level.stepC_val`), with `8|E_j| + j + 63`
+  arithmetic operations at the step `j → j + 1` (`Level.stepC_cost`);
+* `levelsC` and `ruleC` run the rule over the levels, with `δ`, the translations `μ_j` and the
+  right ends `R_1^{(j)}` of the windows (`def:tower`), and collect the numbers of the steps
+  (`StepNums`); they return level `j` and these numbers (`ruleC_val`, `StepNums.OK`) with
+  `(25j² + 153j + 10)/2` operations for the levels `1, …, j` (`ruleC_cost`);
+* `gTStepC` and `gTC` evaluate `g_j` by the formula for `g_j` (`gT_succ_apply`) from the numbers of
+  the steps that the rule returns; they return `g_j(S)` (`gTC_val`) with at most `3j² + 15j + 3`
+  operations (`gTC_cost`).
+`|E_j| = 3(j + 1)` is `card_Gr_eq`. The numbers of the parameter rule listed in `RuleNumber` have
+`O(k + log μ^in_k)` bits by the first part of `sizes`, and the values of `g_{k−1}` by the second.
+Not bounded here, and not argued in the paper either: the intermediate results inside the formulas
+of the rule and of `gTC` (such as `μ(m_* − m_e)`, the partial sums of `d(E_k)`, `Π` and
+`d(S ∖ {b})`, and the values `g_j(S ∩ E_j)` of the lower levels), and the numbers `δ`, `μ_j`,
+`R_1^{(j)}` and `8^j` that `ruleC` computes besides those of `RuleNumber`.
+(Not in the paper: the paper counts in prose.) -/
+
+section RunningTime
+
+open Counted
+
+namespace Level
+
+variable {C : Type*} [Fintype C] (L : Level C) (μ R1 : ℝ)
+
+/-- One step of the parameter rule (`def:ruleP`), counted, from the data `L` of level `k`, with
+`μ = μ_{k+1}` and `R_1 = R_1^{(k)}`: (P1) `m_δ = M/2` and `m_* = m_δ + 64M` (three operations);
+(P2) `8^k` (`k` multiplications), `β_δ = 1/((3/4)·8^k)` and `β_b = β_δ/12` (three); (P3)
+`w = 64Mμ` (two), the table of the `d_e = μ(m_* − m_e)/β_e` for `e ∈ E_k` (three each),
+`d_{τ_1} = d_{τ_2} = w/β_δ` (one), the sums `d(E_k)` and `d(E)` (`|E_k|` and `|E_k| + 2`
+additions) and `d̄ = d(E_k)/d_{τ_1}` (one); (P4) `Δ_b`, `m_b`, `s`, `m̄` and `ψ_{k+1}` (seven);
+(P5) `Π = ∑_{e∈E_k} (m_δ − m_e) d_e` (three per element), `q_kμ − Π` and `ΔF` (five); (P6) `a_2`,
+`a_0`, `u^0`, `F_{τ_2}` and `F_{τ_1}` (nineteen); (P7) `K` (ten); (P8) `Δ_p`, `p_{k+1}` and
+`q_{k+1}` (seven); and level `k + 1`, with `ρ̄_{k+1} = R_0 m_δ − β_δ F_{τ_2}` (three, (P6)), the
+rewards and curvatures of `τ_1`, `τ_2` and `b`, and `M_{k+1} = m_b`. It returns level `k + 1` and
+the numbers `F_{τ_1}`, `F_{τ_2}`, `K` and `d` on `E = E_k ∪ {τ_1, τ_2}` of the step. Modelling
+choices: the tables of level `k + 1` (rewards, curvatures) and of `d` on `E` extend the old tables
+by numbers just computed and cost no operations, and the constants (`R_0`, `ι`, `12/13`, `415/2`,
+`3/4`) are free. -/
+def stepC :
+    Counted (Level (Option (Option (Option C))) × ℝ × ℝ × ℝ × (Option (Option C) → ℝ)) :=
+  -- (P1)
+  Counted.ops 1 (L.M / 2) >>=ᶜ fun mδ =>
+  Counted.ops 2 (mδ + 64 * L.M) >>=ᶜ fun mstar =>
+  -- (P2)
+  Counted.ops L.k (8 ^ L.k) >>=ᶜ fun p8 =>
+  Counted.ops 2 (1 / (3 / 4 * p8)) >>=ᶜ fun βδ =>
+  Counted.ops 1 (βδ / 12) >>=ᶜ fun βb =>
+  -- (P3)
+  Counted.ops 2 (64 * L.M * μ) >>=ᶜ fun w =>
+  table (fun c => Counted.ops 3 (μ * (mstar - L.m c) / L.β c)) >>=ᶜ fun d =>
+  Counted.ops 1 (w / βδ) >>=ᶜ fun dτ =>
+  Counted.sum univ (fun c => ret (d c)) >>=ᶜ fun dEk =>
+  Counted.sum univ (fun e => ret (Option.elim e dτ fun o => Option.elim o dτ d)) >>=ᶜ fun dE =>
+  Counted.ops 1 (dEk / dτ) >>=ᶜ fun dbar =>
+  -- (P4)
+  Counted.ops 1 (415 / 2 * L.M) >>=ᶜ fun Δb =>
+  Counted.ops 1 (mδ + Δb) >>=ᶜ fun mb =>
+  Counted.ops 1 (12 / 13 * Δb) >>=ᶜ fun s =>
+  Counted.ops 1 (mδ + s) >>=ᶜ fun mbar =>
+  Counted.ops 3 (12 / 13 * Δb ^ 2 / βδ) >>=ᶜ fun ψ =>
+  -- (P5)
+  Counted.sum univ (fun c => Counted.ops 2 ((mδ - L.m c) * d c)) >>=ᶜ fun Pcal =>
+  Counted.ops 2 (L.q * μ - Pcal) >>=ᶜ fun qP =>
+  Counted.ops 3 (dτ + dEk - qP / s) >>=ᶜ fun ΔF =>
+  -- (P6)
+  Counted.ops 4 (12 / 13 * (μ - (R1 - R0) / 2)) >>=ᶜ fun a2 =>
+  Counted.ops 1 (βδ * qP) >>=ᶜ fun a0 =>
+  Counted.ops 6 (a2 * Δb - (1 / 2 + dbar) * w + a0 / Δb) >>=ᶜ fun u0 =>
+  Counted.ops 7 ((R0 * mδ - L.ρbar - w + u0 - s * ι) / βδ) >>=ᶜ fun Fτ₂ =>
+  Counted.ops 1 (Fτ₂ + ΔF) >>=ᶜ fun Fτ₁ =>
+  -- (P7)
+  Counted.ops 10 (dE + 12 * Fτ₁ - 13 * (w / 2 - s * (R0 + R1) / 2) / βδ) >>=ᶜ fun K =>
+  -- (P8)
+  Counted.ops 5 (mδ * Fτ₂ + (K - dE + Fτ₁) * mbar) >>=ᶜ fun Δp =>
+  Counted.ops 1 (L.p + Δp) >>=ᶜ fun p' =>
+  Counted.ops 1 (L.q + ψ) >>=ᶜ fun q' =>
+  -- level `k + 1`, with `ρ̄_{k+1} = R_0 m_δ − β_δ F_{τ_2}` (P6)
+  Counted.ops 3 (R0 * mδ - βδ * Fτ₂) >>=ᶜ fun ρ' =>
+  ret (⟨L.k + 1, (⟨μ, mstar, mδ, βδ, mb, Fτ₁, Fτ₂, K⟩ : StepData).mNew L.m,
+    fun o => Option.elim o βb ((⟨μ, mstar, mδ, βδ, mb, Fτ₁, Fτ₂, K⟩ : StepData).βf L.β), mb,
+    p', q', ρ'⟩, Fτ₁, Fτ₂, K, fun e => Option.elim e dτ fun o => Option.elim o dτ d)
+
+/-- The counted step returns level `k + 1` of the parameter rule and the numbers `F_{τ_1}`,
+`F_{τ_2}`, `K` and `d` of the step (not in the paper). -/
+lemma stepC_val :
+    (L.stepC μ R1).val = (L.next μ R1, L.Fτ₁ μ R1, L.Fτ₂ μ R1, L.K μ R1, L.dE' μ) := rfl
+
+/-- The counted step makes `8|E_k| + k + 63` arithmetic operations, `O(|E_k|)`, and no oracle
+calls (not in the paper). -/
+lemma stepC_cost : (L.stepC μ R1).cost = (8 * Fintype.card C + L.k + 63, 0, 0) := by
+  simp [stepC, Prod.ext_iff]
+  ring
+
+end Level
+
+/-- The numbers `F_{τ_1}`, `F_{τ_2}`, `K` and `d` (on `E_i ∪ {τ_1, τ_2}`) of the steps
+`i → i + 1` for `i < j`, which the counted rule returns and the formula for `g_j` uses. -/
+inductive StepNums : ℕ → Type
+  /-- no step -/
+  | nil : StepNums 0
+  /-- the numbers of the steps before `j`, and those of the step `j → j + 1` -/
+  | cons {j : ℕ} (prev : StepNums j) (F1 F2 K : ℝ) (d : Option (Option (Gr j)) → ℝ) :
+      StepNums (j + 1)
+
+variable (μin) in
+/-- The numbers of the steps are those of the parameter rule (`StepNums`). -/
+def StepNums.OK : {j : ℕ} → StepNums j → Prop
+  | _, .nil => True
+  | _, @StepNums.cons j ns F1 F2 K d => StepNums.OK ns ∧
+      F1 = (lvl μin j).Fτ₁ (μT μin (j + 1)) (R1T μin j) ∧
+      F2 = (lvl μin j).Fτ₂ (μT μin (j + 1)) (R1T μin j) ∧
+      K = (lvl μin j).K (μT μin (j + 1)) (R1T μin j) ∧ d = (lvl μin j).dE' (μT μin (j + 1))
+
+variable (μin) in
+/-- The levels `1, …, j` built by the parameter rule, counted, from the base level and `R_1^{(0)}`,
+with the width `δ`: the step `j → j + 1` computes `μ_{j+1} = δ μ^in_{j+2}` (one operation), runs the
+counted step `Level.stepC`, and computes `R_1^{(j+1)} = R_1^{(j)} + μ_{j+1}` (one operation,
+`R1T_succ`); the numbers of the steps are collected in `StepNums`. -/
+def levelsC (δ R10 : ℝ) : (j : ℕ) → Counted (Level (Gr j) × ℝ × StepNums j)
+  | 0 => ret (baseLevel, R10, .nil)
+  | j + 1 => levelsC δ R10 j >>=ᶜ fun LR =>
+      Counted.ops 1 (δ * μin (j + 1)) >>=ᶜ fun μ =>
+      LR.1.stepC μ LR.2.1 >>=ᶜ fun out =>
+      Counted.ops 1 (LR.2.1 + μ) >>=ᶜ fun R1 =>
+      ret (out.1, R1, .cons LR.2.2 out.2.1 out.2.2.1 out.2.2.2.1 out.2.2.2.2)
+
+variable (μin) in
+/-- The parameter rule for the levels `1, …, j`, counted: the width `δ = 1/(3μ^in_1)` (two
+operations), `μ_0 = δ μ^in_1` and `R_1^{(0)} = ζ_1 + μ_0 + ε_0` (three), and the steps
+(`levelsC`). -/
+def ruleC (j : ℕ) : Counted (Level (Gr j) × ℝ × StepNums j) :=
+  Counted.ops 2 ((1 : ℝ) / (3 * μin 0)) >>=ᶜ fun δ =>
+  Counted.ops 1 (δ * μin 0) >>=ᶜ fun μ0 =>
+  Counted.ops 2 (ζ₁ + μ0 + ε₀) >>=ᶜ fun R10 =>
+  levelsC μin δ R10 j
+
+/-- One level of the formula for `g_{j+1}` (`gT_succ_apply`), counted, from a counted `g_j` and the
+numbers `F_{τ_1}`, `F_{τ_2}`, `K` and `d` of the step `j → j + 1`: `S ∩ E_j` (one operation per
+element of `S`), `g_j(S ∩ E_j)`, the terms of `τ_1` and `τ_2` (one test each), the test `b ∈ S`
+and then `K − d(S ∖ {b})` (`|S ∖ {b}|` additions and one subtraction), and the sum (three
+additions). -/
+def gTStepC (j : ℕ) (gj : Finset (Gr j) → Counted ℝ) (F1 F2 K : ℝ)
+    (d : Option (Option (Gr j)) → ℝ) (S : Finset (Option (Option (Option (Gr j))))) :
+    Counted ℝ :=
+  Counted.ops S.card (eraseNone (eraseNone (eraseNone S))) >>=ᶜ fun S' =>
+  gj S' >>=ᶜ fun v =>
+  Counted.ops 1 (if some (some none) ∈ S then F1 else 0) >>=ᶜ fun a =>
+  Counted.ops 1 (if some none ∈ S then F2 else 0) >>=ᶜ fun b =>
+  Counted.ops 1 () >>=ᶜ fun _ =>
+  (if none ∈ S then
+    Counted.sum (eraseNone S) (fun e => ret (d e)) >>=ᶜ fun dS => Counted.ops 1 (K - dS)
+  else ret 0) >>=ᶜ fun c =>
+  Counted.ops 3 (v + a + b + c)
+
+/-- The values `g_j(S)`, counted: "Values of `g_{k−1}` are computed recursively, by the formula
+above", level by level (`gTStepC`) from `g_0 = f_0` (three membership tests), with the numbers of
+the steps that the counted rule returns. -/
+def gTC : (j : ℕ) → StepNums j → Finset (Gr j) → Counted ℝ
+  | 0, _, S => Counted.ops 3 (Base.f₀ S)
+  | j + 1, .cons ns F1 F2 K d, S => gTStepC j (gTC j ns) F1 F2 K d S
+
+/-- `|E_j| = 3(j + 1)` (not in the paper; the same count as `card_Gr` of
+`ContractDesignPolymatroids/Hardness/Gadget.lean`, which this file precedes). -/
+lemma card_Gr_eq (j : ℕ) : Fintype.card (Gr j) = 3 * (j + 1) := by
+  induction j with
+  | zero =>
+    show Fintype.card (Fin 3) = 3
+    simp
+  | succ j ih =>
+    show Fintype.card (Option (Option (Option (Gr j)))) = _
+    simp only [Fintype.card_option, ih]
+    ring
+
+/-- The counted steps return the levels of `def:tower`, the right ends `R_1^{(j)}` of the windows
+and the numbers of the steps, from `δ` and `R_1^{(0)}` (not in the paper). -/
+lemma levelsC_val (j : ℕ) :
+    (levelsC μin (δT μin) (R1T μin 0) j).val.1 = lvl μin j ∧
+      (levelsC μin (δT μin) (R1T μin 0) j).val.2.1 = R1T μin j ∧
+      (levelsC μin (δT μin) (R1T μin 0) j).val.2.2.OK μin := by
+  induction j with
+  | zero => exact ⟨rfl, rfl, trivial⟩
+  | succ j ih =>
+    obtain ⟨h1, h2, h3⟩ := ih
+    simp only [levelsC, val_bind, val_ops, Level.stepC_val, val_ret, h1, h2]
+    exact ⟨rfl, (R1T_succ j).symm, h3, rfl, rfl, rfl, rfl⟩
+
+/-- The level returned by the counted steps has index `j` (not in the paper). -/
+lemma levelsC_k (δ R10 : ℝ) (j : ℕ) : (levelsC μin δ R10 j).val.1.k = j := by
+  induction j with
+  | zero => rfl
+  | succ j ih =>
+    simp only [levelsC, val_bind, val_ops, val_ret, Level.stepC_val]
+    exact congrArg (· + 1) ih
+
+/-- The counted steps for the levels `1, …, j` make `(25j² + 153j)/2` arithmetic operations and no
+oracle calls (not in the paper). -/
+lemma levelsC_cost (δ R10 : ℝ) (j : ℕ) :
+    2 * (levelsC μin δ R10 j).cost.1 = 25 * j ^ 2 + 153 * j ∧
+      (levelsC μin δ R10 j).cost.2 = 0 := by
+  induction j with
+  | zero => simp [levelsC]
+  | succ j ih =>
+    have h : (levelsC μin δ R10 (j + 1)).cost = (levelsC μin δ R10 j).cost +
+        (8 * Fintype.card (Gr j) + (levelsC μin δ R10 j).val.1.k + 65, 0, 0) := by
+      simp only [levelsC, cost_bind, cost_ops, Level.stepC_cost, cost_ret, Prod.ext_iff]
+      simp
+      omega
+    rw [h, Prod.fst_add, Prod.snd_add, ih.2, levelsC_k, card_Gr_eq]
+    refine ⟨?_, rfl⟩
+    have := ih.1
+    simp only at this ⊢
+    nlinarith
+
+/-- The counted rule returns level `j` of `def:tower`, the right ends of the windows and the
+numbers of the steps (not in the paper). -/
+lemma ruleC_val (j : ℕ) :
+    (ruleC μin j).val.1 = lvl μin j ∧ (ruleC μin j).val.2.1 = R1T μin j ∧
+      (ruleC μin j).val.2.2.OK μin := by
+  have hR : ζ₁ + 1 / (3 * (μin 0 : ℝ)) * μin 0 + ε₀ = R1T μin 0 := by
+    simp [R1T, μT, δT]
+  simp only [ruleC, val_bind, val_ops]
+  rw [hR]
+  exact levelsC_val j
+
+/-- The counted rule for the levels `1, …, j` makes `(25j² + 153j + 10)/2` arithmetic operations,
+`O(j|E_j|)`, and no oracle calls (not in the paper). -/
+lemma ruleC_cost (j : ℕ) :
+    2 * (ruleC μin j).cost.1 = 25 * j ^ 2 + 153 * j + 10 ∧ (ruleC μin j).cost.2 = 0 := by
+  have h := levelsC_cost (μin := μin) (1 / (3 * (μin 0 : ℝ)))
+    (ζ₁ + 1 / (3 * (μin 0 : ℝ)) * μin 0 + ε₀) j
+  simp only [ruleC, cost_bind, cost_ops, val_ops, Prod.fst_add, Prod.snd_add]
+  refine ⟨by omega, ?_⟩
+  rw [h.2]
+  rfl
+
+/-- One counted level of the formula for `g_{j+1}` returns `g_{j+1}(S)` from the numbers of the
+step `j → j + 1` (not in the paper). -/
+lemma gTStepC_val (j : ℕ) {gj : Finset (Gr j) → Counted ℝ} (hgj : ∀ S, (gj S).val = gT μin j S)
+    (S : Finset (Option (Option (Option (Gr j))))) :
+    (gTStepC j gj ((lvl μin j).Fτ₁ (μT μin (j + 1)) (R1T μin j))
+      ((lvl μin j).Fτ₂ (μT μin (j + 1)) (R1T μin j)) ((lvl μin j).K (μT μin (j + 1)) (R1T μin j))
+      ((lvl μin j).dE' (μT μin (j + 1))) S).val = gT μin (j + 1) S := by
+  rw [gT_succ_apply]
+  by_cases h : none ∈ S
+  · simp only [gTStepC, val_bind, val_ops, hgj, h, ite_true, val_sum, val_ret]
+  · simp only [gTStepC, val_bind, val_ops, hgj, h, ite_false, val_ret, add_zero]
+
+/-- The counted evaluation returns `g_j(S)` from the numbers of the steps of the parameter rule
+(not in the paper). -/
+lemma gTC_val : ∀ j (ns : StepNums j), ns.OK μin → ∀ S, (gTC j ns S).val = gT μin j S
+  | 0, .nil, _, _ => rfl
+  | j + 1, .cons ns F1 F2 K d, ⟨hns, h1, h2, h3, h4⟩, S => by
+    subst h1 h2 h3 h4
+    exact gTStepC_val j (gTC_val j ns hns) S
+
+/-- One counted level of the formula for `g_{j+1}` adds at most `6j + 18` arithmetic operations and
+no oracle calls (not in the paper). -/
+lemma gTStepC_cost (j : ℕ) {gj : Finset (Gr j) → Counted ℝ} {c : ℕ}
+    (hgj : ∀ S, (gj S).cost.1 ≤ c ∧ (gj S).cost.2 = 0) (F1 F2 K : ℝ)
+    (d : Option (Option (Gr j)) → ℝ) (S : Finset (Option (Option (Option (Gr j))))) :
+    (gTStepC j gj F1 F2 K d S).cost.1 ≤ c + 6 * j + 18 ∧
+      (gTStepC j gj F1 F2 K d S).cost.2 = 0 := by
+  have ih := hgj (eraseNone (eraseNone (eraseNone S)))
+  have h1 : S.card ≤ 3 * (j + 1) + 3 := by
+    have := card_le_univ S
+    simp only [Fintype.card_option, card_Gr_eq] at this
+    omega
+  have h2 : (eraseNone S).card ≤ 3 * (j + 1) + 2 := by
+    have := card_le_univ (eraseNone S)
+    simp only [Fintype.card_option, card_Gr_eq] at this
+    exact this
+  by_cases h : none ∈ S
+  · simp only [gTStepC, cost_bind, cost_ops, val_ops, h, ite_true, cost_sum, cost_ret,
+      sum_const_zero, zero_add, Prod.fst_add, Prod.snd_add, ih.2]
+    refine ⟨?_, rfl⟩
+    have := ih.1
+    omega
+  · simp only [gTStepC, cost_bind, cost_ops, val_ops, h, ite_false, cost_ret, Prod.fst_add,
+      Prod.snd_add, ih.2, Prod.fst_zero]
+    refine ⟨?_, rfl⟩
+    have := ih.1
+    omega
+
+/-- The counted evaluation of `g_j` makes at most `3j² + 15j + 3` arithmetic operations,
+`O(j|E_j|)`, and no oracle calls (not in the paper). -/
+lemma gTC_cost : ∀ j (ns : StepNums j) (S : Finset (Gr j)),
+    (gTC j ns S).cost.1 ≤ 3 * j ^ 2 + 15 * j + 3 ∧ (gTC j ns S).cost.2 = 0
+  | 0, _, S => by simp [gTC]
+  | j + 1, .cons ns F1 F2 K d, S => by
+    have h := gTStepC_cost j (gTC_cost j ns) F1 F2 K d S
+    refine ⟨h.1.trans ?_, h.2⟩
+    nlinarith
+
+end RunningTime
 
 /-! ### The lemma -/
 
@@ -1574,9 +1890,9 @@ bounded above have at most `30(k + ⌊log₂ μ^in_k⌋ + 1)` (`sizes_prim`); "T
 and `Π` lie in `(δ/4)ℤ`, with magnitudes at most `2Ω_j` and `2M_jΩ_j`, and `a_2` lies in
 `(δ/130)ℤ`, with magnitude at most `1 + μ_j`, as `|𝓡_{j−1}| ≤ R_0 + R_1^{(j−1)} ≤ 1 + μ_j`. So they
 too have `O(k + log μ^in_k)` bits" (`sizes_prim` with these denominators and magnitudes), "and so do
-the remaining quantities `d̄`, `φ` and `a_0` of the parameter rule, which are obtained from these
+the remaining quantities `d̄`, `φ`, and `a_0` of the parameter rule, which are obtained from these
 by `O(1)` arithmetic operations at each level" (quotients of such numbers, `Bits.div`)
-(appD-hardness.tex:1654-1655). -/
+(appD-hardness.tex:1652). -/
 lemma sizes_step {k : ℕ} (hF : InF μin k) {j : ℕ} (hj : j + 2 ≤ k) (x : ℝ)
     (hx : RuleNumber μin j x) : Bits (100 * (k + Nat.log 2 (μin (k - 1)) + 1)) x := by
   set L := Nat.log 2 (μin (k - 1)) with hL
@@ -1811,8 +2127,8 @@ lemma sizes_step {k : ℕ} (hF : InF μin k) {j : ℕ} (hj : j + 2 ≤ k) (x : �
         (by rw [abs_of_nonneg hΔF0]; linarith)
     exact (bΔF.div bϖw bϖw0).mono h3B
 
-/-- **`lem:sizes`** (Lemma C.24, `stoc-sections/appD-hardness.tex:1547-1552`, proof lines
-1554-1660): let `μ^in ∈ 𝔉` have length `k`. Every number computed by the parameter rule for the
+/-- **`lem:sizes`** (Lemma C.24, `stoc-sections/appD-hardness.tex:1545-1550`, proof lines
+1552-1658): let `μ^in ∈ 𝔉` have length `k`. Every number computed by the parameter rule for the
 levels `1, …, k − 1` (the steps `j → j + 1`, `j + 2 ≤ k`, `RuleNumber`), and every value of
 `g_{k−1}`, is a rational with `O(k + log μ^in_k)` bits: its magnitude and its denominator are at
 most `2^B` with `B = 100(k + ⌊log₂ μ^in_k⌋ + 1)` (`Bits`).
@@ -1829,19 +2145,51 @@ rewards and the `1/β_e` (`mT_le_M`, `inv_βT_bounds`); (3) the denominators: `1
 (`sizes_items`), `(*)` (`Fτ₂_star`, `ϖ_ρbar`, `Fτ₂_terms`), `F_{τ_2}` and `F_{τ_1}`
 (`sizes_Fτ₂_den`), `K_j` (`sizes_K_den`), the values of `g_j` (`sizes_g_den`), `(†)` and `Δ_p`
 (`Δp_dagger`), `p_j` (`sizes_p_den`), `ρ̄_j` and `u^0_j` (`sizes_ρbar_den`); (4) "The integers
-`𝔇_j`, `𝔗_j` and `𝔓` have `O(j + log μ^in_1)` bits" (`sizes_pow`, `sizes_dens`, in `log μ^in_k`
+`𝔇_j`, `𝔗_j`, and `𝔓` have `O(j + log μ^in_1)` bits" (`sizes_pow`, `sizes_dens`, in `log μ^in_k`
 instead of `log μ^in_1`), so every number has `O(k + log μ^in_k)` bits (`sizes_prim`), and so do
 the sums `d_j(E_{j−1})` and `Π` and `a_2`, by their denominators and magnitudes, and the remaining
-quantities `d̄`, `φ` and `a_0` (`sizes_step`, with `Bits.div` for the `O(1)` arithmetic
-operations).
+quantities `d̄`, `φ`, and `a_0` (`sizes_step`, with `Bits.div` for the `O(1)` arithmetic
+operations); (5) "Finally, we bound the running time. Per level, the parameter rule needs
+`O(|E_{k−1}|)` arithmetic operations on numbers of `O(k + log μ^in_k)` bits. Values of `g_{k−1}` are
+computed recursively, by the formula above, in `O(k|E_{k−1}|)` operations." (`ruleC_val`,
+`ruleC_cost`, `gTC_val`, `gTC_cost`; not in the paper: the paper counts in prose).
 
-Not formalised: the running time (the last paragraph of the proof), as Turing machines are not
-formalised and arithmetic operations are not counted. -/
+The running time as operation counts: the counted parameter rule `ruleC` for the levels
+`1, …, k − 1` returns level `k − 1` of `def:tower` with at most `13k² + 52k` arithmetic operations
+(`8|E_j| + j + 65` at the step `j → j + 1`, with `μ_{j+1}` and `R_1^{(j+1)}`: the `O(|E_{k−1}|)` per
+level, `O(k²)` in all), and the counted evaluation `gTC`, from the numbers of the steps that the
+rule returns, gives `g_{k−1}(S)` with at most `3k² + 9k` more (the `O(k|E_{k−1}|)`,
+`|E_{k−1}| = 3k`), without oracle calls. The numbers of `RuleNumber` and the values of `g_{k−1}`
+have `O(k + log μ^in_k)` bits by the first two parts. Not formalised, and not argued in the paper
+either: the sizes of the intermediate results inside the formulas of the rule and of `gTC` (the
+partial sums over `E_j`, the values `g_j(S ∩ E_j)` of the lower levels), and of `δ`, `μ_j`,
+`R_1^{(j)}` and `8^j`, which `ruleC` computes besides the numbers of `RuleNumber`. Not formalised
+either: the running time on a Turing machine, which follows from these counts and the sizes by a
+standard bit-complexity analysis. -/
 theorem sizes {k : ℕ} (hF : InF μin k) :
     (∀ j, j + 2 ≤ k → ∀ x, RuleNumber μin j x →
       Bits (100 * (k + Nat.log 2 (μin (k - 1)) + 1)) x) ∧
-    ∀ S, Bits (100 * (k + Nat.log 2 (μin (k - 1)) + 1)) (gT μin (k - 1) S) := by
-  refine ⟨fun j hj x hx => sizes_step hF hj x hx, ?_⟩
+    (∀ S, Bits (100 * (k + Nat.log 2 (μin (k - 1)) + 1)) (gT μin (k - 1) S)) ∧
+    -- the running time
+    ((ruleC μin (k - 1)).val.1 = lvl μin (k - 1) ∧
+      (ruleC μin (k - 1)).cost.1 ≤ 13 * k ^ 2 + 52 * k ∧ (ruleC μin (k - 1)).cost.2 = 0 ∧
+      ∀ S, (gTC (k - 1) (ruleC μin (k - 1)).val.2.2 S).val = gT μin (k - 1) S ∧
+        (gTC (k - 1) (ruleC μin (k - 1)).val.2.2 S).cost.1 ≤ 3 * k ^ 2 + 9 * k ∧
+        (gTC (k - 1) (ruleC μin (k - 1)).val.2.2 S).cost.2 = 0) := by
+  refine ⟨fun j hj x hx => sizes_step hF hj x hx, ?_, ?_⟩
+  rotate_left
+  · -- (5) "Finally, we bound the running time. Per level, the parameter rule needs
+    -- `O(|E_{k−1}|)` arithmetic operations on numbers of `O(k + log μ^in_k)` bits. Values of
+    -- `g_{k−1}` are computed recursively, by the formula above, in `O(k|E_{k−1}|)` operations."
+    -- (the counted rule `ruleC` and the counted evaluation `gTC`)
+    have hk : 1 ≤ k := hF.1
+    obtain ⟨j, rfl⟩ : ∃ j, k = j + 1 := ⟨k - 1, by omega⟩
+    rw [Nat.add_sub_cancel]
+    obtain ⟨hr, hr2⟩ := ruleC_cost (μin := μin) j
+    obtain ⟨hv1, -, hv3⟩ := ruleC_val (μin := μin) j
+    refine ⟨hv1, by nlinarith, hr2, fun S => ⟨gTC_val j _ hv3 S, ?_, (gTC_cost j _ S).2⟩⟩
+    have := (gTC_cost j (ruleC μin j).val.2.2 S).1
+    nlinarith
   rcases Nat.lt_or_ge k 2 with hk | hk
   · -- `k = 1`: `g_0 = f_0`, with values in `(1/6)ℤ` and at most `4/3`
     obtain rfl : k = 1 := by have := hF.1; omega

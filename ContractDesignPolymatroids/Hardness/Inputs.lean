@@ -1,12 +1,12 @@
--- stamp r8 2026-11-02
+-- stamp r9 2026-11-03
 import ContractDesignPolymatroids.Hardness.Tower
 
 /-!
 # The inputs: `def:family` and `lem:inputs`
 
 The STOC version's `def:family` (Appendix C.3, `sec:D-correct`,
-`stoc-sections/appD-hardness.tex:185-187`) and `lem:inputs` (Appendix C.7, `sec:D-alllevels`,
-"Every level works", lines 1178-1216), for the levels of `def:tower` (`μT`, `R1T`, `ΓT` of
+`stoc-sections/appD-hardness.tex:183-185`) and `lem:inputs` (Appendix C.7, `sec:D-alllevels`,
+"Every level works", lines 1176-1214), for the levels of `def:tower` (`μT`, `R1T`, `ΓT` of
 `ContractDesignPolymatroids/Hardness/Tower.lean`):
 
 * `InF`: the family `𝔉` of `def:family`;
@@ -16,7 +16,7 @@ The STOC version's `def:family` (Appendix C.3, `sec:D-correct`,
   exceeds the sum of the earlier ones has distinct subset sums, which the paper uses without
   proof).
 
-The text after `def:family` (line 189: in every `μ ∈ 𝔉`, each entry exceeds the sum of the earlier
+The text after `def:family` (line 187: in every `μ ∈ 𝔉`, each entry exceeds the sum of the earlier
 ones, so the `2^k` numbers `μ^⊤χ` are distinct) is not a result and has no declaration of its own;
 for the `μ_j` of the levels, the property is the third conjunct of `inputs`.
 
@@ -34,7 +34,7 @@ open Finset
 
 noncomputable section
 
-/-- **`def:family`** (Definition C.5, `stoc-sections/appD-hardness.tex:185-187`): `𝔉` is the set of
+/-- **`def:family`** (Definition C.5, `stoc-sections/appD-hardness.tex:183-185`): `𝔉` is the set of
 all `μ ∈ ℤ^k_{>0}`, `k ≥ 1`, for which there is an integer `H ≥ 1` with
 `H 8^{i−1} ≤ μ_i < (11/10) H 8^{i−1}` for `i ∈ [k]`. Here `μ : ℕ → ℕ` has indices from `0` (`μ i`
 is `μ_{i+1}`, and the entries `μ i` with `i ≥ k` are not used), so the condition reads
@@ -121,8 +121,8 @@ lemma subsetSum_injOn {μs : ℕ → ℝ} : ∀ n : ℕ, (∀ i ≤ n, 0 < μs i
       have e2 : Q' ⊆ range (n + 1) := by rw [← erase_eq_of_notMem h2]; exact hsub hQ'
       exact ih hp' hs' (mem_coe.2 (mem_powerset.2 e1)) (mem_coe.2 (mem_powerset.2 e2)) hsum
 
-/-- **`lem:inputs`** (Lemma C.19, `stoc-sections/appD-hardness.tex:1180-1194`, proof lines
-1196-1216): let `μ^in ∈ 𝔉` have length `k ≥ 2`. Then `μ_1 ∈ (80/33, 44/15)`, and for every `j ≥ 1`
+/-- **`lem:inputs`** (Lemma C.19, `stoc-sections/appD-hardness.tex:1178-1192`, proof lines
+1194-1214): let `μ^in ∈ 𝔉` have length `k ≥ 2`. Then `μ_1 ∈ (80/33, 44/15)`, and for every `j ≥ 1`
 for which `μ_{j+1}` is defined (`j + 1 < k`), `μ̂_j ∈ (5/44, 11/80)`, `ℓ̂_j < 253/1600` and
 `1/μ_{j+1} < 33/640`. Moreover, `μ_{j+1} > ∑_{i ≤ j} μ_i` and `|𝓡_j| < μ_{j+1}` for every `j ≥ 0`
 for which `μ_{j+1}` is defined. So `Γ_j` has `2^{j+1}` points for every `j` for which `μ_j` is

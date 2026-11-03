@@ -1,4 +1,4 @@
--- stamp r7 2026-11-02
+-- stamp r8 2026-11-03
 import ContractDesignPolymatroids.Approximation.Scheme
 
 /-!
@@ -234,7 +234,7 @@ theorem foc_aux (hc : IsHomogeneous p c) (hp : 1 < p) {K : Set (E → ℝ)} (_hK
   -- (1) "For `σ ∈ (0, 1]`, the point `x + σ(z − x)` lies in the convex set `K`."
   have h1 : ∀ σ ∈ Ioc (0 : ℝ) 1, x + σ • (z - x) ∈ K := fun σ hσ =>
     hK.add_smul_sub_mem hx.1 hz ⟨hσ.1.le, hσ.2⟩
-  -- (2) "By the optimality of `x`, the linearity of `r` and `lem:segment`,
+  -- (2) "By the optimality of `x`, the linearity of `r`, and `lem:segment`,
   -- `α r(x) − X^p ≥ α r(x) + σα (r(z) − r(x)) − (X + σ(Z − X))^p`."
   have h2 : ∀ σ ∈ Ioc (0 : ℝ) 1, α * reward m x + σ * α * (reward m z - reward m x) -
       (X + σ * (Z - X)) ^ p ≤ α * reward m x - X ^ p := by
@@ -296,7 +296,7 @@ uses only that `K ⊆ ℝ^E_{≥0}` is convex; compactness, `0 ∈ K`, `α > 0` 
 the steps are in `foc_aux`, the form without `m ≥ 0`.
 
 The proof (appE-halfrule.tex:67-73): (1) `x + σ(z − x) ∈ K` for `σ ∈ (0, 1]`; (2) by the optimality
-of `x`, the linearity of `r` and `lem:segment`,
+of `x`, the linearity of `r`, and `lem:segment`,
 `α r(x) − X^p ≥ α r(x) + σα (r(z) − r(x)) − (X + σ(Z − X))^p`; (3) dividing by `σ` and letting
 `σ ↓ 0` gives the claim, since the right derivative of `σ ↦ (X + σ(Z − X))^p` at `0` is
 `p X^{p−1}(Z − X)`, which "also holds for `X = 0`, where the derivative is
@@ -1002,7 +1002,7 @@ rewards `m ≥ 0` and costs homogeneous of degree `p > 1`:
 (a) for every choice of the best responses `x*(α)` of the model at the shares `α ∈ [0, 1]`
 (`IsPBR`), `1/p` is a share bound of `U_P(α) = (1 − α) r(x*(α))`;
 (b) the bound is tight: the instance of the last paragraph of the proof, one element with
-`K = [0, 1]`, `m_e = 1` and `c(x) = x^p/p` (`exCost`), whose cost is homogeneous of degree `p` and
+`K = [0, 1]`, `m_e = 1`, and `c(x) = x^p/p` (`exCost`), whose cost is homogeneous of degree `p` and
 whose best responses exist, has for every choice of them the optimal share `1/p` ("the bound `1/p`
 on the share of an optimal contract is attained"), and no `ᾱ ∈ [0, 1/p)` is a share bound for it.
 The theorem does not state its assumptions on `K`; its proof uses them ("the point `tz` lies in `K`
@@ -1095,7 +1095,7 @@ theorem prule {K : Set (E → ℝ)} (hKc : IsCompact K) (hK : Convex ℝ K) (hKn
     exact isShareBound_of_antitoneOn (monotoneOn_reward_of_isBR fun α hα => (hxs α hα).isBR)
       (fun α hα => reward_nonneg_of_nonneg hm (hKnn _ (hxs α hα).isBR.1)) ⟨hp1.1, hplt⟩ hU
   · -- (10) "Finally, we show that the bound `1/p` on the share of an optimal contract is attained.
-    -- For one element with `K = [0, 1]`, `m_e = 1` and `c(x) = x^p/p`" (which is homogeneous of
+    -- For one element with `K = [0, 1]`, `m_e = 1`, and `c(x) = x^p/p`" (which is homogeneous of
     -- degree `p`), "the agent maximizes `αx − x^p/p` over `[0, 1]`, so `x*(α) = α^{1/(p−1)}` for
     -- `α ∈ [0, 1]`."
     refine ⟨1, exCost p, fun _ => zero_le_one, ex_isHomogeneous hp,

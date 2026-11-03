@@ -1,4 +1,4 @@
--- stamp r8 2026-11-02
+-- stamp r9 2026-11-03
 import ContractDesignPolymatroids.Subclasses.Partition
 import ContractDesignPolymatroids.Subclasses.SupportShrinks
 import ContractDesignPolymatroids.Subclasses.LinearPieces
@@ -28,7 +28,7 @@ constraint sets and their height, recalled at `appB-quadratic.tex:602-606`) and 
   over the forest (`Dfun`, `Dfun_eq`); "By induction over the forest, `D_L` is the minimum of
   finitely many affine functions `(α, θ) ↦ α t(U) − θ β⁻¹(U) + c` with `U ⊆ L ∩ W` and `c ∈ ℝ`,
   one of them with `U = L ∩ W`." (`IsMinAffine`, `isMinAffine_Dfun`); "So `D_L` is continuous,
-  concave and piecewise affine, nondecreasing in `α` and nonincreasing in `θ`, and
+  concave, and piecewise affine, nondecreasing in `α` and nonincreasing in `θ`, and
   `D_L(α, θ) → −∞` for `θ → ∞`, as `L` contains an element of `W`." (`continuous_Dfun`,
   `concaveOn_Dfun`,
   `pwAffine_Dfun`, `monotone_Dfun`, `antitone_Dfun`, `tendsto_Dfun`).

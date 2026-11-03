@@ -1,4 +1,4 @@
--- stamp r8 2026-11-02
+-- stamp r9 2026-11-03
 import ContractDesignPolymatroids.BestResponse.Quadratic
 import ContractDesignPolymatroids.BestResponse.LayerCake
 import ContractDesignPolymatroids.Preliminaries.Greedy
@@ -254,7 +254,7 @@ def rho (f : Finset E → ℝ) (m β : E → ℝ) (α : ℝ) (e : E) : ℝ :=
 def optLevelSet (f : Finset E → ℝ) (m β : E → ℝ) (α θ : ℝ) : Finset E :=
   univ.filter fun e => θ ≤ rho f m β α e
 
-/-- `F_{α,θ}(S) = f(S) − α t(S) + θ β⁻¹(S)`, with `t_e = m_e/β_e`, `t(S) = ∑_{e∈S} t_e` and
+/-- `F_{α,θ}(S) = f(S) − α t(S) + θ β⁻¹(S)`, with `t_e = m_e/β_e`, `t(S) = ∑_{e∈S} t_e`, and
 `β⁻¹(S) = ∑_{e∈S} 1/β_e` (`stoc-sections/05-best-response.tex:12, 31`). -/
 def levelFun (f : Finset E → ℝ) (m β : E → ℝ) (α θ : ℝ) (S : Finset E) : ℝ :=
   f S - α * ∑ e ∈ S, m e / β e + θ * ∑ e ∈ S, 1 / β e

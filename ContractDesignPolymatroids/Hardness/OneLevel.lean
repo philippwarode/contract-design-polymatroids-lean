@@ -1,11 +1,11 @@
--- stamp r8 2026-11-02
+-- stamp r9 2026-11-03
 import ContractDesignPolymatroids.Hardness.ClosedForms
 
 /-!
 # One level: `lem:fast`, `lem:onelevel` and `lem:leftwindows`
 
 The STOC version's `lem:fast`, `lem:onelevel` and `lem:leftwindows` (Appendix C.6,
-`sec:D-onelevel`, "One level", `stoc-sections/appD-hardness.tex:791-987`), for the step
+`sec:D-onelevel`, "One level", `stoc-sections/appD-hardness.tex:790-986`), for the step
 `k → k + 1` of the levels of `def:tower` built by the parameter rule:
 
 * `cfast`, `IsConfig`, `IsWeakConfigT`, `OneLevelHyp`, `ατ₂`: the rate `t_b/β⁻¹(E ∪ {b})` of
@@ -72,8 +72,8 @@ abbrev IsWeakConfigT (k : ℕ) (α : ℝ) (U W : Finset (Option (Option (Gr k)))
     (stepD μin k).K (mT μin (k + 1)) (βT μin (k + 1)) α U W
 
 /-- The hypotheses (W1)–(W6) of `lem:onelevel` at the step `k → k + 1`
-(`stoc-sections/appD-hardness.tex:821-831`), with `𝓡 = [R_0, R_1]` and `𝓡 + μ`. In words (the
-paragraph after `lem:onelevel`, lines 853-856): (W1) and (W2) keep `b` inside the band of `τ_1` on
+(`stoc-sections/appD-hardness.tex:820-830`), with `𝓡 = [R_0, R_1]` and `𝓡 + μ`. In words (the
+paragraph after `lem:onelevel`, lines 852-855): (W1) and (W2) keep `b` inside the band of `τ_1` on
 the first window and inside the band of `τ_2` on the second; (W3) and (W4) keep the old elements
 above `b` on the first window and below `b` on the second; (W5) puts the band of `τ_1` below that of
 `τ_2`, and (W6) makes `b` faster than every other element. -/
@@ -143,7 +143,7 @@ lemma R0_lt_R1T (k : ℕ) : R0 < R1T μin k := by
   linarith
 
 /-- The proof of `lem:onelevel`(b), its first sentence
-(`stoc-sections/appD-hardness.tex:905-909`): the setting of `lem:dmt` holds at the step with
+(`stoc-sections/appD-hardness.tex:904-908`): the setting of `lem:dmt` holds at the step with
 `f_C := g_k` and `C := E_k`, as `g_k` is submodular with `g_k(∅) = 0` and positive curvatures
 (`fpHyp_gT`), the rewards of `E_k` are positive (`lem:weights`(b), `mT_pos`),
 `m_* ≥ max_{e ∈ E} m_e` (the paragraph after `def:ruleP`, `stepD_hyp`), `β_b = β_δ/12` by (P2) (the
@@ -244,7 +244,7 @@ lemma IsConfig.weak {k : ℕ} {α : ℝ} {U W : Finset (Option (Option (Gr k)))}
 
 /-- `lem:windows`(b) at the step (`windows_b`, `stoc-sections/appB-tools.tex:417`): for
 `U ⊆ W ⊆ E`, if `ρ^f_e > θ_{U,W}` for `e ∈ U`, `ρ^f_e ≤ θ_{U,W}` for `e ∈ E ∖ U`,
-`ρ^h_e ≥ θ_{U,W}` for `e ∈ W` and `ρ^h_e < θ_{U,W}` for `e ∈ E ∖ W` at `α`, then `(U, W)` is the
+`ρ^h_e ≥ θ_{U,W}` for `e ∈ W`, and `ρ^h_e < θ_{U,W}` for `e ∈ E ∖ W` at `α`, then `(U, W)` is the
 configuration of level `k + 1` at `α`. -/
 lemma isConfig_of_windows {k : ℕ} {α : ℝ} {U W : Finset (Option (Option (Gr k)))} (hUW : U ⊆ W)
     (hU : ∀ e ∈ U, θUW μin k α U W < ρf μin k α e)
@@ -345,7 +345,7 @@ lemma ρh_rate (k : ℕ) (e : Option (Option (Gr k))) :
 /-! ### `lem:fast` -/
 
 /-- `lem:fast` without the hypothesis `μ^in ∈ 𝔉` (which its proof does not use), the form the
-proofs below use (`stoc-sections/appD-hardness.tex:797-801`, proof lines 803-815): at the step
+proofs below use (`stoc-sections/appD-hardness.tex:796-800`, proof lines 802-814): at the step
 `k → k + 1`, if `t_b/β⁻¹(E ∪ {b}) > M`, then `m̄ > M`, and `θ_b − ρ^f_e` and `θ_b − ρ^h_e` are
 continuous and strictly increasing for every `e ∈ E`.
 
@@ -433,7 +433,7 @@ theorem fast_aux (k : ℕ) (h6 : (lvl μin k).M < cfast μin k) :
     have h1' : θb μin k α + cfast μin k * (α' - α) ≤ θb μin k α' := h1
     linarith
 
-/-- **`lem:fast`** (Lemma C.14, `stoc-sections/appD-hardness.tex:797-801`, proof lines 803-815): let
+/-- **`lem:fast`** (Lemma C.14, `stoc-sections/appD-hardness.tex:796-800`, proof lines 802-814): let
 `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`). Consider the step `k → k + 1`, and suppose
 that `t_b/β⁻¹(E ∪ {b}) > M`. Then `m̄ > M`, and `θ_b − ρ^f_e` and `θ_b − ρ^h_e` are continuous and
 strictly increasing for every `e ∈ E`. The proof (steps (1)–(4)) is that of `fast_aux`, which does
@@ -485,7 +485,7 @@ lemma u2_sub_w (k : ℕ) (α : ℝ) :
 
 /-! ### The proof of `lem:onelevel`(b): `lem:dmt`(c) at the step -/
 
-/-- The proof of `lem:onelevel`(b) (`stoc-sections/appD-hardness.tex:909-912`), case (a):
+/-- The proof of `lem:onelevel`(b) (`stoc-sections/appD-hardness.tex:908-911`), case (a):
 `lem:dmt`(c), applied with `L_C := L_k` (its hypothesis on `ΔF` is (P5), `P5_stepD`, and its line
 `L` is `L_{k+1}` by (P8), `gapT_succ_eq`): if `(E ∖ {τ_1}, E)` is a weak configuration of level
 `k + 1` at `α`, the gap of level `k + 1` at `α` is the gap of level `k` at `α`. -/
@@ -506,7 +506,7 @@ theorem gapT_config_τ₂ (k : ℕ) (hμ : 0 < μT μin (k + 1)) {α : ℝ}
   exact (StepData.dmt_c (dmtSetting_stepD k hμ) (lvl μin k).p (lvl μin k).q (P5_stepD k) α).2
     hconf
 
-/-- The proof of `lem:onelevel`(b) on `[α_{τ_2}, ∞)` (`stoc-sections/appD-hardness.tex:912-923`):
+/-- The proof of `lem:onelevel`(b) on `[α_{τ_2}, ∞)` (`stoc-sections/appD-hardness.tex:911-922`):
 if `(∅, ∅)` is a weak configuration at `α` and at `α'`, that is, `ρ^h_e ≤ θ_b` for every `e ∈ E`
 (the tightness of `∅` is trivial), then
 (`eq:windows`), with `lem:fullplane`(f) and `lem:translation`(c) (`config_empty` of
@@ -536,12 +536,12 @@ theorem gapT_config_empty (k : ℕ) {α α' : ℝ}
 /-! ### `lem:onelevel` -/
 
 /-- **Step (1) of the proof of `lem:onelevel`** (our numbering;
-`stoc-sections/appD-hardness.tex:862-871`), "We first show that `b` is merged with `τ_1` on the
+`stoc-sections/appD-hardness.tex:861-870`), "We first show that `b` is merged with `τ_1` on the
 first window `𝓡`": on `𝓡`, the configuration of level `k + 1` is `(E ∖ {τ_1}, E)` and `θ_b = θ_1`.
 
 The step's sentences: (1) as `u_1` is affine and `sι > 0`, (W1) gives `0 < u_1(α) < w`, that is,
 `ρ^f_{τ_1} < θ_1 < ρ^h_{τ_1}` at `α`; (2) we apply `lem:windows`(b) with `U = E ∖ {τ_1}` and
-`W = E`, where `D = {b, τ_1}`, `X_{U,W} = K − d(E) + F_{τ_1}` and `θ_{U,W} = θ_1` (`θ1_θUW`), and
+`W = E`, where `D = {b, τ_1}`, `X_{U,W} = K − d(E) + F_{τ_1}`, and `θ_{U,W} = θ_1` (`θ1_θUW`), and
 its conditions hold, for `τ_1` by (1); (3) for `e ∈ E_k`, (W3) and `thm:splice`(a) give
 `ρ^h_e ≥ ρ^f_e = ρ^{(k)}_e > ρ^h_{τ_1} > θ_1`; (4) for `τ_2`, (W5) gives
 `ρ^h_{τ_2} ≥ ρ^f_{τ_2} = ρ^f_{τ_1} + φw > ρ^h_{τ_1} > θ_1`; (5) so the configuration is
@@ -568,7 +568,7 @@ theorem onelevel_step1 {k : ℕ} (h : OneLevelHyp μin k) {α : ℝ}
   have hτ₁_1 : ρf μin k α (some none) < θ1 μin k α := by unfold u1 at hu0; linarith
   have hτ₁_2 : θ1 μin k α < ρh μin k α (some none) := by rw [hhτ₁]; unfold u1 at hu1; linarith
   -- (2) "We apply `lem:windows`(b) with `U = E ∖ {τ_1}` and `W = E`. Then `D = {b, τ_1}`,
-  -- `X_{U,W} = K − d(E) + F_{τ_1}` and `θ_{U,W} = θ_1`. The conditions of the lemma hold. For
+  -- `X_{U,W} = K − d(E) + F_{τ_1}`, and `θ_{U,W} = θ_1`. The conditions of the lemma hold. For
   -- `τ_1`, we have just seen it."
   have hθ : θUW μin k α (univ.erase (some none)) univ = θ1 μin k α := (θ1_θUW k α).symm
   -- (3) "For `e ∈ E_k`, (W3) and `thm:splice`(a) give
@@ -604,12 +604,12 @@ theorem onelevel_step1 {k : ℕ} (h : OneLevelHyp μin k) {α : ℝ}
   exact ⟨hc, hc.θb_eq.trans hθ⟩
 
 /-- **Step (2) of the proof of `lem:onelevel`** (our numbering;
-`stoc-sections/appD-hardness.tex:873-880`), "Next we show that `b` is merged with `τ_2` on the
+`stoc-sections/appD-hardness.tex:872-879`), "Next we show that `b` is merged with `τ_2` on the
 second window `𝓡 + μ`": on `𝓡 + μ`, the configuration of level `k + 1` is `(∅, {τ_2})` and
 `θ_b = θ_2`.
 
 The step's sentences: (1) by (W2), `ρ^f_{τ_2} < θ_2 < ρ^h_{τ_2}`; (2) we apply `lem:windows`(b) with
-`U = ∅` and `W = {τ_2}`, where `D = {b, τ_2}`, `X_{U,W} = K + F_{τ_2} − w/β_δ` and `θ_{U,W} = θ_2`
+`U = ∅` and `W = {τ_2}`, where `D = {b, τ_2}`, `X_{U,W} = K + F_{τ_2} − w/β_δ`, and `θ_{U,W} = θ_2`
 (`θ2_θUW`); (3) for `e ∈ E_k`, `ρ^f_e ≤ ρ^h_e < θ_2` by (W4); (4) for `τ_1`,
 `ρ^f_{τ_1} ≤ ρ^h_{τ_1} < ρ^f_{τ_2} < θ_2` by (W5); (5) so the configuration is `(∅, {τ_2})`
 (`lem:windows`(b), `isConfig_of_windows`), and `θ_b = θ_2` (`lem:windows`(a), `IsConfig.θb_eq`). -/
@@ -631,7 +631,7 @@ theorem onelevel_step2 {k : ℕ} (h : OneLevelHyp μin k) {α : ℝ}
   have hτ₂_1 : ρf μin k α none < θ2 μin k α := by unfold u2 at hu0; linarith
   have hτ₂_2 : θ2 μin k α < ρh μin k α none := by rw [hhτ₂]; unfold u2 at hu1; linarith
   -- (2) "We apply `lem:windows`(b) with `U = ∅` and `W = {τ_2}`. Then `D = {b, τ_2}`,
-  -- `X_{U,W} = K + F_{τ_2} − w/β_δ` and `θ_{U,W} = θ_2`."
+  -- `X_{U,W} = K + F_{τ_2} − w/β_δ`, and `θ_{U,W} = θ_2`."
   have hθ : θUW μin k α ∅ {none} = θ2 μin k α := (θ2_θUW k α).symm
   -- (3) "For `e ∈ E_k`, `ρ^f_e ≤ ρ^h_e < θ_2` by (W4)."
   have hold : ∀ c, ρf μin k α (some (some c)) ≤ ρh μin k α (some (some c)) ∧
@@ -661,7 +661,7 @@ theorem onelevel_step2 {k : ℕ} (h : OneLevelHyp μin k) {α : ℝ}
   exact ⟨hc, hc.θb_eq.trans hθ⟩
 
 /-- **Step (3) of the proof of `lem:onelevel`** (our numbering;
-`stoc-sections/appD-hardness.tex:882-903`), "To complete (a), we follow `b` to the right of the
+`stoc-sections/appD-hardness.tex:881-902`), "To complete (a), we follow `b` to the right of the
 second window": `α_{τ_2} > R_1 + μ`; on `[R_1 + μ, α_{τ_2}]` the configuration of level `k + 1` is
 `(∅, {τ_2})` with `θ_b = θ_2`, and on `(α_{τ_2}, ∞)` it is `(∅, ∅)`.
 
@@ -834,7 +834,7 @@ theorem onelevel_step3 {k : ℕ} (h : OneLevelHyp μin k) :
   exact ⟨hατ₂, h5, h7⟩
 
 /-- `lem:onelevel`(a) without the hypothesis `μ^in ∈ 𝔉` (`μ > 0` from (W1)), the form the proofs
-below use (`stoc-sections/appD-hardness.tex:832-838`, proof lines 862-903): under (W1)–(W6) at the
+below use (`stoc-sections/appD-hardness.tex:831-837`, proof lines 861-902): under (W1)–(W6) at the
 step `k → k + 1`, `α_{τ_2} > R_1 + μ`, and the configuration of level `k + 1` is `(E ∖ {τ_1}, E)`,
 with `θ_b = θ_1`, on `𝓡`; it is `(∅, {τ_2})`, with `θ_b = θ_2`, on `[R_0 + μ, α_{τ_2}]`; and it is
 `(∅, ∅)` on `(α_{τ_2}, ∞)`.
@@ -857,7 +857,7 @@ theorem onelevel_a_aux {k : ℕ} (h : OneLevelHyp μin k) :
   · exact h3 α (not_le.1 h1).le hα.2
 
 /-- `lem:onelevel`(b) without the hypothesis `μ^in ∈ 𝔉` (`μ > 0` from (W1)), the form the proofs
-below use (`stoc-sections/appD-hardness.tex:839-846`, proof lines 905-923, "Now we prove (b)"):
+below use (`stoc-sections/appD-hardness.tex:838-845`, proof lines 904-922, "Now we prove (b)"):
 under (W1)–(W6) at the step `k → k + 1`, the gap of level `k + 1` is the gap of level `k` at `α`
 for `α ∈ 𝓡`, the gap of level `k` at `α − μ` for `α ∈ [R_0 + μ, α_{τ_2}]`, and that plus
 `ψ_{k+1}(α − α_{τ_2})` for `α ∈ [α_{τ_2}, ∞)`.
@@ -880,7 +880,7 @@ theorem onelevel_b_aux {k : ℕ} (h : OneLevelHyp μin k) :
   obtain ⟨hατ₂, ha1, ha2, ha3⟩ := onelevel_a_aux h
   -- (1) "Now we prove (b). The setting of `lem:dmt` holds with `f_C := g_k` and `C := E_k`, as
   -- `m_* ≥ max_{e∈E} m_e` (see the paragraph after `def:ruleP`), `β_b = β_δ/12` by (P2) and
-  -- `m_b > m_δ` by (P4), and its numbers `w`, `m̄`, `s` and `ψ` are those of the parameter rule,
+  -- `m_b > m_δ` by (P4), and its numbers `w`, `m̄`, `s`, and `ψ` are those of the parameter rule,
   -- with `ψ = ψ_{k+1}`. On `𝓡` and on `[R_0 + μ, α_{τ_2}]`, the claim is `lem:dmt`(c), applied
   -- with `L_C := L_k`, whose cases (a) and (b) hold there by (a). Its hypothesis on `ΔF` is (P5),
   -- and its line `L` is `L_{k+1}` by (P8)." (`dmtSetting_stepD`, `P5_stepD` and `gapT_succ_eq`,
@@ -915,7 +915,7 @@ theorem onelevel_b_aux {k : ℕ} (h : OneLevelHyp μin k) :
   linarith
 
 /-- `lem:onelevel`(c) without the hypothesis `μ^in ∈ 𝔉` (`μ > 0` from (W1)), the form the proofs
-below use (`stoc-sections/appD-hardness.tex:847-849`, proof lines 925-942, "Finally, we prove
+below use (`stoc-sections/appD-hardness.tex:846-848`, proof lines 924-941, "Finally, we prove
 (c)"): under (W1)–(W6) at the step `k → k + 1`, on `𝓡` the smallest marginal of level `k + 1` is
 `θ_1` (that of `b`) and the largest is `ρ^f_{τ_2}` (that of `τ_2`); on `𝓡 + μ`, the largest is `θ_2`
 (that of `b`) and the smallest is `ρ^h_{τ_1}` (that of `τ_1`).
@@ -1011,7 +1011,7 @@ theorem onelevel_c_aux {k : ℕ} (h : OneLevelHyp μin k) :
     -- `ρ^h_e(α) = ρ^{(k)}_e(α − μ) + m_*μ > ρ^h_{τ_1}(α − μ) + m_*μ = ρ^h_{τ_1}(α) + w`, so
     -- `ρ^h_{τ_1}` is the smallest marginal." The marginal `θ_2` of `b` and `τ_2` exceeds
     -- `ρ^h_{τ_1}` by (3) ("all other elements have `ρ' = ρ^h < θ_2`"), as at
-    -- appD-hardness.tex:878-879.
+    -- appD-hardness.tex:877-878.
     have hold : ∀ c, ρh μin k α (some none) < ρh μin k α (some (some c)) := by
       intro c
       have hα' : α - μT μin (k + 1) ∈ Set.Icc R0 (R1T μin k) :=
@@ -1042,8 +1042,8 @@ theorem onelevel_c_aux {k : ℕ} (h : OneLevelHyp μin k) :
         · exact le_rfl
         · exact (hold c).le
 
-/-- **`lem:onelevel`(a)** (Lemma C.15, `stoc-sections/appD-hardness.tex:820-838`, proof lines
-862-903): let `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`). Consider the step
+/-- **`lem:onelevel`(a)** (Lemma C.15, `stoc-sections/appD-hardness.tex:819-837`, proof lines
+861-902): let `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`). Consider the step
 `k → k + 1`, and assume (W1)–(W6) (`OneLevelHyp`); let `α_{τ_2}` be the zero of `u_2 − w`, the share
 at which `b` reaches the top of the band of `τ_2`. Then `α_{τ_2} > R_1 + μ`, and the configuration
 of level `k + 1` is `(E ∖ {τ_1}, E)`, with `θ_b = θ_1`, on `𝓡`; it is `(∅, {τ_2})`, with
@@ -1058,8 +1058,8 @@ theorem onelevel_a {K k : ℕ} (_hF : InF μin K) (_hK : k + 2 ≤ K) (h : OneLe
     (∀ α, ατ₂ μin k < α → IsConfig μin k α ∅ ∅) :=
   onelevel_a_aux h
 
-/-- **`lem:onelevel`(b)** (`stoc-sections/appD-hardness.tex:820-833, 839-846`, proof lines
-905-923): let `μ^in ∈ 𝔉` have length at least `k + 2`. Under (W1)–(W6) at the step `k → k + 1`,
+/-- **`lem:onelevel`(b)** (`stoc-sections/appD-hardness.tex:819-832, 838-845`, proof lines
+904-922): let `μ^in ∈ 𝔉` have length at least `k + 2`. Under (W1)–(W6) at the step `k → k + 1`,
 the gap `L_{k+1}(α) − r(ξ^{(k+1)}(α))` of level `k + 1` is the gap of level `k` at `α` for
 `α ∈ 𝓡`, the gap of level `k` at `α − μ` for `α ∈ [R_0 + μ, α_{τ_2}]`, and that plus
 `ψ_{k+1}(α − α_{τ_2})` for `α ∈ [α_{τ_2}, ∞)`. The proof is that of `onelevel_b_aux`. -/
@@ -1071,8 +1071,8 @@ theorem onelevel_b {K k : ℕ} (_hF : InF μin K) (_hK : k + 2 ≤ K) (h : OneLe
       gapT μin k (α - μT μin (k + 1)) + (lvl μin k).ψ * (α - ατ₂ μin k)) :=
   onelevel_b_aux h
 
-/-- **`lem:onelevel`(c)** (`stoc-sections/appD-hardness.tex:820-833, 847-849`, proof lines
-925-942): let `μ^in ∈ 𝔉` have length at least `k + 2`. Under (W1)–(W6) at the step `k → k + 1`,
+/-- **`lem:onelevel`(c)** (`stoc-sections/appD-hardness.tex:819-832, 846-848`, proof lines
+924-941): let `μ^in ∈ 𝔉` have length at least `k + 2`. Under (W1)–(W6) at the step `k → k + 1`,
 on `𝓡` the smallest marginal of level `k + 1` is `θ_1` (that of `b`) and the largest is `ρ^f_{τ_2}`
 (that of `τ_2`); on `𝓡 + μ`, the largest is `θ_2` (that of `b`) and the smallest is `ρ^h_{τ_1}`
 (that of `τ_1`). The proof is that of `onelevel_c_aux`. -/
@@ -1086,7 +1086,7 @@ theorem onelevel_c {K k : ℕ} (_hF : InF μin K) (_hK : k + 2 ≤ K) (h : OneLe
       ρT μin (k + 1) α (some (some none)) = ρh μin k α (some none)) :=
   onelevel_c_aux h
 
-/-- **`lem:onelevel`** (Lemma C.15, `stoc-sections/appD-hardness.tex:820-851`): let
+/-- **`lem:onelevel`** (Lemma C.15, `stoc-sections/appD-hardness.tex:819-850`): let
 `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`). Consider the step `k → k + 1`, and assume
 (W1)–(W6) (`OneLevelHyp`): (W1) `sι < u_1(R_0)` and `u_1(R_1) < w`; (W2) `0 < u_2(R_0 + μ)` and
 `u_2(R_1 + μ) < w`; (W3) `ρ^{(k)}_e(α) > ρ^h_{τ_1}(α)` for all `e ∈ E_k` and `α ∈ 𝓡`; (W4)
@@ -1131,7 +1131,7 @@ theorem onelevel {K k : ℕ} (hF : InF μin K) (hK : k + 2 ≤ K) (h : OneLevelH
 /-! ### `lem:leftwindows` -/
 
 /-- `lem:leftwindows`(a) without the hypothesis `μ^in ∈ 𝔉`, the form the proofs below use
-(`stoc-sections/appD-hardness.tex:954-955`, proof lines 966-971), for level `j = k + 1`:
+(`stoc-sections/appD-hardness.tex:953-954`, proof lines 965-970), for level `j = k + 1`:
 assume the hypotheses of `lem:onelevel` at the step `k → k + 1`. Then for every `α ≤ R_0`, every
 `e ∈ E_k ∪ {τ_2}` has `ρ^f_e(α) > θ_b(α)`, and `θ_b(α) ≤ ρ^h_{τ_1}(α)`.
 
@@ -1174,7 +1174,7 @@ theorem leftwindows_a_aux {k : ℕ} (h : OneLevelHyp μin k) :
     exact ⟨h0f, h0h.le⟩
 
 /-- `lem:leftwindows`(b) without the hypothesis `μ^in ∈ 𝔉`, the form the proofs below use
-(`stoc-sections/appD-hardness.tex:956-958`, proof lines 971-977), for level `j = k + 1`:
+(`stoc-sections/appD-hardness.tex:955-957`, proof lines 970-976), for level `j = k + 1`:
 assume the hypotheses of `lem:onelevel` at the step `k → k + 1`. Then for every `α ≤ R_0`,
 `ρ^{(k+1)}_e(α) = ρ^{(k)}_e(α)` for `e ∈ E_k`, `ρ^{(k+1)}_{τ_2}(α) = ρ^f_{τ_2}(α)`, and `b` has the
 smallest marginal of level `k + 1`.
@@ -1209,7 +1209,7 @@ theorem leftwindows_b_aux {k : ℕ} (h : OneLevelHyp μin k) :
         exact (ha.1 e he).le
 
 /-- `lem:leftwindows`(c) without the hypothesis `μ^in ∈ 𝔉`, the form the proofs below use
-(`stoc-sections/appD-hardness.tex:959-961`, proof lines 979-986), for level `j = k + 1`:
+(`stoc-sections/appD-hardness.tex:958-960`, proof lines 978-985), for level `j = k + 1`:
 assume the hypotheses of `lem:onelevel` at the step `k → k + 1`. If `α ≤ R_0` and `u_1(α) ≥ 0`,
 then level `k + 1` has the configuration `(E ∖ {τ_1}, E)`, so the block of `b` (the elements of
 `E ∪ {b}` with the marginal `θ_b`) is `{b, τ_1}`, and `θ_b(α) = θ_1(α)`.
@@ -1278,20 +1278,20 @@ theorem leftwindows_c_aux {k : ℕ} (h : OneLevelHyp μin k) :
   rw [hc.spec.2.2.2.2]
   exact StepData.insertNone_τ₁
 
-/-- **`lem:leftwindows`(a)** (Lemma C.16, `stoc-sections/appD-hardness.tex:948-955`, proof lines
-966-971), for level `j = k + 1`: let `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`), and
+/-- **`lem:leftwindows`(a)** (Lemma C.16, `stoc-sections/appD-hardness.tex:947-954`, proof lines
+965-970), for level `j = k + 1`: let `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`), and
 assume the hypotheses of `lem:onelevel` at the step `k → k + 1` (`OneLevelHyp`); `f`, `h`, `τ_1`,
-`τ_2`, `b`, `u_1`, `θ_1` and `θ_b` are the quantities of this step, and `E = E_k ∪ {τ_1, τ_2}`. Then
-for every `α ≤ R_0`, every `e ∈ E_k ∪ {τ_2}` has `ρ^f_e(α) > θ_b(α)`, and `θ_b(α) ≤ ρ^h_{τ_1}(α)`.
-The proof (steps (1), (2)) is that of `leftwindows_a_aux`, which does not use the hypothesis on the
-input. -/
+`τ_2`, `b`, `u_1`, `θ_1`, and `θ_b` are the quantities of this step, and `E = E_k ∪ {τ_1, τ_2}`.
+Then for every `α ≤ R_0`, every `e ∈ E_k ∪ {τ_2}` has `ρ^f_e(α) > θ_b(α)`, and
+`θ_b(α) ≤ ρ^h_{τ_1}(α)`. The proof (steps (1), (2)) is that of `leftwindows_a_aux`, which does not
+use the hypothesis on the input. -/
 theorem leftwindows_a {K k : ℕ} (_hF : InF μin K) (_hK : k + 2 ≤ K) (h : OneLevelHyp μin k) :
     ∀ α, α ≤ R0 → (∀ e, e ≠ some none → θb μin k α < ρf μin k α e) ∧
       θb μin k α ≤ ρh μin k α (some none) :=
   leftwindows_a_aux h
 
-/-- **`lem:leftwindows`(b)** (`stoc-sections/appD-hardness.tex:948-953, 956-958`, proof lines
-971-977), for level `j = k + 1`: let `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`), and
+/-- **`lem:leftwindows`(b)** (`stoc-sections/appD-hardness.tex:947-952, 955-957`, proof lines
+970-976), for level `j = k + 1`: let `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`), and
 assume the hypotheses of `lem:onelevel` at the step `k → k + 1`. Then for every `α ≤ R_0`,
 `ρ^{(k+1)}_e(α) = ρ^{(k)}_e(α)` for `e ∈ E_k`, `ρ^{(k+1)}_{τ_2}(α) = ρ^f_{τ_2}(α)`, and `b` has the
 smallest marginal of level `k + 1`. The proof (step (3)) is that of `leftwindows_b_aux`, which does
@@ -1302,8 +1302,8 @@ theorem leftwindows_b {K k : ℕ} (_hF : InF μin K) (_hK : k + 2 ≤ K) (h : On
       ∀ o, θb μin k α ≤ ρT μin (k + 1) α o :=
   leftwindows_b_aux h
 
-/-- **`lem:leftwindows`(c)** (`stoc-sections/appD-hardness.tex:948-953, 959-961`, proof lines
-979-986), for level `j = k + 1`: let `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`), and
+/-- **`lem:leftwindows`(c)** (`stoc-sections/appD-hardness.tex:947-952, 958-960`, proof lines
+978-985), for level `j = k + 1`: let `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`), and
 assume the hypotheses of `lem:onelevel` at the step `k → k + 1`. If `α ≤ R_0` and `u_1(α) ≥ 0`,
 then level `k + 1` has the configuration `(E ∖ {τ_1}, E)`, so the block of `b` is `{b, τ_1}`, and
 `θ_b(α) = θ_1(α)`. The proof (steps (4)–(6)) is that of `leftwindows_c_aux`, which does not use
@@ -1315,11 +1315,11 @@ theorem leftwindows_c {K k : ℕ} (_hF : InF μin K) (_hK : k + 2 ≤ K) (h : On
       θb μin k α = θ1 μin k α :=
   leftwindows_c_aux h
 
-/-- **`lem:leftwindows`** (Lemma C.16, `stoc-sections/appD-hardness.tex:948-963`), for level
+/-- **`lem:leftwindows`** (Lemma C.16, `stoc-sections/appD-hardness.tex:947-962`), for level
 `j = k + 1`: let `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`). Let `j ≥ 1`, and assume the
 hypotheses of `lem:onelevel` at the step `j − 1 → j` (`OneLevelHyp`). In this lemma, `f`, `h`,
-`τ_1`, `τ_2`, `b`, `u_1`, `θ_1` and `θ_b` are the quantities of this step, written without the index
-`j`, and `E := E_{j−1} ∪ {τ_1, τ_2}`. Then the following hold for every `α ≤ R_0`. (a) Every
+`τ_1`, `τ_2`, `b`, `u_1`, `θ_1`, and `θ_b` are the quantities of this step, written without the
+index `j`, and `E := E_{j−1} ∪ {τ_1, τ_2}`. Then the following hold for every `α ≤ R_0`. (a) Every
 `e ∈ E_{j−1} ∪ {τ_2}` has `ρ^f_e(α) > θ_b(α)`, and `θ_b(α) ≤ ρ^h_{τ_1}(α)`. (b)
 `ρ^{(j)}_e(α) = ρ^{(j−1)}_e(α)` for `e ∈ E_{j−1}`, `ρ^{(j)}_{τ_2}(α) = ρ^f_{τ_2}(α)`, and `b` has
 the smallest marginal of level `j`. (c) If `u_1(α) ≥ 0`, then level `j` has the configuration

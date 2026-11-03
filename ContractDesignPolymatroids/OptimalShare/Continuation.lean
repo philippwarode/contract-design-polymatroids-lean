@@ -1,5 +1,6 @@
--- stamp r7 2026-11-02
+-- stamp r8 2026-11-03
 import ContractDesignPolymatroids.OptimalShare.Pieces
+import ContractDesignPolymatroids.Preliminaries.CountedLists
 
 /-!
 # Affine continuation
@@ -56,19 +57,27 @@ and at most `2N' + n(C(n, 2) + 2)` further evaluations of `f` (`contEvals_le`: a
 `C(n, 2) + 2` cells, `card_cells_le`, each with at most `n` set tests). With the cited bounds in
 the form `N = N' = c n²` ([GGJ17]: `n² + O(n log² n)` minimizations and `O(n²)` evaluations of `f`
 per ray), these are the `O(n²)` and `O(n³)` of `lem:continuation` with explicit constants, `2c n²`
-and `(2c + 2) n³` (`cont_costs_poly`). The
-arithmetic operations (`O(n⁴)` in the STOC version) are not counted.
+and `(2c + 2) n³` (`cont_costs_poly`). The arithmetic operations (`O(n⁴)` in the STOC version)
+are counted by the counted procedure `contC`, which performs the steps (2)-(6) in the cost model
+of `Stoc.Counted`: it returns the ends of `I(α̂)` with exactly `contCalls` minimizations and
+`contEvals` further evaluations of `f`, and at most `3n⁴ + (2c + 5)n³ + 44n² + 57n + 62` further
+arithmetic operations if each ray computation makes at most `c n³` (`contC_spec`; the arithmetic
+operations of the cited ray computation, which the STOC version does not state, are an assumption
+of the formalisation, not cited, `RayCostOps`).
 
 Steps that the STOC version cites or leaves implicit are proved in lemmas of their own, marked "not
 in the paper": `rayMax_spec` (in step 2, that the feasible steps of a ray form `[0, d]` or
 `[0, ∞)`, which the STOC version takes from the cited ray computation), `card_cuts_le` and
 `card_cells_le` (the explicit counts `C(n, 2) + 3` and `C(n, 2) + 2` behind the `O(n²)` intervals
-of step 4), `tests_le_cube` and `cont_costs_poly` (the explicit constants of the costs), and
-`agree_of_two` and `not_mem_BP_of_mem_Ioo` (in step 7).
+of step 4), `tests_le_cube` and `cont_costs_poly` (the explicit constants of the costs),
+`agree_of_two` and `not_mem_BP_of_mem_Ioo` (in step 7), and the counted procedure `contC` with
+`contC_spec` (the paper counts in prose).
 
 Written on 2026-10-25 for the STOC version; it replaces the affine continuation of
 `ContractDesignPolymatroids/OptimalShare/Tracing.lean`, where `I(α̂)` was defined as the largest interval around `α̂` on
-which `x* = y` and the procedure of the proof was not formalised.
+which `x* = y` and the procedure of the proof was not formalised. Extended on 2026-11-03 with the
+counted procedure `contC`, which proves the arithmetic operations of `lem:continuation` and leaves
+its proof as it was.
 -/
 
 namespace Stoc
@@ -910,9 +919,9 @@ minimizations, `O(n³)` further evaluations of `f`, and `O(n⁴)` further arithm
 the costs as the proof accounts for them: "The ray computations and at most `n` set tests on each
 of the `O(n²)` intervals give the stated costs". As `ContractDesignPolymatroids/BestResponse/WaterFilling.lean` counts the
 work of water-filling, the procedure's work is counted in submodular minimizations (`contCalls`)
-and further evaluations of `f` (`contEvals`); arithmetic operations are not counted. The ray
-computation of [GGJ17] is cited and not formalised, so its work is a parameter (`RayCost`), with
-the cited bounds as hypotheses. -/
+and further evaluations of `f` (`contEvals`); the arithmetic operations are counted by the counted
+procedure `contC` below. The ray computation of [GGJ17] is cited and not formalised, so its work
+is a parameter (`RayCost`), with the cited bounds as hypotheses. -/
 
 /-- The work of the ray computation of [GGJ17] (cited, not formalised), a parameter of the counts:
 `calls x w` submodular minimizations and `evals x w` further evaluations of `f` for the ray from
@@ -1397,6 +1406,750 @@ theorem found_eq_walk (H : Hyp f m β) (h0 : 0 ≤ αh) (h1 : αh ≤ 1) :
 
 end Correct
 
+/-! ### The procedure with its operation counts
+
+The first sentence of `lem:continuation` counts arithmetic operations as well: "`I(α̂)` can be
+computed with `O(n²)` submodular minimizations, `O(n³)` further evaluations of `f`, and `O(n⁴)`
+further arithmetic operations", by "The ray computations and at most `n` set tests on each of the
+`O(n²)` intervals give the stated costs". The counted procedure `contC` performs the steps (2)-(6)
+of the proof in the cost model of `Stoc.Counted`, with the primitives of
+`ContractDesignPolymatroids/Preliminaries/CountedLists.lean`: the two ray computations of [GGJ17] (`rayMaxC`, cited, with
+the work of `RayCostOps`) and the bounds `α̂ − d⁻` and `α̂ + d⁺` (`rankLoC`, `rankHiC`); `K`
+(`kLoC`, `kHiC`); the crossings inside `K` of the pairs `(e, g)` and the cut points without
+duplicates (`crossC`, `cutsC`); for each cut point `p < κ⁺` the next cut point (`nextC`) and the
+tests at the midpoint `c` of the cell (`testC`: the distinct positive values of `ρ̃(c)`, one for
+each set `L_i` of the chain, and the tests `setTestC` of each set) (`cellC`, `cellsC`); and the
+walk from `α̂` (`walkC`). `contC_spec` shows that it returns the ends `lo` and `hi` of the walk,
+which bound `I(α̂)` (`found_eq_walk`), with exactly `contCalls` submodular minimizations and
+`contEvals` further evaluations of `f`, and, if each ray computation makes at most `c n³`
+arithmetic operations, at most `3n⁴ + (2c + 5)n³ + 44n² + 57n + 62` further arithmetic operations
+(comparisons included). The cells are found without sorting: the next cut point of a cut point is
+the minimum of the `O(n²)` cut points above it, `O(n⁴)` comparisons in all, as are the removal of
+the duplicate cut points and the at most `n` set tests, with `O(n)` operations each, on each of the
+`O(n²)` cells. (Not in the paper: the paper counts in prose.) -/
+
+/-- The work of the ray computation of [GGJ17] with its arithmetic operations (cited, not
+formalised): the submodular minimizations and the further evaluations of `f` of `RayCost`, and
+`arith x w` further arithmetic operations for the ray from `x` in the direction `w`. The STOC
+version cites the minimizations and the evaluations of `f` of a ray, not its arithmetic operations;
+these enter `contC_spec` as an assumption of the formalisation, not cited, `arith x w ≤ c n³`: the
+`n² + O(n log² n)` rounds of the discrete Newton method of [GGJ17], each with `O(n)` arithmetic
+operations for its update (as in step (5) of `lem:ray`). The `O(n⁴)` of `lem:continuation` would
+follow from the weaker `arith x w ≤ c n⁴` as well. -/
+structure RayCostOps (E : Type*) extends RayCost E where
+  /-- The further arithmetic operations of the ray computation from `x` in the direction `w`. -/
+  arith : (E → ℝ) → (E → ℝ) → ℕ
+
+section Counts
+
+open Counted
+
+variable (f m β) (αh : ℝ) (x v : E → ℝ)
+
+/-- Step (2), the ray computation of [GGJ17] from `x` in the direction `w`, counted (cited): its
+result, the largest feasible step `rayMax f x w`, with the work of `R`. -/
+noncomputable def rayMaxC (R : RayCostOps E) (w : E → ℝ) : Counted (WithTop ℝ) :=
+  ⟨rayMax f x w, (R.arith x w, R.calls x w, R.evals x w)⟩
+
+/-- Step (2), the bound `α̂ − d⁻` from the result `d⁻` of the ray computation in the direction
+`−v`: one comparison and one subtraction. -/
+noncomputable def rankLoC (dm : WithTop ℝ) : Counted ℝ :=
+  ops 2 (if h : dm = ⊤ then 0 else αh - dm.untop h)
+
+/-- Step (2), the bound `α̂ + d⁺`: one comparison and one addition. -/
+noncomputable def rankHiC (dp : WithTop ℝ) : Counted ℝ :=
+  ops 2 (if h : dp = ⊤ then 1 else αh + dp.untop h)
+
+/-- Step (3), `κ⁻`: for each `e`, the ratio bounds of `y_e ≥ 0` (three operations) and of
+`ρ̃_e ≥ 0` (eight) and their maximum (one comparison); their maximum with `0`, and with
+`α̂ − d⁻`. -/
+noncomputable def kLoC (rl : ℝ) : Counted ℝ :=
+  max0 Finset.univ (fun e => ops 12 (max (ratioLo αh (x e) (v e))
+    (ratioLo αh (αh * m e - β e * x e) (m e - β e * v e)))) >>=ᶜ fun M =>
+  ops 1 (max M rl)
+
+/-- Step (3), `κ⁺`, as `κ⁻`. -/
+noncomputable def kHiC (rh : ℝ) : Counted ℝ :=
+  minWith 1 Finset.univ (fun e => ops 12 (min (ratioHi αh (x e) (v e))
+    (ratioHi αh (αh * m e - β e * x e) (m e - β e * v e)))) >>=ᶜ fun M =>
+  ops 1 (min M rh)
+
+/-- Step (4), the pair `q = (e, g)`: the slopes `m_e − β_e v_e` and `m_g − β_g v_g` and their
+comparison (five operations); for distinct slopes, the crossing (ten operations) and whether it
+lies inside `K` (two comparisons). -/
+noncomputable def crossC (kl kh : ℝ) (q : E × E) : Counted (Option ℝ) :=
+  ops 5 (decide (m q.1 - β q.1 * v q.1 ≠ m q.2 - β q.2 * v q.2)) >>=ᶜ fun d =>
+  if d then
+    ops 10 (crossing m β αh x v q.1 q.2) >>=ᶜ fun c =>
+    ops 2 (if kl < c ∧ c < kh then some c else none)
+  else ret none
+
+/-- Step (4), the cut points: the crossings inside `K` of the pairs `(e, g)` (`crossC`), and,
+with `κ⁻`, `κ⁺` and `α̂`, their duplicates removed. -/
+noncomputable def cutsC (kl kh : ℝ) : Counted (List ℝ) :=
+  filterMapL (crossC m β αh x v kl kh) (Finset.univ : Finset (E × E)).toList >>=ᶜ fun X =>
+  dedupL (kl :: kh :: αh :: X)
+
+/-- Step (5), one positive value of `ρ` at `e`: one comparison. -/
+noncomputable def posC (ρ : E → ℝ) (e : E) : Counted (Option ℝ) :=
+  ops 1 (if 0 < ρ e then some (ρ e) else none)
+
+/-- Step (5), the tests of the set `L = {e | ρ_e ≥ θ}` of the chain at a share `c`, with
+`ρ = ρ̃(c)` and `yc = y(c)`: `L` (one comparison for each element), `y(c)(L)` and `v(L)` (one
+addition for each element of `L`), one evaluation of `f(L)`, and the two tests (two comparisons). -/
+noncomputable def setTestC (ρ yc : E → ℝ) (θ : ℝ) : Counted Bool :=
+  filterK 1 Finset.univ (fun e => θ ≤ ρ e) >>=ᶜ fun L =>
+  Counted.sum L (fun e => ret (yc e)) >>=ᶜ fun yL =>
+  evalF (f L) >>=ᶜ fun fL =>
+  Counted.sum L (fun e => ret (v e)) >>=ᶜ fun vL =>
+  ops 2 (decide (yL = fL ∧ vL = 0))
+
+/-- Step (5) at the share `c`: `y(c)` (three operations for each element), `ρ̃(c)` (three more),
+the distinct positive values of `ρ̃(c)` (one comparison for each element, and the duplicates
+removed), and the tests of the set `L = {e | ρ̃_e(c) ≥ θ}` of the chain for each such value `θ`
+(`setTestC`), with one conjunction for each. -/
+noncomputable def testC (c : ℝ) : Counted Bool :=
+  ops (3 * Fintype.card E) (y αh x v c) >>=ᶜ fun yc =>
+  ops (3 * Fintype.card E) (rhoT m β αh x v c) >>=ᶜ fun ρc =>
+  filterMapL (posC ρc) (Finset.univ : Finset E).toList >>=ᶜ fun P =>
+  dedupL P >>=ᶜ fun Θ =>
+  allL (setTestC f v ρc yc) Θ
+
+/-- Step (4), the cut point after `p` among the cut points `C`: those above `p` (one comparison
+each) and their minimum with `κ⁺` (one comparison each). -/
+noncomputable def nextC (C : List ℝ) (kh p : ℝ) : Counted ℝ :=
+  filterMapL (fun q => ops 1 (if p < q then some q else none)) C >>=ᶜ fun A => minL kh A
+
+/-- Steps (4) and (5), the cell after the cut point `p`, if `p < κ⁺` (one comparison): the next
+cut point `q`, the midpoint `c = (p + q)/2` (two operations) and the tests at `c`; it returns
+`(p, q)` with the outcome of the tests. -/
+noncomputable def cellC (C : List ℝ) (kh p : ℝ) : Counted (Option (ℝ × ℝ × Bool)) :=
+  ops 1 (decide (p < kh)) >>=ᶜ fun b =>
+  if b then
+    nextC C kh p >>=ᶜ fun q =>
+    ops 2 ((p + q) / 2) >>=ᶜ fun c =>
+    testC f m β αh x v c >>=ᶜ fun t =>
+    ret (some (p, q, t))
+  else ret none
+
+/-- Steps (4) and (5), the cells `(p, q)` after the cut points `p < κ⁺`, with their tests. -/
+noncomputable def cellsC (C : List ℝ) (kh : ℝ) : Counted (List (ℝ × ℝ × Bool)) :=
+  filterMapL (cellC f m β αh x v C kh) C
+
+/-- Step (6): the walk to the right ends at the least cut point `p ≥ α̂` that is `κ⁺` or whose
+cell fails the tests, and the walk to the left at the largest cut point `q ≤ α̂` that is `κ⁻` or
+whose cell `(p, q)` fails the tests: two comparisons for each cell, and the minimum and the
+maximum of the candidates, one comparison for each. -/
+noncomputable def walkC (kl kh : ℝ) (T : List (ℝ × ℝ × Bool)) : Counted (ℝ × ℝ) :=
+  filterMapL (fun r => ops 2 (if αh ≤ r.1 ∧ r.2.2 = false then some r.1 else none)) T >>=ᶜ
+    fun A =>
+  minL kh A >>=ᶜ fun h =>
+  filterMapL (fun r => ops 2 (if r.2.1 ≤ αh ∧ r.2.2 = false then some r.2.1 else none)) T >>=ᶜ
+    fun B =>
+  maxL kl B >>=ᶜ fun l =>
+  ret (l, h)
+
+/-- The procedure of the proof of `lem:continuation`, counted: `−v` (one operation for each
+element), the two ray computations of step (2), the bounds `α̂ − d⁻` and `α̂ + d⁺`, `K` (step
+(3)), the cut points (step (4)), the cells with their tests (steps (4) and (5)), and the walk
+(step (6)); it returns the ends `(lo, hi)` of `I(α̂)`. -/
+noncomputable def contC (R : RayCostOps E) : Counted (ℝ × ℝ) :=
+  ops (Fintype.card E) (-v) >>=ᶜ fun nv =>
+  rayMaxC f x R v >>=ᶜ fun dp =>
+  rayMaxC f x R nv >>=ᶜ fun dm =>
+  rankLoC αh dm >>=ᶜ fun rl =>
+  rankHiC αh dp >>=ᶜ fun rh =>
+  kLoC m β αh x v rl >>=ᶜ fun kl =>
+  kHiC m β αh x v rh >>=ᶜ fun kh =>
+  cutsC m β αh x v kl kh >>=ᶜ fun C =>
+  cellsC f m β αh x v C kh >>=ᶜ fun T =>
+  walkC αh kl kh T
+
+variable {f m β αh x v}
+
+omit [Fintype E] [DecidableEq E] in
+@[simp] lemma val_rayMaxC (R : RayCostOps E) (w : E → ℝ) : (rayMaxC f x R w).val = rayMax f x w :=
+  rfl
+
+omit [Fintype E] [DecidableEq E] in
+lemma rankLoC_val : (rankLoC αh (rayMax f x (-v))).val = rankLo f αh x v := rfl
+
+omit [Fintype E] [DecidableEq E] in
+lemma rankHiC_val : (rankHiC αh (rayMax f x v)).val = rankHi f αh x v := rfl
+
+/-- `max (insert a (insert b S)) = max (max (insert a S)) b` (plumbing). -/
+lemma max'_insert_insert (a b : ℝ) (S : Finset ℝ) :
+    (insert a (insert b S)).max' (Finset.insert_nonempty _ _) =
+      max ((insert a S).max' (Finset.insert_nonempty _ _)) b := by
+  have h : ∀ (s t : Finset ℝ) (hs : s.Nonempty) (ht : t.Nonempty), s = t → s.max' hs = t.max' ht :=
+    by rintro s t hs ht rfl; rfl
+  rw [h _ _ _ (Finset.insert_nonempty b (insert a S)) (Finset.insert_comm a b S)]
+  exact (Finset.max'_insert b (insert a S) (Finset.insert_nonempty _ _)).trans (max_comm _ _)
+
+/-- `min (insert a (insert b S)) = min (min (insert a S)) b` (plumbing). -/
+lemma min'_insert_insert (a b : ℝ) (S : Finset ℝ) :
+    (insert a (insert b S)).min' (Finset.insert_nonempty _ _) =
+      min ((insert a S).min' (Finset.insert_nonempty _ _)) b := by
+  have h : ∀ (s t : Finset ℝ) (hs : s.Nonempty) (ht : t.Nonempty), s = t → s.min' hs = t.min' ht :=
+    by rintro s t hs ht rfl; rfl
+  rw [h _ _ _ (Finset.insert_nonempty b (insert a S)) (Finset.insert_comm a b S)]
+  exact (Finset.min'_insert b (insert a S) (Finset.insert_nonempty _ _)).trans (min_comm _ _)
+
+omit [DecidableEq E] in
+/-- `kLoC` computes `κ⁻` from `α̂ − d⁻`. -/
+lemma kLoC_val : (kLoC m β αh x v (rankLo f αh x v)).val = kLo f m β αh x v := by
+  simp only [kLoC, val_bind, val_ops, val_max0]
+  unfold kLo
+  rw [max'_insert_insert]
+
+omit [DecidableEq E] in
+/-- `kHiC` computes `κ⁺` from `α̂ + d⁺`. -/
+lemma kHiC_val : (kHiC m β αh x v (rankHi f αh x v)).val = kHi f m β αh x v := by
+  simp only [kHiC, val_bind, val_ops, val_minWith]
+  unfold kHi
+  rw [min'_insert_insert]
+
+
+omit [Fintype E] [DecidableEq E] in
+/-- A pair `(e, g)` gives its crossing if the slopes differ and the crossing lies inside
+`(kl, kh)`. -/
+lemma crossC_val (kl kh : ℝ) (q : E × E) :
+    (crossC m β αh x v kl kh q).val =
+      if m q.1 - β q.1 * v q.1 ≠ m q.2 - β q.2 * v q.2 ∧ kl < crossing m β αh x v q.1 q.2 ∧
+          crossing m β αh x v q.1 q.2 < kh
+        then some (crossing m β αh x v q.1 q.2) else none := by
+  unfold crossC
+  by_cases hs : m q.1 - β q.1 * v q.1 = m q.2 - β q.2 * v q.2
+  · simp [hs]
+  · simp only [hs, ne_eq, not_false_eq_true, decide_true, ↓reduceIte, val_bind, val_ops, true_and]
+    congr
+
+omit [DecidableEq E] in
+/-- The cut points of `cutsC` are those of `cuts`, without duplicates. -/
+lemma cutsC_val :
+    (cutsC m β αh x v (kLo f m β αh x v) (kHi f m β αh x v)).val.Nodup ∧
+      ∀ c, c ∈ (cutsC m β αh x v (kLo f m β αh x v) (kHi f m β αh x v)).val ↔
+        c ∈ cuts f m β αh x v := by
+  simp only [cutsC, val_bind, val_dedupL, val_filterMapL]
+  refine ⟨List.nodup_dedup _, fun c => ?_⟩
+  simp only [List.mem_dedup, List.mem_cons, List.mem_filterMap, Finset.mem_toList,
+    Finset.mem_univ, true_and, crossC_val, cuts, Finset.mem_insert, Finset.mem_filter,
+    Finset.mem_image, Option.ite_none_right_eq_some, Option.some.injEq, Prod.exists]
+  constructor
+  · rintro (h | h | h | ⟨e, g, ⟨hs, h1, h2⟩, rfl⟩)
+    · exact Or.inl h
+    · exact Or.inr (Or.inl h)
+    · exact Or.inr (Or.inr (Or.inl h))
+    · exact Or.inr (Or.inr (Or.inr ⟨⟨e, g, hs, rfl⟩, h1, h2⟩))
+  · rintro (h | h | h | ⟨⟨e, g, hs, rfl⟩, h1, h2⟩)
+    · exact Or.inl h
+    · exact Or.inr (Or.inl h)
+    · exact Or.inr (Or.inr (Or.inl h))
+    · exact Or.inr (Or.inr (Or.inr ⟨e, g, ⟨hs, h1, h2⟩, rfl⟩))
+
+omit [Fintype E] [DecidableEq E] in
+lemma posC_val (ρ : E → ℝ) (e : E) :
+    (posC ρ e).val = if 0 < ρ e then some (ρ e) else none := rfl
+
+omit [DecidableEq E] in
+lemma setTestC_val (ρ yc : E → ℝ) (θ : ℝ) :
+    (setTestC f v ρ yc θ).val =
+      decide (∑ e ∈ Finset.univ.filter (fun e => θ ≤ ρ e), yc e =
+          f (Finset.univ.filter fun e => θ ≤ ρ e) ∧
+        ∑ e ∈ Finset.univ.filter (fun e => θ ≤ ρ e), v e = 0) := rfl
+
+omit [DecidableEq E] in
+open Classical in
+/-- The tests of `testC` are the tests `Test` of step (5): the sets `L` of the distinct positive
+values of `ρ̃(c)` are the sets `L_i` of the chain. -/
+lemma testC_val (c : ℝ) : (testC f m β αh x v c).val = decide (Test f m β αh x v c) := by
+  simp only [testC, val_bind, val_ops, val_filterMapL, val_dedupL, val_allL, setTestC_val,
+    posC_val]
+  rw [Bool.eq_iff_iff, List.all_eq_true, decide_eq_true_iff]
+  simp only [List.mem_dedup, List.mem_filterMap, Finset.mem_toList, Finset.mem_univ, true_and,
+    Option.ite_none_right_eq_some, Option.some.injEq, decide_eq_true_eq, forall_exists_index,
+    and_imp]
+  unfold Test chainSet
+  constructor
+  · intro h i hi
+    obtain ⟨e, -, he⟩ := Finset.mem_image.1 (Finset.mem_filter.1 (theta_mem hi)).1
+    exact h _ e (he ▸ c_lt_theta hi) he
+  · intro h θ e he hθ
+    obtain ⟨j, hj, hθj⟩ := exists_theta_eq he
+    have := h j hj
+    rw [hθj, hθ] at this
+    exact this
+
+omit [DecidableEq E] in
+/-- `nextC` finds the cut point after `p < κ⁺`. -/
+lemma nextC_val {C : List ℝ} (hC : ∀ c, c ∈ C ↔ c ∈ cuts f m β αh x v) {p : ℝ}
+    (hp : p < kHi f m β αh x v) :
+    (nextC C (kHi f m β αh x v) p).val = next f m β αh x v p := by
+  simp only [nextC, val_bind, val_filterMapL, val_ops, val_minL]
+  have hF : insert (kHi f m β αh x v) (C.filterMap fun q => if p < q then some q else none).toFinset
+      = (cuts f m β αh x v).filter fun q => p < q := by
+    ext q
+    simp only [Finset.mem_insert, List.mem_toFinset, List.mem_filterMap,
+      Option.ite_none_right_eq_some, Option.some.injEq, Finset.mem_filter, hC]
+    constructor
+    · rintro (rfl | ⟨q', hq', hpq, rfl⟩)
+      · exact ⟨kHi_mem_cuts, hp⟩
+      · exact ⟨hq', hpq⟩
+    · rintro ⟨hq, hpq⟩
+      exact Or.inr ⟨q, hq, hpq, rfl⟩
+  have hS : {q | q ∈ cuts f m β αh x v ∧ p < q} =
+      (((cuts f m β αh x v).filter fun q => p < q : Finset ℝ) : Set ℝ) := by
+    ext q
+    simp
+  have hne : ((cuts f m β αh x v).filter fun q => p < q).Nonempty :=
+    ⟨_, Finset.mem_filter.2 ⟨kHi_mem_cuts, hp⟩⟩
+  unfold next
+  rw [hS, hne.csInf_eq_min']
+  have h : ∀ (s t : Finset ℝ) (hs : s.Nonempty) (ht : t.Nonempty), s = t → s.min' hs = t.min' ht :=
+    by rintro s t hs ht rfl; rfl
+  exact h _ _ _ _ hF
+
+omit [DecidableEq E] in
+open Classical in
+/-- A cell `cellC` after a cut point `p`: none if `p ≥ κ⁺`, else `(p, next p)` with the outcome
+of the tests at the midpoint. -/
+lemma cellC_val {C : List ℝ} (hC : ∀ c, c ∈ C ↔ c ∈ cuts f m β αh x v) (p : ℝ) :
+    (cellC f m β αh x v C (kHi f m β αh x v) p).val =
+      if p < kHi f m β αh x v then
+        some (p, next f m β αh x v p,
+          decide (Test f m β αh x v ((p + next f m β αh x v p) / 2)))
+      else none := by
+  unfold cellC
+  by_cases hp : p < kHi f m β αh x v
+  · simp [hp, nextC_val hC hp, testC_val]
+  · simp [hp]
+
+omit [DecidableEq E] in
+open Classical in
+/-- The cells of `cellsC`: the cells `(p, next p)` after the cut points `p < κ⁺`, with the outcome
+of their tests. -/
+lemma mem_cellsC {C : List ℝ} (hC : ∀ c, c ∈ C ↔ c ∈ cuts f m β αh x v) (r : ℝ × ℝ × Bool) :
+    r ∈ (cellsC f m β αh x v C (kHi f m β αh x v)).val ↔
+      ∃ p ∈ cuts f m β αh x v, p < kHi f m β αh x v ∧
+        r = (p, next f m β αh x v p,
+          decide (Test f m β αh x v ((p + next f m β αh x v p) / 2))) := by
+  simp only [cellsC, val_filterMapL, List.mem_filterMap, cellC_val hC,
+    Option.ite_none_right_eq_some, Option.some.injEq, hC]
+  constructor
+  · rintro ⟨p, hp, hpk, rfl⟩
+    exact ⟨p, hp, hpk, rfl⟩
+  · rintro ⟨p, hp, hpk, rfl⟩
+    exact ⟨p, hp, hpk, rfl⟩
+
+omit [DecidableEq E] in
+/-- The cell after a cut point `q < κ⁺` is the cell before the next one: `prev (next q) = q`
+(plumbing). -/
+lemma prev_next (hlo : kLo f m β αh x v ≤ αh) (hhi : αh ≤ kHi f m β αh x v) {q : ℝ}
+    (hq : q ∈ cuts f m β αh x v) (hqk : q < kHi f m β αh x v) :
+    prev f m β αh x v (next f m β αh x v q) = q := by
+  obtain ⟨hnc, hqn, hnmin⟩ := next_spec (f := f) (m := m) (β := β) (x := x) (v := v) hqk
+  have hkn : kLo f m β αh x v < next f m β αh x v q :=
+    lt_of_le_of_lt (mem_K_of_mem_cuts hlo hhi hq).1 hqn
+  obtain ⟨hpc, hpn, hpmax⟩ := prev_spec (f := f) (m := m) (β := β) (x := x) (v := v) hkn
+  refine le_antisymm ?_ (hpmax q hq hqn)
+  by_contra hlt
+  push Not at hlt
+  exact absurd (hnmin _ hpc hlt) (not_le.2 hpn)
+
+open Classical in
+omit [DecidableEq E] in
+/-- The walk `walkC` over the cells of `cellsC` ends at `lo` and `hi`, when `α̂ ∈ K`. -/
+lemma walkC_val (hlo : kLo f m β αh x v ≤ αh) (hhi : αh ≤ kHi f m β αh x v)
+    {T : List (ℝ × ℝ × Bool)}
+    (hT : ∀ r, r ∈ T ↔ ∃ p ∈ cuts f m β αh x v, p < kHi f m β αh x v ∧
+      r = (p, next f m β αh x v p,
+        decide (Test f m β αh x v ((p + next f m β αh x v p) / 2)))) :
+    (walkC αh (kLo f m β αh x v) (kHi f m β αh x v) T).val =
+      (lo f m β αh x v, hi f m β αh x v) := by
+  simp only [walkC, val_bind, val_filterMapL, val_ops, val_minL, val_maxL, val_ret]
+  have hK : ∀ p ∈ cuts f m β αh x v, kLo f m β αh x v ≤ p ∧ p ≤ kHi f m β αh x v :=
+    fun p hp => mem_K_of_mem_cuts hlo hhi hp
+  have hmax : ∀ (s t : Finset ℝ) (hs : s.Nonempty) (ht : t.Nonempty), (∀ q, q ∈ s ↔ q ∈ t) →
+      s.max' hs = t.max' ht := fun s t hs ht h => by
+    obtain rfl : s = t := Finset.ext h
+    rfl
+  have hmin : ∀ (s t : Finset ℝ) (hs : s.Nonempty) (ht : t.Nonempty), (∀ q, q ∈ s ↔ q ∈ t) →
+      s.min' hs = t.min' ht := fun s t hs ht h => by
+    obtain rfl : s = t := Finset.ext h
+    rfl
+  refine Prod.ext ?_ ?_
+  · -- the walk to the left
+    set S := (cuts f m β αh x v).filter fun p => p ≤ αh ∧
+      (p = kLo f m β αh x v ∨ ¬ Test f m β αh x v ((prev f m β αh x v p + p) / 2))
+    have hS : S.Nonempty := ⟨_, Finset.mem_filter.2 ⟨kLo_mem_cuts, hlo, Or.inl rfl⟩⟩
+    have hlo' : lo f m β αh x v = S.max' hS := by
+      unfold lo
+      rw [← hS.csSup_eq_max']
+      congr 1
+      ext p
+      simp [S]
+    rw [hlo']
+    refine hmax _ _ (Finset.insert_nonempty _ _) hS fun q => ?_
+    simp only [Finset.mem_insert, List.mem_toFinset, List.mem_filterMap, hT,
+      Option.ite_none_right_eq_some, Option.some.injEq, S, Finset.mem_filter]
+    constructor
+    · rintro (rfl | ⟨r, ⟨p, hp, hpk, rfl⟩, ⟨hqa, ht⟩, rfl⟩)
+      · exact ⟨kLo_mem_cuts, hlo, Or.inl rfl⟩
+      · obtain ⟨hnc, -, -⟩ := next_spec (f := f) (m := m) (β := β) (x := x) (v := v) hpk
+        refine ⟨hnc, hqa, Or.inr ?_⟩
+        rw [prev_next hlo hhi hp hpk]
+        simpa using ht
+    · rintro ⟨hq, hqa, hq'⟩
+      by_cases hql : q = kLo f m β αh x v
+      · exact Or.inl hql
+      · have hkq : kLo f m β αh x v < q := lt_of_le_of_ne (hK q hq).1 (Ne.symm hql)
+        obtain ⟨hpc, hpq, -⟩ := prev_spec (f := f) (m := m) (β := β) (x := x) (v := v) hkq
+        have hnp : next f m β αh x v (prev f m β αh x v q) = q := next_prev hq hkq
+        refine Or.inr ⟨_, ⟨prev f m β αh x v q, hpc, lt_of_lt_of_le hpq (hK q hq).2, rfl⟩,
+          ⟨?_, ?_⟩, ?_⟩
+        · simpa [hnp] using hqa
+        · simpa [hnp] using hq'.resolve_left hql
+        · simp [hnp]
+  · -- the walk to the right
+    set S := (cuts f m β αh x v).filter fun p => αh ≤ p ∧
+      (p = kHi f m β αh x v ∨ ¬ Test f m β αh x v ((p + next f m β αh x v p) / 2))
+    have hS : S.Nonempty := ⟨_, Finset.mem_filter.2 ⟨kHi_mem_cuts, hhi, Or.inl rfl⟩⟩
+    have hhi' : hi f m β αh x v = S.min' hS := by
+      unfold hi
+      rw [← hS.csInf_eq_min']
+      congr 1
+      ext p
+      simp [S]
+    rw [hhi']
+    refine hmin _ _ (Finset.insert_nonempty _ _) hS fun q => ?_
+    simp only [Finset.mem_insert, List.mem_toFinset, List.mem_filterMap, hT,
+      Option.ite_none_right_eq_some, Option.some.injEq, S, Finset.mem_filter]
+    constructor
+    · rintro (rfl | ⟨r, ⟨p, hp, hpk, rfl⟩, ⟨hqa, ht⟩, rfl⟩)
+      · exact ⟨kHi_mem_cuts, hhi, Or.inl rfl⟩
+      · exact ⟨hp, hqa, Or.inr (by simpa using ht)⟩
+    · rintro ⟨hq, hqa, hq'⟩
+      by_cases hqk : q = kHi f m β αh x v
+      · exact Or.inl hqk
+      · have hlt : q < kHi f m β αh x v := lt_of_le_of_ne (hK q hq).2 hqk
+        exact Or.inr ⟨_, ⟨q, hq, hlt, rfl⟩, ⟨hqa, by simpa using hq'.resolve_left hqk⟩, rfl⟩
+
+omit [DecidableEq E] in
+/-- The counted procedure returns the ends `lo` and `hi` of the walk, when `α̂ ∈ K`. -/
+lemma contC_val (R : RayCostOps E) (hlo : kLo f m β αh x v ≤ αh)
+    (hhi : αh ≤ kHi f m β αh x v) :
+    (contC f m β αh x v R).val = (lo f m β αh x v, hi f m β αh x v) := by
+  obtain ⟨-, hC⟩ := cutsC_val (f := f) (m := m) (β := β) (αh := αh) (x := x) (v := v)
+  simp only [contC, val_bind, val_ops, val_rayMaxC, rankLoC_val, rankHiC_val, kLoC_val, kHiC_val]
+  exact walkC_val hlo hhi (mem_cellsC hC)
+
+/-! #### The costs -/
+
+omit [DecidableEq E] in
+/-- `κ⁻`: `13n + 2` operations. -/
+lemma kLoC_cost (rl : ℝ) : (kLoC m β αh x v rl).cost = (13 * Fintype.card E + 2, 0, 0) := by
+  simp [kLoC, Prod.ext_iff]
+  ring
+
+omit [DecidableEq E] in
+/-- `κ⁺`: `13n + 2` operations. -/
+lemma kHiC_cost (rh : ℝ) : (kHiC m β αh x v rh).cost = (13 * Fintype.card E + 2, 0, 0) := by
+  simp [kHiC, Prod.ext_iff]
+  ring
+
+omit [Fintype E] [DecidableEq E] in
+/-- A pair: at most `17` operations. -/
+lemma crossC_cost (kl kh : ℝ) (q : E × E) :
+    (crossC m β αh x v kl kh q).cost.2.1 = 0 ∧ (crossC m β αh x v kl kh q).cost.2.2 = 0 ∧
+      (crossC m β αh x v kl kh q).cost.1 ≤ 17 := by
+  unfold crossC
+  by_cases hs : m q.1 - β q.1 * v q.1 = m q.2 - β q.2 * v q.2
+  · simp [hs]
+  · simp [hs]
+
+omit [DecidableEq E] in
+/-- The cut points: at most `17` operations for each of the `n²` pairs, and the duplicates
+removed with at most `(n² + 3)|C|` comparisons. -/
+lemma cutsC_cost (kl kh : ℝ) :
+    (cutsC m β αh x v kl kh).cost.2.1 = 0 ∧ (cutsC m β αh x v kl kh).cost.2.2 = 0 ∧
+      (cutsC m β αh x v kl kh).cost.1 ≤ 17 * Fintype.card E ^ 2 +
+        (Fintype.card E ^ 2 + 3) * (cutsC m β αh x v kl kh).val.length := by
+  set X := (Finset.univ : Finset (E × E)).toList.filterMap fun q =>
+    (crossC m β αh x v kl kh q).val
+  have hX : X.length ≤ Fintype.card E ^ 2 := by
+    refine (List.length_filterMap_le _ _).trans ?_
+    simp [Finset.length_toList, sq]
+  obtain ⟨hd2, hd1⟩ := dedupL_cost (kl :: kh :: αh :: X)
+  have hval : (cutsC m β αh x v kl kh).val = (kl :: kh :: αh :: X).dedup := by
+    simp [cutsC, X]
+  have hcost : (cutsC m β αh x v kl kh).cost =
+      (filterMapL (crossC m β αh x v kl kh) (Finset.univ : Finset (E × E)).toList).cost +
+        (dedupL (kl :: kh :: αh :: X)).cost := by
+    simp [cutsC, X]
+  have h1 : ((Finset.univ : Finset (E × E)).toList.map
+      fun q => ((crossC m β αh x v kl kh q).cost).1).sum ≤ Fintype.card E ^ 2 * 17 := by
+    have := sum_map_le_mul (Finset.univ : Finset (E × E)).toList
+      (fun q => ((crossC m β αh x v kl kh q).cost).1) (B := 17)
+      fun q _ => (crossC_cost kl kh q).2.2
+    simpa [Finset.length_toList, sq] using this
+  have hd21 : (dedupL (kl :: kh :: αh :: X)).cost.2.1 = 0 := by rw [hd2]; rfl
+  have hd22 : (dedupL (kl :: kh :: αh :: X)).cost.2.2 = 0 := by rw [hd2]; rfl
+  rw [hcost, hval]
+  simp only [Prod.fst_add, Prod.snd_add, cost_filterMapL, fst_list_sum, snd_fst_list_sum,
+    snd_snd_list_sum, hd21, hd22, add_zero]
+  refine ⟨?_, ?_, ?_⟩
+  · simp [fun q => (crossC_cost (m := m) (β := β) (αh := αh) (x := x) (v := v) kl kh q).1]
+  · simp [fun q => (crossC_cost (m := m) (β := β) (αh := αh) (x := x) (v := v) kl kh q).2.1]
+  · simp only [List.length_cons] at hd1
+    nlinarith
+
+omit [DecidableEq E] in
+/-- The tests of one set of the chain: one evaluation of `f` and at most `3n + 2` operations. -/
+lemma setTestC_cost (ρ yc : E → ℝ) (θ : ℝ) :
+    (setTestC f v ρ yc θ).cost.2.1 = 0 ∧ (setTestC f v ρ yc θ).cost.2.2 = 1 ∧
+      (setTestC f v ρ yc θ).cost.1 ≤ 3 * Fintype.card E + 2 := by
+  have hL : (Finset.univ.filter fun e => θ ≤ ρ e).card ≤ Fintype.card E :=
+    (Finset.card_filter_le _ _).trans (by simp)
+  simp only [setTestC, cost_bind, cost_filterK, val_filterK, cost_sum, cost_ret,
+    Finset.sum_const_zero, zero_add, cost_evalF, cost_ops, Prod.fst_add, Prod.snd_add]
+  refine ⟨by simp, by simp, ?_⟩
+  simp only [one_mul, Finset.card_univ]
+  omega
+
+omit [DecidableEq E] in
+/-- The tests at a share `c`: no minimization, one evaluation of `f` for each set of the chain, and
+at most `4n² + 10n` further arithmetic operations. -/
+lemma testC_cost (c : ℝ) :
+    (testC f m β αh x v c).cost.2.1 = 0 ∧
+      (testC f m β αh x v c).cost.2.2 = numVals (rhoT m β αh x v c) 0 ∧
+      (testC f m β αh x v c).cost.1 ≤ 4 * Fintype.card E ^ 2 + 10 * Fintype.card E := by
+  set ρ := rhoT m β αh x v c
+  set P := (Finset.univ : Finset E).toList.filterMap fun e => (posC ρ e).val
+  have hP : P.length ≤ Fintype.card E :=
+    (List.length_filterMap_le _ _).trans (by simp [Finset.length_toList])
+  have hPfin : P.toFinset = valsAbove ρ 0 := by
+    ext θ
+    simp only [P, List.mem_toFinset, List.mem_filterMap, Finset.mem_toList, Finset.mem_univ,
+      true_and, posC_val, Option.ite_none_right_eq_some, Option.some.injEq, valsAbove,
+      Finset.mem_filter, Finset.mem_image]
+    constructor
+    · rintro ⟨a, h, rfl⟩
+      exact ⟨⟨a, rfl⟩, h⟩
+    · rintro ⟨⟨a, rfl⟩, h⟩
+      exact ⟨a, h, rfl⟩
+  have hq : P.dedup.length = numVals ρ 0 := by
+    rw [← List.card_toFinset, hPfin]
+    rfl
+  have hqn : numVals ρ 0 ≤ Fintype.card E := numVals_le_card ρ
+  obtain ⟨hd2, hd1⟩ := dedupL_cost P
+  have hd21 : (dedupL P).cost.2.1 = 0 := by rw [hd2]; rfl
+  have hd22 : (dedupL P).cost.2.2 = 0 := by rw [hd2]; rfl
+  have hcost : (testC f m β αh x v c).cost = (3 * Fintype.card E, 0, 0) +
+      ((3 * Fintype.card E, 0, 0) + ((filterMapL (posC ρ) (Finset.univ : Finset E).toList).cost +
+        ((dedupL P).cost + (allL (setTestC f v ρ (y αh x v c)) P.dedup).cost))) := by
+    simp only [testC, cost_bind, cost_ops, val_ops, val_filterMapL, val_dedupL]
+    rfl
+  have hpos : (filterMapL (posC ρ) (Finset.univ : Finset E).toList).cost =
+      (Fintype.card E, 0, 0) := by
+    rw [cost_filterMapL]
+    simp [posC, Finset.length_toList]
+  rw [hcost, hpos, cost_allL]
+  simp only [Prod.fst_add, Prod.snd_add, fst_list_sum, snd_fst_list_sum, snd_snd_list_sum, hd21,
+    hd22, fun θ => (setTestC_cost (f := f) (v := v) ρ (y αh x v c) θ).1,
+    fun θ => (setTestC_cost (f := f) (v := v) ρ (y αh x v c) θ).2.1, add_zero, zero_add]
+  refine ⟨by simp, by simp [hq], ?_⟩
+  have h1 := sum_map_le_mul P.dedup
+    (fun θ => (setTestC f v ρ (y αh x v c) θ).cost.1 + 1) (B := 3 * Fintype.card E + 3)
+    fun θ _ => by have := (setTestC_cost (f := f) (v := v) ρ (y αh x v c) θ).2.2; omega
+  rw [hq] at h1 hd1
+  have h2 : P.length * numVals ρ 0 ≤ Fintype.card E * Fintype.card E := Nat.mul_le_mul hP hqn
+  have h3 : numVals ρ 0 * (3 * Fintype.card E + 3) ≤ Fintype.card E * (3 * Fintype.card E + 3) :=
+    Nat.mul_le_mul_right _ hqn
+  nlinarith
+
+omit [Fintype E] [DecidableEq E] in
+/-- The next cut point: at most `2|C|` comparisons. -/
+lemma nextC_cost (C : List ℝ) (kh p : ℝ) :
+    (nextC C kh p).cost.2.1 = 0 ∧ (nextC C kh p).cost.2.2 = 0 ∧
+      (nextC C kh p).cost.1 ≤ 2 * C.length := by
+  have hA := List.length_filterMap_le (fun q => (ops 1 (if p < q then some q else none)).val) C
+  simp only [nextC, cost_bind, cost_filterMapL, cost_minL, val_filterMapL, Prod.fst_add,
+    Prod.snd_add, fst_list_sum, snd_fst_list_sum, snd_snd_list_sum, cost_ops]
+  simp only [List.map_const', List.sum_replicate, smul_eq_mul, mul_one, mul_zero, add_zero]
+  exact ⟨by simp, by simp, by omega⟩
+
+omit [DecidableEq E] in
+open Classical in
+/-- A cell with its tests: the evaluations of `f` of its tests (`cellEvals`), and at most
+`3 + 2|C| + 4n² + 10n` operations. -/
+lemma cellC_cost {C : List ℝ} (hC : ∀ c, c ∈ C ↔ c ∈ cuts f m β αh x v) (p : ℝ) :
+    (cellC f m β αh x v C (kHi f m β αh x v) p).cost.2.1 = 0 ∧
+      (cellC f m β αh x v C (kHi f m β αh x v) p).cost.2.2 =
+        (if p < kHi f m β αh x v then cellEvals f m β αh x v p else 0) ∧
+      (cellC f m β αh x v C (kHi f m β αh x v) p).cost.1 ≤
+        3 + 2 * C.length + 4 * Fintype.card E ^ 2 + 10 * Fintype.card E := by
+  unfold cellC
+  by_cases hp : p < kHi f m β αh x v
+  · obtain ⟨n1, n2, n3⟩ := nextC_cost C (kHi f m β αh x v) p
+    obtain ⟨t1, t2, t3⟩ := testC_cost (f := f) (m := m) (β := β) (αh := αh) (x := x) (v := v)
+      ((p + next f m β αh x v p) / 2)
+    simp only [hp, decide_true, cost_bind, cost_ops, val_ops, ↓reduceIte, nextC_val hC hp,
+      cost_ret, add_zero, Prod.fst_add, Prod.snd_add, n1, n2, t1, t2, cellEvals]
+    refine ⟨by simp, by simp, ?_⟩
+    omega
+  · simp only [hp, decide_false, cost_bind, cost_ops, val_ops, Bool.false_eq_true, ↓reduceIte,
+      cost_ret, add_zero, true_and]
+    omega
+
+omit [DecidableEq E] in
+/-- The cells with their tests: no minimization, the evaluations of `f` of the tests on the cells
+(`cellEvals`), and at most `|C|(3 + 2|C| + 4n² + 10n)` further arithmetic operations. -/
+lemma cellsC_cost {C : List ℝ} (hCn : C.Nodup) (hC : ∀ c, c ∈ C ↔ c ∈ cuts f m β αh x v) :
+    (cellsC f m β αh x v C (kHi f m β αh x v)).cost.2.1 = 0 ∧
+      (cellsC f m β αh x v C (kHi f m β αh x v)).cost.2.2 =
+        ∑ p ∈ cells f m β αh x v, cellEvals f m β αh x v p ∧
+      (cellsC f m β αh x v C (kHi f m β αh x v)).cost.1 ≤
+        C.length * (3 + 2 * C.length + 4 * Fintype.card E ^ 2 + 10 * Fintype.card E) := by
+  have hCfin : C.toFinset = cuts f m β αh x v := by
+    ext c
+    rw [List.mem_toFinset, hC]
+  simp only [cellsC, cost_filterMapL, fst_list_sum, snd_fst_list_sum, snd_snd_list_sum]
+  refine ⟨?_, ?_, ?_⟩
+  · simp [fun p => (cellC_cost (f := f) (m := m) (β := β) (αh := αh) (x := x) (v := v) hC p).1]
+  · simp only [fun p => (cellC_cost (f := f) (m := m) (β := β) (αh := αh) (x := x) (v := v) hC
+      p).2.1]
+    rw [← List.sum_toFinset _ hCn, hCfin, ← Finset.sum_filter]
+    rfl
+  · exact sum_map_le_mul C _ fun p _ => (cellC_cost hC p).2.2
+
+omit [Fintype E] [DecidableEq E] in
+/-- The walk: at most six comparisons for each cell. -/
+lemma walkC_cost (kl kh : ℝ) (T : List (ℝ × ℝ × Bool)) :
+    (walkC αh kl kh T).cost.2.1 = 0 ∧ (walkC αh kl kh T).cost.2.2 = 0 ∧
+      (walkC αh kl kh T).cost.1 ≤ 6 * T.length := by
+  have hA := List.length_filterMap_le
+    (fun r : ℝ × ℝ × Bool => (ops 2 (if αh ≤ r.1 ∧ r.2.2 = false then some r.1 else none)).val) T
+  have hB := List.length_filterMap_le
+    (fun r : ℝ × ℝ × Bool =>
+      (ops 2 (if r.2.1 ≤ αh ∧ r.2.2 = false then some r.2.1 else none)).val) T
+  simp only [walkC, cost_bind, cost_filterMapL, cost_minL, cost_maxL, cost_ret, val_filterMapL,
+    Prod.fst_add, Prod.snd_add, fst_list_sum, snd_fst_list_sum, snd_snd_list_sum, cost_ops]
+  simp only [List.map_const', List.sum_replicate, smul_eq_mul, mul_zero]
+  refine ⟨by simp, by simp, ?_⟩
+  simp only [Prod.fst_zero, add_zero] at *
+  omega
+
+omit [Fintype E] [DecidableEq E] in
+@[simp] lemma cost_rayMaxC (R : RayCostOps E) (w : E → ℝ) :
+    (rayMaxC f x R w).cost = (R.arith x w, R.calls x w, R.evals x w) := rfl
+
+omit [Fintype E] [DecidableEq E] in
+@[simp] lemma cost_rankLoC (dm : WithTop ℝ) : (rankLoC αh dm).cost = (2, 0, 0) := rfl
+
+omit [Fintype E] [DecidableEq E] in
+@[simp] lemma cost_rankHiC (dp : WithTop ℝ) : (rankHiC αh dp).cost = (2, 0, 0) := rfl
+
+/-- The arithmetic of the count of the counted procedure (plumbing): with `K` cut points,
+`2K ≤ n² + 6`, and `T ≤ K` cells, the operations outside the ray computations are at most
+`3n⁴ + 5n³ + 44n² + 57n + 62`. -/
+lemma cont_arith_le {n K T a b c : ℕ} (hK : 2 * K ≤ n ^ 2 + 6) (hT : T ≤ K)
+    (ha : a ≤ 17 * n ^ 2 + (n ^ 2 + 3) * K) (hb : b ≤ K * (3 + 2 * K + 4 * n ^ 2 + 10 * n))
+    (hc : c ≤ 6 * T) :
+    n + 2 + 2 + (13 * n + 2) + (13 * n + 2) + a + b + c ≤
+      3 * n ^ 4 + 5 * n ^ 3 + 44 * n ^ 2 + 57 * n + 62 := by
+  have hA : K * (3 + 2 * K + 4 * n ^ 2 + 10 * n) ≤ K * (3 + n ^ 2 + 6 + 4 * n ^ 2 + 10 * n) :=
+    Nat.mul_le_mul_left K (by omega)
+  have hB : 2 * (K * (3 + n ^ 2 + 6 + 4 * n ^ 2 + 10 * n)) ≤
+      (n ^ 2 + 6) * (3 + n ^ 2 + 6 + 4 * n ^ 2 + 10 * n) := by
+    rw [← mul_assoc]
+    exact Nat.mul_le_mul_right _ hK
+  have hC : 2 * ((n ^ 2 + 3) * K) ≤ (n ^ 2 + 3) * (n ^ 2 + 6) := by
+    rw [mul_left_comm]
+    exact Nat.mul_le_mul_left _ hK
+  have hD : (n ^ 2 + 6) * (3 + n ^ 2 + 6 + 4 * n ^ 2 + 10 * n) =
+      5 * n ^ 4 + 10 * n ^ 3 + 39 * n ^ 2 + 60 * n + 54 := by ring
+  have hE : (n ^ 2 + 3) * (n ^ 2 + 6) = n ^ 4 + 9 * n ^ 2 + 18 := by ring
+  omega
+
+/-- The costs of the counted procedure: the submodular minimizations of `contCalls` and the
+further evaluations of `f` of `contEvals`, and at most `3n⁴ + 5n³ + 44n² + 57n + 62` further
+arithmetic operations besides those of the two ray computations (with at most `C(n, 2) + 3` cut
+points, `card_cuts_le`). -/
+lemma contC_cost (R : RayCostOps E) :
+    (contC f m β αh x v R).cost.2.1 = contCalls x v R.toRayCost ∧
+      (contC f m β αh x v R).cost.2.2 = contEvals f m β αh x v R.toRayCost ∧
+      (contC f m β αh x v R).cost.1 ≤ R.arith x v + R.arith x (-v) +
+        (3 * Fintype.card E ^ 4 + 5 * Fintype.card E ^ 3 + 44 * Fintype.card E ^ 2 +
+          57 * Fintype.card E + 62) := by
+  obtain ⟨hCn, hC⟩ := cutsC_val (f := f) (m := m) (β := β) (αh := αh) (x := x) (v := v)
+  have hlen : (cutsC m β αh x v (kLo f m β αh x v) (kHi f m β αh x v)).val.length =
+      (cuts f m β αh x v).card := by
+    rw [← List.toFinset_card_of_nodup hCn]
+    congr 1
+    ext c
+    rw [List.mem_toFinset, hC]
+  have hK := card_cuts_le (f := f) (m := m) (β := β) (αh := αh) (x := x) (v := v)
+  have hch : 2 * (Fintype.card E).choose 2 ≤ Fintype.card E ^ 2 := by
+    rw [Nat.choose_two_right]
+    have := Nat.div_mul_le_self (Fintype.card E * (Fintype.card E - 1)) 2
+    have : Fintype.card E * (Fintype.card E - 1) ≤ Fintype.card E ^ 2 := by
+      rw [sq]
+      exact Nat.mul_le_mul_left _ (Nat.sub_le _ 1)
+    omega
+  obtain ⟨c1, c2, c3⟩ := cutsC_cost (m := m) (β := β) (αh := αh) (x := x) (v := v)
+    (kLo f m β αh x v) (kHi f m β αh x v)
+  obtain ⟨e1, e2, e3⟩ := cellsC_cost hCn hC
+  obtain ⟨w1, w2, w3⟩ := walkC_cost (αh := αh) (kLo f m β αh x v) (kHi f m β αh x v)
+    (cellsC f m β αh x v (cutsC m β αh x v (kLo f m β αh x v) (kHi f m β αh x v)).val
+      (kHi f m β αh x v)).val
+  have hT : (cellsC f m β αh x v (cutsC m β αh x v (kLo f m β αh x v) (kHi f m β αh x v)).val
+      (kHi f m β αh x v)).val.length ≤ (cuts f m β αh x v).card := by
+    rw [← hlen]
+    simp only [cellsC, val_filterMapL]
+    exact List.length_filterMap_le _ _
+  rw [hlen] at c3 e3
+  have hcost : (contC f m β αh x v R).cost =
+      (Fintype.card E, 0, 0) + ((R.arith x v, R.calls x v, R.evals x v) +
+        ((R.arith x (-v), R.calls x (-v), R.evals x (-v)) + ((2, 0, 0) + ((2, 0, 0) +
+          ((13 * Fintype.card E + 2, 0, 0) + ((13 * Fintype.card E + 2, 0, 0) +
+            ((cutsC m β αh x v (kLo f m β αh x v) (kHi f m β αh x v)).cost +
+              ((cellsC f m β αh x v (cutsC m β αh x v (kLo f m β αh x v)
+                (kHi f m β αh x v)).val (kHi f m β αh x v)).cost +
+                (walkC αh (kLo f m β αh x v) (kHi f m β αh x v)
+                  (cellsC f m β αh x v (cutsC m β αh x v (kLo f m β αh x v)
+                    (kHi f m β αh x v)).val (kHi f m β αh x v)).val).cost)))))))) := by
+    simp only [contC, cost_bind, cost_ops, val_ops, val_rayMaxC, cost_rayMaxC, cost_rankLoC,
+      cost_rankHiC, rankLoC_val, rankHiC_val, kLoC_val, kHiC_val, kLoC_cost, kHiC_cost]
+  rw [hcost]
+  simp only [Prod.fst_add, Prod.snd_add, c1, c2, e1, e2, w1, w2]
+  refine ⟨by simp [contCalls], by simp [contEvals, cells, cellEvals, add_assoc], ?_⟩
+  have := cont_arith_le (by omega) hT c3 e3 w3
+  omega
+
+/-- The counted procedure of `lem:continuation` (not in the paper: the paper counts in prose): for
+`α̂ ∈ K`, `contC` returns the ends `lo` and `hi` of the walk of step (6), with exactly `contCalls`
+submodular minimizations and `contEvals` further evaluations of `f`, and, if each ray computation
+makes at most `c n³` arithmetic operations, at most `3n⁴ + (2c + 5)n³ + 44n² + 57n + 62` further
+arithmetic operations (comparisons included). -/
+theorem contC_spec (R : RayCostOps E) {c : ℕ}
+    (hR : ∀ x w, R.arith x w ≤ c * Fintype.card E ^ 3) (hlo : kLo f m β αh x v ≤ αh)
+    (hhi : αh ≤ kHi f m β αh x v) :
+    (contC f m β αh x v R).val = (lo f m β αh x v, hi f m β αh x v) ∧
+      (contC f m β αh x v R).cost.2.1 = contCalls x v R.toRayCost ∧
+      (contC f m β αh x v R).cost.2.2 = contEvals f m β αh x v R.toRayCost ∧
+      (contC f m β αh x v R).cost.1 ≤ 3 * Fintype.card E ^ 4 + (2 * c + 5) * Fintype.card E ^ 3 +
+        44 * Fintype.card E ^ 2 + 57 * Fintype.card E + 62 := by
+  obtain ⟨h1, h2, h3⟩ := contC_cost (f := f) (m := m) (β := β) (αh := αh) (x := x) (v := v) R
+  refine ⟨contC_val R hlo hhi, h1, h2, ?_⟩
+  have h4 := hR x v
+  have h5 := hR x (-v)
+  have e : (2 * c + 5) * Fintype.card E ^ 3 =
+      c * Fintype.card E ^ 3 + c * Fintype.card E ^ 3 + 5 * Fintype.card E ^ 3 := by ring
+  generalize (contC f m β αh x v R).cost.1 = t at h3 ⊢
+  omega
+
+end Counts
+
 end Cont
 
 /-! ### Steps (7) and (8), and `lem:continuation` -/
@@ -1574,26 +2327,43 @@ end Piece
    makes at
    most `2c n²` submodular minimizations (`contCalls`) and at most `(2c + 2) n³` further
    evaluations of `f` (`contEvals`), the `O(n²)` and `O(n³)` of the STOC version with explicit
-   constants; the `O(n⁴)` further arithmetic operations are not counted;
+   constants; and the counted procedure `contC`, which performs the steps of the procedure in the
+   cost model of `Stoc.Counted`, returns the ends of `I(α̂)` with exactly these minimizations and
+   evaluations, and, if each ray computation makes at most `c n³` arithmetic operations (assumed,
+   not cited: the STOC version does not state them, `RayCostOps`), at most
+   `3n⁴ + (2c + 5)n³ + 44n² + 57n + 62` further arithmetic operations, comparisons included, the
+   `O(n⁴)` of the STOC version (`contC_spec`; not in the paper: the paper counts in prose);
 2. every nondegenerate `I(α̂)` is a piece;
 3. if `α̂` is not an event point, it lies in the interior of `I(α̂)`.
 
 Steps (1)-(6) of the proof: `agree_iff`, `ratio_iff`, `rayMax_spec`, `rank_y_iff`, `mem_K_iff`,
 `cell_chain`, `cell_tests`, `found_eq_walk`, and for the costs `contCalls_le` and `contEvals_le`
-(with `card_cells_le` and `numVals_le_card`) and their polynomial form `cont_costs_poly`; step (7):
-`found_mem_pieces`; step (8): `mem_interior_found`. -/
+(with `card_cells_le` and `numVals_le_card`), their polynomial form `cont_costs_poly` and the
+counted procedure `contC` (`contC_spec`); step (7): `found_mem_pieces`; step (8):
+`mem_interior_found`. -/
 theorem continuation (H : Hyp f m β) {αh : ℝ} (hα : αh ∈ Ioo (0 : ℝ) 1) :
     (found f m β αh = insert αh (⋃ p ∈ Cont.retained f m β αh (bestResponse f m β αh)
         (velocity f m β αh), closure (Ioo p
           (Cont.next f m β αh (bestResponse f m β αh) (velocity f m β αh) p))) ∧
       found f m β αh = Icc (Cont.lo f m β αh (bestResponse f m β αh) (velocity f m β αh))
         (Cont.hi f m β αh (bestResponse f m β αh) (velocity f m β αh)) ∧
-      ∀ (R : Cont.RayCost E) (c : ℕ),
+      (∀ (R : Cont.RayCost E) (c : ℕ),
         (∀ x w, R.calls x w ≤ c * Fintype.card E ^ 2 ∧ R.evals x w ≤ c * Fintype.card E ^ 2) →
         Cont.contCalls (bestResponse f m β αh) (velocity f m β αh) R ≤
             2 * c * Fintype.card E ^ 2 ∧
           Cont.contEvals f m β αh (bestResponse f m β αh) (velocity f m β αh) R ≤
             (2 * c + 2) * Fintype.card E ^ 3) ∧
+      ∀ (R : Cont.RayCostOps E) (c : ℕ), (∀ x w, R.arith x w ≤ c * Fintype.card E ^ 3) →
+        (Cont.contC f m β αh (bestResponse f m β αh) (velocity f m β αh) R).val =
+            (Cont.lo f m β αh (bestResponse f m β αh) (velocity f m β αh),
+              Cont.hi f m β αh (bestResponse f m β αh) (velocity f m β αh)) ∧
+          (Cont.contC f m β αh (bestResponse f m β αh) (velocity f m β αh) R).cost.2.1 =
+            Cont.contCalls (bestResponse f m β αh) (velocity f m β αh) R.toRayCost ∧
+          (Cont.contC f m β αh (bestResponse f m β αh) (velocity f m β αh) R).cost.2.2 =
+            Cont.contEvals f m β αh (bestResponse f m β αh) (velocity f m β αh) R.toRayCost ∧
+          (Cont.contC f m β αh (bestResponse f m β αh) (velocity f m β αh) R).cost.1 ≤
+            3 * Fintype.card E ^ 4 + (2 * c + 5) * Fintype.card E ^ 3 +
+              44 * Fintype.card E ^ 2 + 57 * Fintype.card E + 62) ∧
     ((found f m β αh).Nontrivial → found f m β αh ∈ pieces f m β) ∧
     (¬ IsEvent f m β αh → αh ∈ interior (found f m β αh)) := by
   -- (1)-(5) are the lemmas named in the docstring; `found_eq_walk` combines them with (6).
@@ -1605,9 +2375,13 @@ theorem continuation (H : Hyp f m β) {αh : ℝ} (hα : αh ∈ Ioo (0 : ℝ) 1
   -- stated costs."
   -- Two ray computations (step (2), with the cited bounds per ray), and one evaluation of `f` for
   -- each of the at most `n` sets tested on each of the at most `C(n, 2) + 2` cells (steps (4) and
-  -- (5)) (`contCalls_le`, `contEvals_le`, `cont_costs_poly`); the arithmetic operations are not
-  -- formalised.
-  refine ⟨⟨hw1, hw2, fun R c hc => Cont.cont_costs_poly R hc⟩, ?_, ?_⟩
+  -- (5)) (`contCalls_le`, `contEvals_le`, `cont_costs_poly`); with the arithmetic operations, the
+  -- counted procedure `contC` returns the ends of `I(α̂)` with these minimizations and evaluations
+  -- and `O(n⁴)` further arithmetic operations, as `α̂ ∈ K` (`K_facts`, `contC_spec`; not in the
+  -- paper: the paper counts in prose).
+  obtain ⟨-, hαK⟩ := Cont.K_facts H hα.1.le hα.2.le
+  refine ⟨⟨hw1, hw2, fun R c hc => Cont.cont_costs_poly R hc,
+    fun R c hc => Cont.contC_spec R hc hαK.1 hαK.2⟩, ?_, ?_⟩
   -- (7) "If `I(α̂)` is nondegenerate, any endpoint in `(0, 1)` must be a breakpoint: otherwise the
   -- affine response there agrees with `y` on an interval and extends the component, a
   -- contradiction. Thus `I(α̂)` is a piece."

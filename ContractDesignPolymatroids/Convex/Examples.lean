@@ -1,20 +1,20 @@
--- stamp r6 2026-11-02
+-- stamp r7 2026-11-03
 import ContractDesignPolymatroids.Convex.Model
 
 /-!
 # Convex costs: transcendental best responses and a transcendental optimal share
 
 The example at the start of the STOC version's Appendix D.3 (`app:convex`,
-`stoc-sections/appF-convex.tex:9-13`): "For convex costs in general, the best responses and an
+`stoc-sections/appF-convex.tex:3-7`): "For convex costs in general, the best responses and an
 optimal contract share can be transcendental, as the following example shows." Section 3 refers to
 it ("even a single best response or the share of an optimal contract can be transcendental
 (`app:convex`)", 05-best-response.tex:6), as do Section 5.2 ("exact best responses can be
 transcendental (`app:convex`)", 08c-convex.tex:3) and the introduction ("Exact best responses may be
-transcendental", 01-introduction.tex:29). The example has one element `e` (vectors over `Unit`, the
+transcendental", 01-introduction.tex:26). The example has one element `e` (vectors over `Unit`, the
 polymatroid `oneF 3` with `f({e}) = 3`) and `m_e = 1`, so `r(x) = x_e`, and it is an instance of
 the setting of `thm:convexfptas` (`setting_exp`).
 
-* "Take one element with `f({e}) = 3`, `m_e = 1` and `c(x) = (exp(x) − 1)/8`" (`expCost`). "The
+* "Take one element with `f({e}) = 3`, `m_e = 1`, and `c(x) = (exp(x) − 1)/8`" (`expCost`). "The
   agent maximizes the strictly concave function `αx − (exp(x) − 1)/8` over `[0, 3]`, whose
   derivative is `α − exp(x)/8`" (`expObj`, `expObj_strictConcaveOn`, `hasDerivAt_expObj`). "As
   `ln(8α) ∈ [0, ln 8] ⊆ [0, 3]` for `α ∈ [1/8, 1]`" (`log_eight_le_three`), "this gives"
@@ -77,7 +77,7 @@ lemma lt_of_strictConcaveOn {S : Set ℝ} {φ : ℝ → ℝ} (hφ : StrictConcav
 section Exp
 
 /-- The cost `c(x) = (exp(x) − 1)/8` of one element with `f({e}) = 3` (the example: "Take one
-element with `f({e}) = 3`, `m_e = 1` and `c(x) = (exp(x) − 1)/8`"). -/
+element with `f({e}) = 3`, `m_e = 1`, and `c(x) = (exp(x) − 1)/8`"). -/
 noncomputable def expCost (x : Unit → ℝ) : ℝ :=
   (Real.exp (x ()) - 1) / 8
 
@@ -355,7 +355,7 @@ lemma exp_upper_44195 : Real.exp (1 / (44195 / 100000) - 1) < 8 * (44195 / 10000
         linarith
     _ < 8 * (44195 / 100000) := by norm_num
 
-/-- "`α* ≈ 0.4419`" (appF-convex.tex:13): every solution `α > 0` of `8α = exp(1/α − 1)` satisfies
+/-- "`α* ≈ 0.4419`" (appF-convex.tex:7): every solution `α > 0` of `8α = exp(1/α − 1)` satisfies
 `0.4419 < α < 0.44195` (not in the paper: it states `α* ≈ 0.4419` without the bounds). The
 derivative `(1 − α)/α − ln(8α)` is zero at `α` (`expDeriv_eq_zero_iff`), positive at `0.4419`
 (`exp_lower_4419`), negative at `0.44195` (`exp_upper_44195`) and strictly decreasing
@@ -386,7 +386,7 @@ lemma exp_optimal_approx {α : ℝ} (hα : 0 < α) (heq : 8 * α = Real.exp (1 /
     · rw [← he] at hzero
       linarith
 
-/-- The example (appF-convex.tex:13): the solution of `8α = exp(1/α − 1)` "is the optimal contract
+/-- The example (appF-convex.tex:7): the solution of `8α = exp(1/α − 1)` "is the optimal contract
 `α* ≈ 0.4419`": the example has exactly one optimal share `α*`, it lies in `(1/8, 1)`, it solves
 `8α = exp(1/α − 1)`, and `0.4419 < α* < 0.44195`.
 
@@ -484,7 +484,7 @@ theorem exp_optimal_transcendental (hHL : HermiteLindemann) {αs : ℝ}
     exact this.mul halg
   exact hHL _ hq hq0 (heq ▸ h8)
 
-/-- "an optimal contract share can be transcendental" (appF-convex.tex:9; 05-best-response.tex:6
+/-- "an optimal contract share can be transcendental" (appF-convex.tex:3; 05-best-response.tex:6
 cites it): in the example (given `HermiteLindemann`) there is exactly one optimal share `α*`; it
 lies in `(1/8, 1)`, it solves `8α = exp(1/α − 1)`, and it is transcendental (`exp_optimal`,
 `exp_optimal_transcendental`). -/
@@ -495,8 +495,8 @@ theorem exp_optimal_share_transcendental (hHL : HermiteLindemann) :
   obtain ⟨αs, hαs, heq, hiff, -⟩ := exp_optimal
   exact ⟨αs, hαs, hiff, heq, exp_optimal_transcendental hHL hαs heq⟩
 
-/-- "the best responses … can be transcendental" (appF-convex.tex:9; 08c-convex.tex:3,
-05-best-response.tex:6 and 01-introduction.tex:29 cite it): in the example (given
+/-- "the best responses … can be transcendental" (appF-convex.tex:3; 08c-convex.tex:3,
+05-best-response.tex:6 and 01-introduction.tex:26 cite it): in the example (given
 `HermiteLindemann`), at every algebraic share `α ∈ (1/8, 1]` the only best response is
 `x*(α) = ln(8α)` (`exp_isBR_iff`), and "In the same way, `x*(α) = ln(8α)` is transcendental for
 every algebraic `α ∈ (1/8, 1]`": otherwise `exp(ln(8α)) = 8α` with the algebraic `ln(8α) ≠ 0` would

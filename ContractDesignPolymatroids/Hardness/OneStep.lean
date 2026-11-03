@@ -1,12 +1,12 @@
--- stamp r8 2026-11-02
+-- stamp r9 2026-11-03
 import ContractDesignPolymatroids.Hardness.Transition
 
 /-!
 # One step, and level 1: `lem:weights`(d), `prop:level1` and `thm:onestep`
 
 The STOC version's `lem:weights`(d) (Appendix C.7, `sec:D-alllevels`, "Every level works",
-`stoc-sections/appD-hardness.tex:1237-1244`, proof lines 1271-1287), `thm:onestep` (lines
-1290-1420) and `prop:level1` (lines 1422-1492), for the levels of `def:tower` built by the parameter
+`stoc-sections/appD-hardness.tex:1235-1242`, proof lines 1269-1285), `thm:onestep` (lines
+1288-1418) and `prop:level1` (lines 1420-1490), for the levels of `def:tower` built by the parameter
 rule.
 
 * `υ0`, `shat`, `Awt`: `υ^0 = u^0/w`, `ŝ = s/(64M)` and `A` at a step (before `lem:weights` and in
@@ -67,7 +67,7 @@ lemma inv_βδ_eq (j : ℕ) : 1 / (lvl μin (j + 1)).βδ = 8 * ϖ μin (j + 1) 
   rw [ϖ_succ, ϖ_succ, pow_succ]
   ring
 
-/-- Before `lem:weights` (`stoc-sections/appD-hardness.tex:1222-1223`): by (P4),
+/-- Before `lem:weights` (`stoc-sections/appD-hardness.tex:1220-1221`): by (P4),
 `s = (12/13)Δ_b = (2490/13)M` at every step, so `ŝ := s/(64M) = 1245/416` does not depend on the
 step. -/
 lemma shat_eq (k : ℕ) : shat μin k = 1245 / 416 := by
@@ -81,14 +81,14 @@ lemma shat_eq (k : ℕ) : shat μin k = 1245 / 416 := by
 
 /-! ### `lem:weights`(d) -/
 
-/-- **`lem:weights`(d)** (`stoc-sections/appD-hardness.tex:1237-1244`, proof lines 1271-1287): let
+/-- **`lem:weights`(d)** (`stoc-sections/appD-hardness.tex:1235-1242`, proof lines 1269-1285): let
 `k ≥ 1` (here `k = j + 1`) and let `μ^in ∈ 𝔉` have length at least `k + 2`. At the step
-`k → k + 1`, `d̄ ∈ [127/64, 129/64)`, `|a_0|/(Δ_b w) ≤ 517/106240 < 0.00487` and
+`k → k + 1`, `d̄ ∈ [127/64, 129/64)`, `|a_0|/(Δ_b w) ≤ 517/106240 < 0.00487`, and
 `φ ∈ (2.9791, 3.0209)`. Moreover, `u^0/w = A − (1245/832)ℓ̂_k` with
 `A := 1245/416 − 1/2 − d̄ + a_0/(Δ_b w) ∈ (0.4722, 0.5133)`, and `u^0/w ∈ (0.2354, 0.5133)`.
 
 The proof's steps: (1) with `M := M_k` and `ϖ := ϖ_k`, `1/β_δ = ϖ_{k+1} = 8ϖ`, `m_* = (129/2)M`,
-`w = 64Mμ` and `β⁻¹(E_k) = 16ϖ` by (a); (2) by (b), `m_* − m_e ∈ [127M/2, 129M/2)` for
+and `w = 64Mμ`, and `β⁻¹(E_k) = 16ϖ` by (a); (2) by (b), `m_* − m_e ∈ [127M/2, 129M/2)` for
 `e ∈ E_k`, and as `d_e = μ(m_* − m_e)/β_e` and `d_{τ_1} = w/β_δ = 512ϖMμ`, (P3) gives
 `d̄ = ∑_{e∈E_k} (m_* − m_e)/(512ϖMβ_e) ∈ [127/64, 129/64)`; (3) as `|m_δ − m_e| ≤ M/2`,
 `|Π| ≤ (M/2)d(E_k) < (M/2)(129/2)Mμβ⁻¹(E_k) = 516ϖμM²`; (4) with `0 < q_kμ ≤ ϖμM²` by (c) and
@@ -115,7 +115,7 @@ theorem weights_d {j : ℕ} {K : ℕ} (hF : InF μin K) (hK : j + 1 + 2 ≤ K) :
   have hμ : 0 < μ := μT_pos hF (by omega)
   have hM : 0 < M := M_pos (j + 1)
   have hϖ : 0 < ϖk := ϖ_pos (j + 1)
-  -- (1) "Write `M := M_k` and `ϖ := ϖ_k`, so that `1/β_δ = ϖ_{k+1} = 8ϖ`, `m_* = (129/2)M` and
+  -- (1) "Write `M := M_k` and `ϖ := ϖ_k`, so that `1/β_δ = ϖ_{k+1} = 8ϖ`, `m_* = (129/2)M`, and
   -- `w = 64Mμ`, and `β⁻¹(E_k) = 16ϖ` by (a)."
   have hβ : 1 / L.βδ = 8 * ϖk := inv_βδ_eq j
   have hβ' : L.βδ = 1 / (8 * ϖk) := by rw [← hβ, one_div_one_div]
@@ -273,14 +273,14 @@ theorem weights_d {j : ℕ} {K : ℕ} (hF : InF μin K) (hK : j + 1 + 2 ≤ K) :
   · rw [hυ2]
     constructor <;> linarith [hA.1, hA.2, hsℓ.1, hsℓ.2]
 
-/-- **`lem:weights`** (Lemma C.20, `stoc-sections/appD-hardness.tex:1228-1246`): (a)
+/-- **`lem:weights`** (Lemma C.20, `stoc-sections/appD-hardness.tex:1226-1244`): (a)
 `β⁻¹(E_k) = 2ϖ_{k+1}` for every `k ≥ 0`. Hence `β⁻¹({τ_{1,k+1}, τ_{2,k+1}}) = β⁻¹(E_k)` and
 `β⁻¹(E_k ∪ {τ_{1,k+1}, τ_{2,k+1}, b_{k+1}}) = 16ϖ_{k+1}` for `k ≥ 0`, and `β⁻¹(E_k ∖ {b_k}) = 4ϖ_k`
 for `k ≥ 1` (here at level `k + 1`). (b) For every `k ≥ 0`, all rewards of `E_k` are integers in
 `(0, M_k]`, and `M_k = 12 · 208^k` is the reward of `C_1` if `k = 0` and of `b_k` if `k ≥ 1`. (c)
 `q_0 = 7`, and `(9/10)ϖ_k M_k² < q_k ≤ ϖ_k M_k²` for `k ≥ 1` (here for `k + 1`). (d) Let `k ≥ 1`
 (here `k = j + 1`), and let `μ^in ∈ 𝔉` have length at least `k + 2`. At the step `k → k + 1`,
-`d̄ ∈ [127/64, 129/64)`, `|a_0|/(Δ_b w) ≤ 517/106240 < 0.00487` and `φ ∈ (2.9791, 3.0209)`.
+`d̄ ∈ [127/64, 129/64)`, `|a_0|/(Δ_b w) ≤ 517/106240 < 0.00487`, and `φ ∈ (2.9791, 3.0209)`.
 Moreover, `u^0/w = A − (1245/832)ℓ̂_k` with
 `A := 1245/416 − 1/2 − d̄ + a_0/(Δ_b w) ∈ (0.4722, 0.5133)`, and `u^0/w ∈ (0.2354, 0.5133)`.
 
@@ -343,7 +343,7 @@ lemma θ2_R0μ {K k : ℕ} (hF : InF μin K) (hK : k + 2 ≤ K) :
   rw [hm]
   linarith
 
-/-- **(Q1)** of the proof of `thm:onestep` (`stoc-sections/appD-hardness.tex:1326-1327`), for
+/-- **(Q1)** of the proof of `thm:onestep` (`stoc-sections/appD-hardness.tex:1324-1325`), for
 `μ^in ∈ 𝔉` of length at least `k + 2`: by `lem:closedforms`(c),
 `ρ^f_{τ_2}(α) = ρ̄_k + m_δ(α − R_0) + (1 − υ^0 + c_{τ_2})w` with `c_{τ_2} = sι/w`, and
 `ρ^h_{τ_1} = ρ^f_{τ_2} − (φ − 1)w` (`ρ^f_{τ_2} = ρ^f_{τ_1} + φw` and
@@ -362,7 +362,7 @@ lemma onestep_Q1 {K k : ℕ} (hF : InF μin K) (hK : k + 2 ≤ K) (α : ℝ) :
   · rw [(D_bands (μin := μin) k α).2.2.2.2.1, ρf_τ₂_eq hμ]
     ring
 
-/-- **(Q2)** of the proof of `thm:onestep` (`stoc-sections/appD-hardness.tex:1328-1333`): if the
+/-- **(Q2)** of the proof of `thm:onestep` (`stoc-sections/appD-hardness.tex:1326-1331`): if the
 marginals of level `k` at `R_0` lie in `[ρ̄_k − c, ρ̄_k]` (`c` the spread, `c_ww` in the paper) and
 grow at most at the rate `L` (the slope bound, `M` in the paper), then, as they are nondecreasing
 (`lem:fullplane`(c)), every `e ∈ E_k` has `ρ^{(k)}_e(α) ∈ [ρ̄_k − c, ρ̄_k + L(α − R_0)]` for
@@ -390,7 +390,7 @@ lemma onestep_Q2 {k : ℕ} {c L : ℝ}
     linarith
 
 /-- (W3) and the inequalities `ρ^h_{τ_1} < ρ^f_e < ρ^f_{τ_2}` of (T2) in the proof of `thm:onestep`
-(`stoc-sections/appD-hardness.tex:1367-1375`), before the numbers, for `μ^in ∈ 𝔉` of length at
+(`stoc-sections/appD-hardness.tex:1365-1373`), before the numbers, for `μ^in ∈ 𝔉` of length at
 least `k + 2`, with the spread `c` and the slope bound `L ≥ m_δ` of (Q2): for `e ∈ E_k` and
 `α ∈ [R_0, R_0 + μ]`, (Q1) and (Q2) give `ρ^{(k)}_e − ρ^h_{τ_1} ≥ (φ + υ^0 − 2)w − sι − c − m_δμ`
 (the paper's `(φ + υ^0 − 2 − c_{τ_2} − c_w)w − m_δμ`) and
@@ -420,7 +420,7 @@ lemma onestep_W3T2 {K k : ℕ} (hF : InF μin K) (hK : k + 2 ≤ K) {c L : ℝ}
   constructor <;> nlinarith
 
 /-- The inequality `ρ^f_{τ_2} < ρ^h_{e'}` of (T2) in the proof of `thm:onestep`
-(`stoc-sections/appD-hardness.tex:1376-1386`), before the numbers, for `μ^in ∈ 𝔉` of length at
+(`stoc-sections/appD-hardness.tex:1374-1384`), before the numbers, for `μ^in ∈ 𝔉` of length at
 least `k + 2`, with the spread `c` and the slope bound `L ≥ m_δ` of (Q2): for `e' ∈ E_k` and `α`
 in the transition, `0 ≤ R_0 + μ − α ≤ μ − |𝓡|`, and (Q1) at `α` and (Q2) at `α − μ ≤ R_0` give
 `ρ^h_{e'}(α) − ρ^f_{τ_2}(α) ≥ υ^0 w − sι − c − (L − m_δ)(μ − |𝓡|)` (the paper's
@@ -450,13 +450,13 @@ lemma onestep_T2' {K k : ℕ} (hF : InF μin K) (hK : k + 2 ≤ K) {c L : ℝ}
   rw [hh]
   nlinarith
 
-/-- (W4) in the proof of `thm:onestep` (`stoc-sections/appD-hardness.tex:1404-1407`), before the
+/-- (W4) in the proof of `thm:onestep` (`stoc-sections/appD-hardness.tex:1402-1405`), before the
 numbers, for `μ^in ∈ 𝔉` of length at least `k + 2`: if the marginals of level `k` at `R_0` are at
 most `ρ̄_k` and grow at most at the rate `L` (the slope bound of (Q2), `M` in the paper), and
 `m̄ > L`, then for `e ∈ E_k`, `θ_2 − ρ^h_e` increases, as `θ_2` has slope `m̄` and
 `ρ^h_e(α) = ρ^{(k)}_e(α − μ) + m_*μ` grows at most at the rate `L`; at `R_0 + μ` it is at least
-`ρ^f_{τ_2}(R_0 + μ) + u_2(R_0 + μ) − ρ̄_k − m_*μ = sι > 0`, by (Q1), (Q2) and `u_2(R_0 + μ) = u^0`
-(`θ2_R0μ`). So (W4) holds. -/
+`ρ^f_{τ_2}(R_0 + μ) + u_2(R_0 + μ) − ρ̄_k − m_*μ = sι > 0`, by (Q1), (Q2), and
+`u_2(R_0 + μ) = u^0` (`θ2_R0μ`). So (W4) holds. -/
 lemma onestep_W4 {K k : ℕ} (hF : InF μin K) (hK : k + 2 ≤ K) {L : ℝ}
     (hL : ∀ e, GrowsAtMost (fun α => ρT μin k α e) L) (hm : L < (lvl μin k).mbar)
     (hR0 : ∀ e, ρT μin k R0 e ≤ (lvl μin k).ρbar) :
@@ -466,7 +466,7 @@ lemma onestep_W4 {K k : ℕ} (hF : InF μin K) (hK : k + 2 ≤ K) {L : ℝ}
   have hs := (s_pos (μin := μin) k)
   have hι : (0 : ℝ) < ι := by unfold ι; norm_num
   -- "At `R_0 + μ` it is at least `ρ^f_{τ_2}(R_0 + μ) + u_2(R_0 + μ) − ρ̄_k − m_*μ = sι > 0`, by
-  -- (Q1), (Q2) and `u_2(R_0 + μ) = u^0`." (`θ2_R0μ`)
+  -- (Q1), (Q2), and `u_2(R_0 + μ) = u^0`." (`θ2_R0μ`)
   have h0 : ρh μin k (R0 + μT μin (k + 1)) (some (some e)) + (lvl μin k).s * ι ≤
       θ2 μin k (R0 + μT μin (k + 1)) := by
     rw [(D_bands (μin := μin) k _).2.1 e, add_sub_cancel_right, θ2_R0μ hF hK]
@@ -487,7 +487,7 @@ lemma onestep_W4 {K k : ℕ} (hF : InF μin K) (hK : k + 2 ≤ K) {L : ℝ}
   have h3 := mul_le_mul_of_nonneg_left hm.le (sub_nonneg.2 hα.1)
   nlinarith [mul_pos hs hι]
 
-/-- (T3) in the proof of `thm:onestep` (`stoc-sections/appD-hardness.tex:1408-1413`), before the
+/-- (T3) in the proof of `thm:onestep` (`stoc-sections/appD-hardness.tex:1406-1411`), before the
 specific element, for `μ^in ∈ 𝔉` of length at least `k + 2`: if `ρ^{(k)}_{e_l}(R_0) = ρ̄_k` and
 `ρ^h_{e_l}` has slope at most `m_δ` on `[R_0 + μ − ι, R_0 + μ]`, then `θ_2 − ρ^h_{e_l}` has slope at
 least `s = m̄ − m_δ` there, it is `sι` at `R_0 + μ` (as for (W4)), so it is at most `0` at
@@ -518,10 +518,10 @@ lemma onestep_T3 {K k : ℕ} (hF : InF μin K) (hK : k + 2 ≤ K) {el : Gr k}
 /-! ### `prop:level1` -/
 
 /-- The data of the step `0 → 1`, the first paragraph of the proof of `prop:level1`
-(`stoc-sections/appD-hardness.tex:1430-1436`): `M = 12`, `m_δ = 6`, `m_* = 774`, `1/β_δ = 3/4`,
-`1/β_b = 9`, `Δ_b = 2490`, `m_b = 2496` and `s = 29880/13 ∈ (2298.46, 2298.47)`, and
+(`stoc-sections/appD-hardness.tex:1428-1434`): `M = 12`, `m_δ = 6`, `m_* = 774`, `1/β_δ = 3/4`,
+`1/β_b = 9`, `Δ_b = 2490`, `m_b = 2496`, and `s = 29880/13 ∈ (2298.46, 2298.47)`, and
 `∑_{e∈E_0} (m_* − m_e)/β_e = 769 + 762/4 + 770/4 = 1152`; so `d̄ = 2`, `w = 768μ`,
-`m_*μ = 774μ`, `Π = μ(769 − 1143 + 385) = 11μ` and `a_0 = (4/3)(q_0 − 11)μ = −(16/3)μ`; and
+`m_*μ = 774μ`, `Π = μ(769 − 1143 + 385) = 11μ`, and `a_0 = (4/3)(q_0 − 11)μ = −(16/3)μ`; and
 `|𝓡_0| = 2/5`. -/
 lemma level1_data (h0 : 0 < μin 0) (hμ : 0 < μT μin 1) :
     (lvl μin 0).M = 12 ∧ (lvl μin 0).mδ = 6 ∧ (lvl μin 0).mstar = 774 ∧
@@ -580,7 +580,7 @@ variable (μin) in
 def cLevel1 : ℝ := (lvl μin 0).s - 1920 - 8 / 3735
 
 /-- The numbers of the step `0 → 1`, the rest of the first paragraph of the proof of
-`prop:level1` (`stoc-sections/appD-hardness.tex:1436-1444`): (d2) by `lem:inputs`,
+`prop:level1` (`stoc-sections/appD-hardness.tex:1434-1442`): (d2) by `lem:inputs`,
 `μ ∈ (80/33, 44/15)`, so `w > 1861`; (d3) by (P6) and `lem:closedforms`(a),
 `u^0 = s(μ − 1/5) − (5/2)w − 16μ/(3·2490) = cμ − s/5`, where `c := s − 1920 − 8/3735 ∈
 (378.45, 378.46)` (`cLevel1`), and `φ_1 = 3 + (16μ/3)/(sw) = 3 + 1/(144s)`; (d4) so
@@ -707,12 +707,12 @@ lemma base_slopes (e : Fin 3) : GrowsAtMost (fun α => rho Base.f₀ Base.m Base
   linarith
 
 /-- The second paragraph of the proof of `prop:level1`, before the bullets
-(`stoc-sections/appD-hardness.tex:1446-1453`): (h0) "To check the hypotheses, we use `sι < 22.99`,
-`R_0 = 3/10`, `R_1 = 7/10`, `s|𝓡_0| < 919.4`, `s/5 < 459.70` and `m_δμ = (M − m_δ)μ = w/128`"; (h1)
+(`stoc-sections/appD-hardness.tex:1444-1451`): (h0) "To check the hypotheses, we use `sι < 22.99`,
+`R_0 = 3/10`, `R_1 = 7/10`, `s|𝓡_0| < 919.4`, `s/5 < 459.70`, and `m_δμ = (M − m_δ)μ = w/128`"; (h1)
 "By the first table of `prop:base` and (B3), the base marginals at `R_0` lie in
-`[2/5, 7/6] = [ρ̄_0 − 23/30, ρ̄_0]`, and their slopes are at most `12`" (`base_slopes`), so (Q1)
-and (Q2) of the proof of `thm:onestep` hold with `k = 0`, `c_ww = 23/30`, `c_{τ_2}w = sι` and the
-slope bound `12` (`onestep_Q2`): "That derivation uses the assumption `k ≥ 1` only through the
+`[2/5, 7/6] = [ρ̄_0 − 23/30, ρ̄_0]`, and their slopes are at most `12`" (`base_slopes`), so (Q1) and
+(Q2) of the proof of `thm:onestep` hold with `k = 0`, `c_ww = 23/30`, `c_{τ_2}w = sι` and the slope
+bound `12` (`onestep_Q2`): "That derivation uses the assumption `k ≥ 1` only through the
 spread and the slopes of the old marginals at `R_0`, which these bounds replace." -/
 lemma level1_spread (h0 : 0 < μin 0) :
     (lvl μin 0).s * ι < 22.99 ∧ R0 = 3 / 10 ∧ R1T μin 0 = 7 / 10 ∧
@@ -752,8 +752,8 @@ lemma level1_spread (h0 : 0 < μin 0) :
     · rw [show ((⟨1, by norm_num⟩ : Fin 3)) = 1 from rfl, hC1]; norm_num
     · rw [show ((⟨2, by norm_num⟩ : Fin 3)) = 2 from rfl, hC2]; norm_num
 
-/-- **`prop:level1`** (Proposition C.22, `stoc-sections/appD-hardness.tex:1422-1427`, proof lines
-1429-1492): let `μ^in ∈ 𝔉` have length at least `2`. Then `φ_1 ∈ (3, 3.000004)` and
+/-- **`prop:level1`** (Proposition C.22, `stoc-sections/appD-hardness.tex:1420-1425`, proof lines
+1427-1490): let `μ^in ∈ 𝔉` have length at least `2`. Then `φ_1 ∈ (3, 3.000004)` and
 `υ^0_1 ∈ (0.2458, 0.2888)`, and the hypotheses of `lem:onelevel` and those of `thm:transition` with
 `(e_t, e_l) = (C_0, C_0)` hold at the step `0 → 1` (`φ_1 = φ μin 0`, `υ^0_1 = υ0 μin 0`, `C_0 = 0`).
 
@@ -798,8 +798,8 @@ theorem level1 {K : ℕ} (hF : InF μin K) (hK : 2 ≤ K) :
     show q₀ + _ < _
     unfold q₀
     norm_num
-  -- "Taking `v = m_b` in the minimum form of `SSq`,
-  -- `SSq({b, C_1, C_2}) ≤ (1/4)(2484² + 2492²) < 3.1·10^6 < ψ_1`."
+  -- "Taking `v = m_b` in the minimum form of `S_2`,
+  -- `S_2({b, C_1, C_2}) ≤ (1/4)(2484² + 2492²) < 3.1·10^6 < ψ_1`."
   have hT1a : SS (mT μin (0 + 1)) (βT μin (0 + 1))
       (insert none (((univ : Finset (Fin 3)).erase 0).image fun c => some (some (some c)))) ≤
         (lvl μin 0).ψ := by
@@ -828,7 +828,7 @@ theorem level1 {K : ℕ} (hF : InF μin K) (hK : 2 ≤ K) :
       norm_num
     rw [hsum]
     linarith
-  -- "Moreover, `SSq({b, C_0}) = 2491²/(β_b + 1) = (9/10)·2491² > 5.58·10^6 > q_1`."
+  -- "Moreover, `S_2({b, C_0}) = 2491²/(β_b + 1) = (9/10)·2491² > 5.58·10^6 > q_1`."
   have hT1b : (lvl μin (0 + 1)).q ≤
       SS (mT μin (0 + 1)) (βT μin (0 + 1)) {none, some (some (some (0 : Fin 3)))} := by
     show (lvl μin 1).q ≤ SS (fun o : Option (Option (Option (Fin 3))) => mT μin 1 o)
@@ -1023,11 +1023,11 @@ def cw (j : ℕ) : ℝ :=
   φ μin j * (lvl μin j).w (μT μin (j + 1)) / (lvl μin (j + 1)).w (μT μin (j + 2))
 
 /-- The numbers of a step in the first paragraph of the proof of `thm:onestep`
-(`stoc-sections/appD-hardness.tex:1298-1303`), for `k = j + 1`: "The numbers of a step grow from
-level to level. We first write them in terms of `M := M_k`, `ϖ := ϖ_k` and the band width `w`, so
+(`stoc-sections/appD-hardness.tex:1296-1301`), for `k = j + 1`: "The numbers of a step grow from
+level to level. We first write them in terms of `M := M_k`, `ϖ := ϖ_k`, and the band width `w`, so
 that the same computation works at every level `k ≥ 1`." With `m_o := m_δ^{(k)} = (1/2)M_{k−1}`,
 let `M̂ := M_{k−1}/M = 1/208` (`lem:weights`(b)); by the parameter rule, `ϖ_{k+1} = 8ϖ`,
-`m_δ = (1/2)M`, `m_* = (129/2)M`, `m_b = 208M`, `Δ_b = (415/2)M`, `s = (2490/13)M` and
+`m_δ = (1/2)M`, `m_* = (129/2)M`, `m_b = 208M`, `Δ_b = (415/2)M`, `s = (2490/13)M`, and
 `m̄ = (4993/26)M`, so `m̄ − M = (4967/26)M > 191M`. -/
 lemma onestep_rule (j : ℕ) :
     Mhat μin j = 1 / 208 ∧ (lvl μin j).mδ = (lvl μin j).M / 2 ∧
@@ -1069,8 +1069,8 @@ lemma onestep_prev_numbers {j K : ℕ} (hF : InF μin K) (hK : j + 2 ≤ K) :
     exact ⟨by linarith [hφ.1], hφ.2, hυ.2⟩
 
 /-- The quantities of the first paragraph of the proof of `thm:onestep`
-(`stoc-sections/appD-hardness.tex:1303-1321`), for `k = j + 1`: the inputs enter through
-`μ̂ = μ̂_k ∈ (5/44, 11/80)`, `ℓ̂ = ℓ̂_k < 0.158125` and `1/μ < 33/640` (`lem:inputs`);
+(`stoc-sections/appD-hardness.tex:1301-1319`), for `k = j + 1`: the inputs enter through
+`μ̂ = μ̂_k ∈ (5/44, 11/80)`, `ℓ̂ = ℓ̂_k < 0.158125`, and `1/μ < 33/640` (`lem:inputs`);
 `w_k/w = M̂μ̂`; `ŝ = s/(64M) = 1245/416 ∈ (2.9927, 2.9928)`; and the three small quantities: the
 margin of (P6) `c_{τ_2} = sι/w = ŝι/μ < 0.00155`, the width `c_w = φ_kw_k/w = φ_kM̂μ̂ < 0.00200`
 (`onestep_prev_numbers`), and the drifts over one shift `m_δμ = (M − m_δ)μ = w/128`. -/
@@ -1086,7 +1086,7 @@ lemma onestep_small {j K : ℕ} (hF : InF μin K) (hK : j + 3 ≤ K) :
       (lvl μin (j + 1)).w (μT μin (j + 2)) / 128 := by
   obtain ⟨hMh, -, -, hmδ, -, -, -, -, -, -, -⟩ := onestep_rule (μin := μin) j
   -- "The inputs enter through `μ̂ := μ̂_k` and `ℓ̂ := ℓ̂_k` of `lem:inputs`, so
-  -- `μ̂ ∈ (5/44, 11/80)`, `ℓ̂ < 0.158125` and `1/μ < 33/640`."
+  -- `μ̂ ∈ (5/44, 11/80)`, `ℓ̂ < 0.158125`, and `1/μ < 33/640`."
   obtain ⟨-, hin, -, -, -⟩ := inputs hF (by omega)
   obtain ⟨hμh, hℓ, hμ⟩ := hin (j + 1) (by omega) (by omega)
   obtain ⟨-, hφ2, -⟩ := onestep_prev_numbers (μin := μin) (j := j) hF (by omega)
@@ -1129,7 +1129,7 @@ lemma onestep_small {j K : ℕ} (hF : InF μin K) (hK : j + 3 ≤ K) :
   · rw [hmδ, hw]
     ring
 
-/-- The width of level `k = j + 1` at `R_0` (`stoc-sections/appD-hardness.tex:1317-1319`), for
+/-- The width of level `k = j + 1` at `R_0` (`stoc-sections/appD-hardness.tex:1315-1317`), for
 `μ^in ∈ 𝔉` of length at least `k + 2`: "By `lem:onelevel`(c) for level `k`, the largest marginal
 of level `k` at `R_0` is `ρ^{f_k}_{τ_{2,k}}(R_0) = ρ̄_k`, and the smallest is `θ_1`, which exceeds
 `ρ^{f_k}_{τ_{1,k}}(R_0) = ρ̄_k − c_ww`, as `u_1(R_0) > 0` by (W1) at the step `k − 1 → k`" (with
@@ -1174,7 +1174,7 @@ lemma onestep_prev_max {j K : ℕ} (hF : InF μin K) (hK : j + 2 ≤ K)
     exact (hc c).2
 
 /-- `s|𝓡|/w = ŝℓ̂` at the step `k → k + 1`, `k = j + 1` (the bullet (W1), (W2) of the proof of
-`thm:onestep`, `stoc-sections/appD-hardness.tex:1359`; as `|𝓡|/μ = ℓ̂`). -/
+`thm:onestep`, `stoc-sections/appD-hardness.tex:1357`; as `|𝓡|/μ = ℓ̂`). -/
 lemma onestep_sℓ (j : ℕ) (hμ : 0 < μT μin (j + 2)) :
     (lvl μin (j + 1)).s * lenR μin (j + 1) =
       shat μin (j + 1) * ℓhat μin (j + 1) * (lvl μin (j + 1)).w (μT μin (j + 2)) := by
@@ -1184,7 +1184,7 @@ lemma onestep_sℓ (j : ℕ) (hμ : 0 < μT μin (j + 2)) :
   field_simp
 
 /-- (W3) and the inequalities `ρ^h_{τ_1} < ρ^f_e < ρ^f_{τ_2}` of (T2) in the proof of `thm:onestep`,
-with the numbers (`stoc-sections/appD-hardness.tex:1367-1375`): for `e ∈ E_k` and
+with the numbers (`stoc-sections/appD-hardness.tex:1365-1373`): for `e ∈ E_k` and
 `α ∈ [R_0, R_0 + μ]`, (Q1) and (Q2) give
 `ρ^{(k)}_e − ρ^h_{τ_1} ≥ (φ + υ^0 − 2 − c_{τ_2} − c_w)w − m_δμ
 > (2.9791 + 0.2354 − 2 − 0.00155 − 0.002 − 1/128)w > 1.2w` and
@@ -1215,7 +1215,7 @@ lemma onestep_W3T2_num {j K : ℕ} (hF : InF μin K) (hK : j + 3 ≤ K)
   constructor <;> linarith
 
 /-- The inequality `ρ^f_{τ_2} < ρ^h_{e'}` of (T2) in the proof of `thm:onestep`, with the numbers
-(`stoc-sections/appD-hardness.tex:1376-1386`): for `e' ∈ E_k` and `α` in the transition,
+(`stoc-sections/appD-hardness.tex:1374-1384`): for `e' ∈ E_k` and `α` in the transition,
 `ρ^h_{e'}(α) − ρ^f_{τ_2}(α) ≥ (υ^0 − c_{τ_2} − c_w)w − (M − m_δ)(μ − |𝓡|)
 = (A − 1/128 − (2477/1664)ℓ̂ − c_{τ_2} − c_w)w > 0.225w` (`k = j + 1`). -/
 lemma onestep_T2b {j K : ℕ} (hF : InF μin K) (hK : j + 3 ≤ K)
@@ -1252,7 +1252,7 @@ lemma onestep_T2b {j K : ℕ} (hF : InF μin K) (hK : j + 3 ≤ K)
   linarith
 
 /-- The inequality `ρ^h_{e'} ≤ ρ^h_{e_l}` of (T2) in the proof of `thm:onestep`
-(`stoc-sections/appD-hardness.tex:1387-1403`): for `α` in the transition, `τ_{2,k}` has the largest
+(`stoc-sections/appD-hardness.tex:1385-1401`): for `α` in the transition, `τ_{2,k}` has the largest
 of the marginals `ρ^h_e(α)`, `e ∈ E_k` (`k = j + 1`, `τ_{2,k} = some none`).
 
 The step's sentences: (1) let `α' := α − μ`, so that `0 ≤ R_0 − α' < μ`; by `lem:leftwindows`(b) for
@@ -1345,7 +1345,7 @@ lemma onestep_T2c {j K : ℕ} (hF : InF μin K) (hK : j + 3 ≤ K) (hyp : ∀ i 
   · exact hτ₁
   · linarith [hprev c]
 
-/-- (T3) in the proof of `thm:onestep` (`stoc-sections/appD-hardness.tex:1408-1413`) with
+/-- (T3) in the proof of `thm:onestep` (`stoc-sections/appD-hardness.tex:1406-1411`) with
 `e_l = τ_{2,k}`: on `(−∞, R_0 + μ]`, `ρ^h_{τ_{2,k}}(α) = ρ^{f_k}_{τ_{2,k}}(α − μ) + m_*μ`
 (`lem:leftwindows`(b)) has slope `m_o ≤ m_δ`, and `ρ^{f_k}_{τ_{2,k}}(R_0) = ρ̄_k`
 (`lem:closedforms`(c)), so `onestep_T3` applies (`k = j + 1`). -/
@@ -1378,10 +1378,10 @@ lemma onestep_T3τ₂ {j K : ℕ} (hF : InF μin K) (hK : j + 3 ≤ K) (hyp : �
     have h2 := mul_le_mul_of_nonneg_left h1 hι.le
     linarith
 
-/-- (T1) of the proof of `thm:onestep`, first part (`stoc-sections/appD-hardness.tex:1338-1344`):
+/-- (T1) of the proof of `thm:onestep`, first part (`stoc-sections/appD-hardness.tex:1336-1342`):
 `ψ_{k+1} = (12/13)Δ_b²/β_δ = (96/13)ϖΔ_b²`, and by `lem:weights`(a), `β⁻¹(E_k ∖ {b_k}) = 4ϖ`;
-taking `v = m_b` in the minimum form of `SSq`, as all rewards of `E_k` lie in `(0, m_b)`,
-`SSq((E_k ∖ {b_k}) ∪ {b}) ≤ β⁻¹(E_k ∖ {b_k})m_b² = 4ϖ((416/415)Δ_b)² < 4.02ϖΔ_b² < ψ_{k+1}`
+taking `v = m_b` in the minimum form of `S_2`, as all rewards of `E_k` lie in `(0, m_b)`,
+`S_2((E_k ∖ {b_k}) ∪ {b}) ≤ β⁻¹(E_k ∖ {b_k})m_b² = 4ϖ((416/415)Δ_b)² < 4.02ϖΔ_b² < ψ_{k+1}`
 (`k = j + 1`, `b_k = none`). -/
 lemma onestep_T1a (j : ℕ) :
     SS (mT μin (j + 2)) (βT μin (j + 2))
@@ -1406,8 +1406,8 @@ lemma onestep_T1a (j : ℕ) :
       rw [sum_erase_eq_sub (mem_univ _), Fintype.sum_option]
       ring
     exact h.trans ((weights_a (μin := μin)).2.2.2 j)
-  -- "Taking `v = m_b` in the minimum form of `SSq`, as all rewards of `E_k` lie in
-  -- `(0, m_b)`, `SSq((E_k ∖ {b_k}) ∪ {b}) ≤ β⁻¹(E_k ∖ {b_k})m_b²`"
+  -- "Taking `v = m_b` in the minimum form of `S_2`, as all rewards of `E_k` lie in
+  -- `(0, m_b)`, `S_2((E_k ∖ {b_k}) ∪ {b}) ≤ β⁻¹(E_k ∖ {b_k})m_b²`"
   show SS (fun o : Option (Option (Option (Gr (j + 1)))) => mT μin (j + 2) o)
     (fun o => βT μin (j + 2) o) (insert none (((univ : Finset (Gr (j + 1))).erase none).image
       fun c => some (some (some c)))) ≤ _
@@ -1450,9 +1450,9 @@ lemma onestep_T1a (j : ℕ) :
     obtain ⟨c, -, hc⟩ := mem_image.1 h
     exact Option.some_ne_none _ hc
 
-/-- (T1) of the proof of `thm:onestep`, second part (`stoc-sections/appD-hardness.tex:1345-1351`):
-by the formula for `SSq` of a pair (`eq:B-pair`) and by `lem:weights`(c),
-`SSq({b, b_k}) = (m_b − M)²/(β_b + β_{b_k}) = (32/3)ϖ(207M)² = 457056ϖM²` and
+/-- (T1) of the proof of `thm:onestep`, second part (`stoc-sections/appD-hardness.tex:1343-1349`):
+by the formula for `S_2` of a pair (`eq:B-pair`) and by `lem:weights`(c),
+`S_2({b, b_k}) = (m_b − M)²/(β_b + β_{b_k}) = (32/3)ϖ(207M)² = 457056ϖM²` and
 `q_{k+1} = q_k + ψ_{k+1} ≤ ϖM² + (96/13)(415/2)²ϖM² < 317955ϖM²` (`k = j + 1`). -/
 lemma onestep_T1b (j : ℕ) :
     (lvl μin (j + 2)).q ≤
@@ -1476,13 +1476,13 @@ lemma onestep_T1b (j : ℕ) :
       rw [one_div_one_div]
     rw [Level.βb, this]
     field_simp
-  -- "Next, by the formula for `SSq` of a pair and by `lem:weights`(c), …" (`SS_pair`, `weights_c`)
+  -- "Next, by the formula for `S_2` of a pair and by `lem:weights`(c), …" (`SS_pair`, `weights_c`)
   set x : Option (Option (Option (Gr (j + 1)))) := some (some (some none)) with hx
   show (lvl μin (j + 1)).q + (lvl μin (j + 1)).ψ ≤
     SS (fun o : Option (Option (Option (Gr (j + 1)))) => mT μin (j + 2) o)
       (fun o => βT μin (j + 2) o) {none, x}
   rw [SS_pair hβ2 (show none ≠ x by simp [hx])]
-  -- "`SSq({b, b_k}) = (m_b − M)²/(β_b + β_{b_k}) = (32/3)ϖ(207M)² = 457056ϖM²`"
+  -- "`S_2({b, b_k}) = (m_b − M)²/(β_b + β_{b_k}) = (32/3)ϖ(207M)² = 457056ϖM²`"
   show _ ≤ ((lvl μin (j + 1)).mb - mT μin (j + 1) none) ^ 2 /
     ((lvl μin (j + 1)).βb + (lvl μin j).βb)
   rw [(weights_b (μin := μin)).2.2.2 j]
@@ -1503,12 +1503,12 @@ lemma onestep_T1b (j : ℕ) :
   have := mul_pos hϖ (pow_pos hM 2)
   nlinarith
 
-/-- (T1) of the proof of `thm:onestep`, third part (`stoc-sections/appD-hardness.tex:1352-1358`): we
-decompose `SSq` into the groups `{b, τ_2}`, with `β⁻¹({b, τ_2}) = 104ϖ` and mean `m̄`, and
+/-- (T1) of the proof of `thm:onestep`, third part (`stoc-sections/appD-hardness.tex:1350-1356`): we
+decompose `S_2` into the groups `{b, τ_2}`, with `β⁻¹({b, τ_2}) = 104ϖ` and mean `m̄`, and
 `{τ_{2,k}}`, with `β⁻¹({τ_{2,k}}) = ϖ` and mean `m_o` (the decomposition `eq:B-twogroups`,
-`SS_union`, with `SSq({b, τ_2}) = ψ_{k+1}`); as `m̄ − m_o ≥ m̄ − M > 191M` (`m_o ≤ M` by
+`SS_union`, with `S_2({b, τ_2}) = ψ_{k+1}`); as `m̄ − m_o ≥ m̄ − M > 191M` (`m_o ≤ M` by
 `lem:weights`(b), and `m̄ − M > 191M` from the first paragraph of the proof, `onestep_rule`) and
-`q_k ≤ ϖM²`, `SSq({b, τ_2, τ_{2,k}}) = ψ_{k+1} + (104/105)ϖ(m̄ − m_o)² > ψ_{k+1} + ϖM² ≥ q_{k+1}`
+`q_k ≤ ϖM²`, `S_2({b, τ_2, τ_{2,k}}) = ψ_{k+1} + (104/105)ϖ(m̄ − m_o)² > ψ_{k+1} + ϖM² ≥ q_{k+1}`
 (`k = j + 1`, `τ_{2,k} = some none`). -/
 lemma onestep_T1c (j : ℕ) :
     (lvl μin (j + 2)).q ≤ SS (mT μin (j + 2)) (βT μin (j + 2))
@@ -1525,14 +1525,14 @@ lemma onestep_T1c (j : ℕ) :
       {none, some none} ∪ {x} := by
     ext o
     simp only [mem_insert, mem_union, mem_singleton, or_assoc]
-  -- "Finally, we decompose `SSq` into the groups `{b, τ_2}`, with `β⁻¹({b, τ_2}) = 104ϖ` and mean
+  -- "Finally, we decompose `S_2` into the groups `{b, τ_2}`, with `β⁻¹({b, τ_2}) = 104ϖ` and mean
   -- `m̄`, and `{τ_{2,k}}`, with `β⁻¹({τ_{2,k}}) = ϖ` and mean `m_o`."
   show (lvl μin (j + 1)).q + (lvl μin (j + 1)).ψ ≤
     SS (fun o : Option (Option (Option (Gr (j + 1)))) => mT μin (j + 2) o)
       (fun o => βT μin (j + 2) o) {none, some none, x}
   rw [hU, SS_union hβ2 (disjoint_singleton_right.2 (by simp [hx])) (insert_nonempty _ _)
     (singleton_nonempty _)]
-  -- the group `{b, τ_2}`: `SSq({b, τ_2}) = ψ_{k+1}`, mean `m̄`, `β⁻¹({b, τ_2}) = 104ϖ`
+  -- the group `{b, τ_2}`: `S_2({b, τ_2}) = ψ_{k+1}`, mean `m̄`, `β⁻¹({b, τ_2}) = 104ϖ`
   have h1 : SS (fun o : Option (Option (Option (Gr (j + 1)))) => mT μin (j + 2) o)
       (fun o => βT μin (j + 2) o) {none, some none} = (lvl μin (j + 1)).ψ := by
     rw [← stepD_ψ]
@@ -1547,7 +1547,7 @@ lemma onestep_T1c (j : ℕ) :
       1 / βT μin (j + 2) o = 13 / (stepD μin (j + 1)).βδ from (StepData.block_τ₂_sums H).1,
       div_eq_mul_one_div, stepD_βδ, hβ]
     ring
-  -- the group `{τ_{2,k}}`: `SSq({τ_{2,k}}) = 0`, mean `m_o`, `β⁻¹({τ_{2,k}}) = ϖ`
+  -- the group `{τ_{2,k}}`: `S_2({τ_{2,k}}) = 0`, mean `m_o`, `β⁻¹({τ_{2,k}}) = ϖ`
   have hbx := (hβ2 x).ne'
   have h4 : SS (fun o : Option (Option (Option (Gr (j + 1)))) => mT μin (j + 2) o)
       (fun o => βT μin (j + 2) o) {x} = 0 := by
@@ -1565,7 +1565,7 @@ lemma onestep_T1c (j : ℕ) :
     rfl
   rw [h1, h4, h2, h5, h3, h6]
   -- "As `m̄ − m_o ≥ m̄ − M > 191M` and `q_k ≤ ϖM²`, this gives
-  -- `SSq({b, τ_2, τ_{2,k}}) = ψ_{k+1} + (104/105)ϖ(m̄ − m_o)² > ψ_{k+1} + ϖM² ≥ q_{k+1}`."
+  -- `S_2({b, τ_2, τ_{2,k}}) = ψ_{k+1} + (104/105)ϖ(m̄ − m_o)² > ψ_{k+1} + ϖM² ≥ q_{k+1}`."
   have e : ((lvl μin (j + 1)).mbar - (lvl μin j).mδ) ^ 2 /
       (1 / (104 * ϖ μin (j + 1)) + 1 / ϖ μin (j + 1)) =
       104 / 105 * ϖ μin (j + 1) * ((lvl μin (j + 1)).mbar - (lvl μin j).mδ) ^ 2 := by
@@ -1581,17 +1581,17 @@ lemma onestep_T1c (j : ℕ) :
   have := mul_lt_mul_of_pos_left hsq hϖ
   nlinarith
 
-/-- **`thm:onestep`** (Theorem C.21, `stoc-sections/appD-hardness.tex:1290-1295`, proof lines
-1297-1420): let `k ≥ 1` (here `k = j + 1`), and let `μ^in ∈ 𝔉` have length at least `k + 2`. Assume
+/-- **`thm:onestep`** (Theorem C.21, `stoc-sections/appD-hardness.tex:1288-1293`, proof lines
+1295-1418): let `k ≥ 1` (here `k = j + 1`), and let `μ^in ∈ 𝔉` have length at least `k + 2`. Assume
 that the hypotheses of `lem:onelevel` hold at the steps `0 → 1, …, k − 1 → k`. Then at the step
 `k → k + 1`, the hypotheses of `lem:onelevel` and those of `thm:transition` with
 `(e_t, e_l) = (b_k, τ_{2,k})` hold (`b_k = none`, `τ_{2,k} = some none`).
 
 The proof's steps: the first paragraph, which writes the numbers of a step in terms of `M`, `ϖ`
 and `w` ("The numbers of a step grow from level to level. We first write them in terms of
-`M := M_k`, `ϖ := ϖ_k` and the band width `w`, so that the same computation works at every level
+`M := M_k`, `ϖ := ϖ_k`, and the band width `w`, so that the same computation works at every level
 `k ≥ 1`": `onestep_rule`, with `m̄ − M = (4967/26)M > 191M`; the inputs and the three small
-quantities, `onestep_prev_numbers`, `onestep_small`; `d̄`, `φ`, `A` and `υ^0` from
+quantities, `onestep_prev_numbers`, `onestep_small`; `d̄`, `φ`, `A`, and `υ^0` from
 `lem:weights`(d); the width of level `k` at `R_0`, `onestep_width`), (Q1) and (Q2) (`onestep_Q1`,
 `onestep_Q2`, with the spread `c_ww` of `onestep_width` and the rate `M` of `lem:fullplane`(c),
 `ρT_rate`), and the bullets in the paper's order: (T1) (`onestep_T1a`, `onestep_T1b`,
@@ -1602,7 +1602,7 @@ of (T2) (`onestep_T2b`); the inequality `ρ^h_{e'} ≤ ρ^h_{e_l}` of (T2) (`one
 theorem onestep {j K : ℕ} (hF : InF μin K) (hK : j + 3 ≤ K) (hyp : ∀ i ≤ j, OneLevelHyp μin i) :
     OneLevelHyp μin (j + 1) ∧ TransitionHyp μin (j + 1) none (some none) := by
   -- The first paragraph: "The numbers of a step grow from level to level. We first write them in
-  -- terms of `M := M_k`, `ϖ := ϖ_k` and the band width `w`, so that the same computation works at
+  -- terms of `M := M_k`, `ϖ := ϖ_k`, and the band width `w`, so that the same computation works at
   -- every level `k ≥ 1`. … By the parameter rule, … `m̄ = (4993/26)M`, so
   -- `m̄ − M = (4967/26)M > 191M`."
   have hμ : 0 < μT μin (j + 2) := μT_pos hF (by omega)
@@ -1610,7 +1610,7 @@ theorem onestep {j K : ℕ} (hF : InF μin K) (hK : j + 3 ≤ K) (hyp : ∀ i �
   have hM := M_pos (μin := μin) (j + 1)
   obtain ⟨-, -, hβ, -, -, hmb, -, -, -, -, h191⟩ := onestep_rule (μin := μin) j
   obtain ⟨-, hℓ, -, -, hshat, hcτ₂, -, -, -⟩ := onestep_small hF hK
-  -- "We take `d̄`, `φ`, `A` and `υ^0 := u^0/w` from `lem:weights`(d) at the step `k → k + 1`, …"
+  -- "We take `d̄`, `φ`, `A`, and `υ^0 := u^0/w` from `lem:weights`(d) at the step `k → k + 1`, …"
   -- (the rest of the sentence, on `ŝ`, is in `onestep_small`)
   obtain ⟨-, -, -, hφ, hυA, hA, hυ⟩ := weights_d (j := j) hF (by omega)
   have hR1 : R1T μin (j + 1) < R0 + μT μin (j + 2) :=
@@ -1662,7 +1662,7 @@ theorem onestep {j K : ℕ} (hF : InF μin K) (hK : j + 3 ≤ K) (hyp : ∀ i �
       rw [e]
       linarith
     linarith
-  -- "`u_2(R_0 + μ) = υ^0w > 0.2354w`"
+  -- "`u_2(R_0 + μ) = υ^0w > 0.2354w`,"
   have hW2a : 0 < u2 μin (j + 1) (R0 + μT μin (j + 2)) := by
     have h1 : 0.2354 * (lvl μin (j + 1)).w (μT μin (j + 2)) <
         u2 μin (j + 1) (R0 + μT μin (j + 2)) := by
@@ -1715,7 +1715,7 @@ theorem onestep {j K : ℕ} (hF : InF μin K) (hK : j + 3 ≤ K) (hyp : ∀ i �
     exact ⟨by rw [hfc]; linarith, by rw [hfc]; linarith, by linarith,
       onestep_T2c hF hK hyp hα c'⟩
   -- (W4) "for `e ∈ E_k`, `θ_2 − ρ^h_e` increases, as `m̄ > M`. At `R_0 + μ` it is at least
-  -- `ρ^f_{τ_2}(R_0 + μ) + u_2(R_0 + μ) − ρ̄_k − m_*μ = sι > 0`, by (Q1), (Q2) and
+  -- `ρ^f_{τ_2}(R_0 + μ) + u_2(R_0 + μ) − ρ̄_k − m_*μ = sι > 0`, by (Q1), (Q2), and
   -- `u_2(R_0 + μ) = u^0`." (`onestep_W4`, with the rate `M` of `lem:fullplane`(c))
   have hW4 := onestep_W4 hF (by omega) (fun e => (ρT_rate (j + 1) e).2) (by linarith)
     fun e => (onestep_width hF hK (hyp j le_rfl) e).2

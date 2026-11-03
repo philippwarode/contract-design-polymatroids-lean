@@ -1,4 +1,4 @@
--- stamp r8 2026-11-02
+-- stamp r9 2026-11-03
 import ContractDesignPolymatroids.BestResponse.LevelSets
 import ContractDesignPolymatroids.BestResponse.LayerCake
 import ContractDesignPolymatroids.Preliminaries.Greedy
@@ -20,7 +20,8 @@ The paper's objects:
   `Stoc.levelSet m β α (xi g m β α) θ`, and `F^g_{α,θ}` is `Stoc.levelFun g m β α θ`;
 * `GrowsAtLeast`, `GrowsAtMost`: a function grows at least (at most) at a rate;
 * `mbar`, `SS`: the weighted mean reward `m̄_D = t(D)/β⁻¹(D)` and the weighted sum of squares
-  `SS(D) = ∑_{e∈D} (m_e − m̄_D)²/β_e`;
+  `S_2(D) = ∑_{e∈D} (m_e − m̄_D)²/β_e` (the name `SS` is the notation of earlier versions of the
+  paper);
 * `modSingleton F`: the modular singleton `π_F`.
 
 The paper's claims, with the declarations of their exact statements:
@@ -295,7 +296,8 @@ variable {ι : Type*} {m β : ι → ℝ}
 def mbar (m β : ι → ℝ) (D : Finset ι) : ℝ :=
   (∑ e ∈ D, m e / β e) / ∑ e ∈ D, 1 / β e
 
-/-- The weighted sum of squares `SS(D) = ∑_{e∈D} (m_e − m̄_D)²/β_e` (`appB-tools.tex:62-65`). -/
+/-- The weighted sum of squares `S_2(D) = ∑_{e∈D} (m_e − m̄_D)²/β_e` (`appB-tools.tex:62-65`); the
+name `SS` is the notation of earlier versions of the paper. -/
 def SS (m β : ι → ℝ) (D : Finset ι) : ℝ :=
   ∑ e ∈ D, (m e - mbar m β D) ^ 2 / β e
 
@@ -336,13 +338,13 @@ lemma hasDerivAt_sum_sq (D : Finset ι) (v : ℝ) :
   rw [mul_sum, ← sum_sub_distrib, mul_sum]
   exact sum_congr rfl fun e _ => by ring
 
-/-- The weighted means (`appB-tools.tex:66-68`): `SS(D) = min_{v∈ℝ} ∑_{e∈D} (m_e − v)²/β_e`, that
-is, `SS(D) ≤ ∑_{e∈D} (m_e − v)²/β_e` for every `v`, with equality at `v = m̄_D` by the definition of
-`SS`. Steps (for nonempty `D`; for `D = ∅` both sides vanish): (1) the function
+/-- The weighted means (`appB-tools.tex:66-68`): `S_2(D) = min_{v∈ℝ} ∑_{e∈D} (m_e − v)²/β_e`, that
+is, `S_2(D) ≤ ∑_{e∈D} (m_e − v)²/β_e` for every `v`, with equality at `v = m̄_D` by the definition
+of `SS`. Steps (for nonempty `D`; for `D = ∅` both sides vanish): (1) the function
 `v ↦ ∑_{e∈D} (m_e − v)²/β_e` is a convex quadratic (`convexOn_sum_sq`) (2) with derivative
 `−2(t(D) − v β⁻¹(D))` (`hasDerivAt_sum_sq`), which vanishes at `v = m̄_D = t(D)/β⁻¹(D)`; (3) so it
 is minimized at `v = m̄_D` (a convex function is minimized where its derivative vanishes,
-`ConvexOn.isMinOn_of_rightDeriv_eq_zero`), and its minimum is `SS(D)`. -/
+`ConvexOn.isMinOn_of_rightDeriv_eq_zero`), and its minimum is `S_2(D)`. -/
 lemma SS_le (hβ : ∀ e, 0 < β e) (D : Finset ι) (v : ℝ) :
     SS m β D ≤ ∑ e ∈ D, (m e - v) ^ 2 / β e := by
   rcases D.eq_empty_or_nonempty with rfl | hD
@@ -355,22 +357,22 @@ lemma SS_le (hβ : ∀ e, 0 < β e) (D : Finset ι) (v : ℝ) :
   have hzero : -2 * (∑ e ∈ D, m e / β e - mbar m β D * ∑ e ∈ D, 1 / β e) = 0 := by
     rw [mbar, div_mul_cancel₀ _ hpos.ne', sub_self, mul_zero]
   rw [hzero] at hderiv
-  -- (3) so it is minimized at `v = m̄_D`, and `SS(D) = min_{v∈ℝ} ∑_{e∈D} (m_e − v)²/β_e`.
+  -- (3) so it is minimized at `v = m̄_D`, and `S_2(D) = min_{v∈ℝ} ∑_{e∈D} (m_e − v)²/β_e`.
   have hmin : IsMinOn (fun v => ∑ e ∈ D, (m e - v) ^ 2 / β e) Set.univ (mbar m β D) :=
     hconv.isMinOn_of_rightDeriv_eq_zero (by simp)
       (hderiv.hasDerivWithinAt.derivWithin (uniqueDiffWithinAt_Ioi _))
   exact isMinOn_iff.1 hmin v (Set.mem_univ v)
 
-/-- The weighted means (`appB-tools.tex:70`): hence `SS` is monotone under inclusion, as for
-`D ⊆ D'` the choice `v = m̄_{D'}` gives `SS(D) ≤ SS(D')`:
-`SS(D) ≤ ∑_{e∈D} (m_e − m̄_{D'})²/β_e ≤ ∑_{e∈D'} (m_e − m̄_{D'})²/β_e = SS(D')`. -/
+/-- The weighted means (`appB-tools.tex:70`): hence `S_2` is monotone under inclusion, as for
+`D ⊆ D'` the choice `v = m̄_{D'}` gives `S_2(D) ≤ S_2(D')`:
+`S_2(D) ≤ ∑_{e∈D} (m_e − m̄_{D'})²/β_e ≤ ∑_{e∈D'} (m_e − m̄_{D'})²/β_e = S_2(D')`. -/
 lemma SS_mono (hβ : ∀ e, 0 < β e) {D D' : Finset ι} (h : D ⊆ D') : SS m β D ≤ SS m β D' :=
   calc SS m β D ≤ ∑ e ∈ D, (m e - mbar m β D') ^ 2 / β e := SS_le hβ D _
     _ ≤ ∑ e ∈ D', (m e - mbar m β D') ^ 2 / β e :=
         sum_le_sum_of_subset_of_nonneg h fun e _ _ => div_nonneg (sq_nonneg _) (hβ e).le
 
-/-- `SS(D) = ∑_{e∈D} m_e²/β_e − t(D)²/β⁻¹(D)` for nonempty `D`: the expansion of the square in
-`SS(D)` (the last step of the proof of `lem:fullplane`(e)). -/
+/-- `S_2(D) = ∑_{e∈D} m_e²/β_e − t(D)²/β⁻¹(D)` for nonempty `D`: the expansion of the square in
+`S_2(D)` (the last step of the proof of `lem:fullplane`(e)). -/
 lemma SS_eq (hβ : ∀ e, 0 < β e) {D : Finset ι} (hD : D.Nonempty) :
     SS m β D = ∑ e ∈ D, m e ^ 2 / β e - (∑ e ∈ D, m e / β e) ^ 2 / ∑ e ∈ D, 1 / β e := by
   have hpos : 0 < ∑ e ∈ D, 1 / β e := sum_pos (fun e _ => one_div_pos.2 (hβ e)) hD
@@ -382,11 +384,11 @@ lemma SS_eq (hβ : ∀ e, 0 < β e) {D : Finset ι} (hD : D.Nonempty) :
   field_simp
   ring
 
-/-- `eq:B-pair` (`appB-tools.tex:71-74`): `SS({e, e'}) = (m_e − m_{e'})²/(β_e + β_{e'})` for
+/-- `eq:B-pair` (`appB-tools.tex:71-74`): `S_2({e, e'}) = (m_e − m_{e'})²/(β_e + β_{e'})` for
 distinct `e, e'`. Steps: (1) the mean `m̄ = m̄_{{e,e'}}` divides the gap between `m_e` and `m_{e'}`
 in the ratio of the curvatures, `m_e − m̄ = β_e (m_e − m_{e'})/(β_e + β_{e'})` and
 `m_{e'} − m̄ = −β_{e'} (m_e − m_{e'})/(β_e + β_{e'})`; (2) so
-`SS({e, e'}) = (m_e − m̄)²/β_e + (m_{e'} − m̄)²/β_{e'} = (m_e − m_{e'})²/(β_e + β_{e'})`. -/
+`S_2({e, e'}) = (m_e − m̄)²/β_e + (m_{e'} − m̄)²/β_{e'} = (m_e − m_{e'})²/(β_e + β_{e'})`. -/
 lemma SS_pair [DecidableEq ι] (hβ : ∀ e, 0 < β e) {a c : ι} (hac : a ≠ c) :
     SS m β {a, c} = (m a - m c) ^ 2 / (β a + β c) := by
   have ha := (hβ a).ne'
@@ -404,16 +406,16 @@ lemma SS_pair [DecidableEq ι] (hβ : ∀ e, 0 < β e) {a c : ι} (hac : a ≠ c
     rw [mbar, sum_pair hac, sum_pair hac]
     field_simp
     ring
-  -- (2) so `SS({e, e'}) = (m_e − m_{e'})²/(β_e + β_{e'})`.
+  -- (2) so `S_2({e, e'}) = (m_e − m_{e'})²/(β_e + β_{e'})`.
   rw [SS, sum_pair hac, h1, h2]
   field_simp
 
 /-- `eq:B-twogroups` (`appB-tools.tex:75-78`): for disjoint nonempty `D₁, D₂`,
-`SS(D₁ ∪ D₂) = SS(D₁) + SS(D₂) + (m̄_{D₁} − m̄_{D₂})²/(1/β⁻¹(D₁) + 1/β⁻¹(D₂))`. Steps, with
+`S_2(D₁ ∪ D₂) = S_2(D₁) + S_2(D₂) + (m̄_{D₁} − m̄_{D₂})²/(1/β⁻¹(D₁) + 1/β⁻¹(D₂))`. Steps, with
 `m̄ = m̄_{D₁ ∪ D₂}`: (1) expanding about the two group means, for `e ∈ D_i`,
 `(m_e − m̄)² = (m_e − m̄_{D_i})² + 2 (m_e − m̄_{D_i})(m̄_{D_i} − m̄) + (m̄_{D_i} − m̄)²`,
 the cross terms vanish, as `∑_{e∈D_i} (m_e − m̄_{D_i})/β_e = t(D_i) − m̄_{D_i} β⁻¹(D_i) = 0`, so
-`SS(D₁ ∪ D₂) = SS(D₁) + SS(D₂) + ∑_i (m̄_{D_i} − m̄)²/(1/β⁻¹(D_i))`; (2) the term between the
+`S_2(D₁ ∪ D₂) = S_2(D₁) + S_2(D₂) + ∑_i (m̄_{D_i} − m̄)²/(1/β⁻¹(D_i))`; (2) the term between the
 groups is `eq:B-pair` (`SS_pair`) for two elements with rewards `m̄_{D_i}` and curvatures
 `1/β⁻¹(D_i)` (the elements `true` and `false` of `Bool`), whose mean is `m̄`. -/
 lemma SS_union [DecidableEq ι] (hβ : ∀ e, 0 < β e) {D₁ D₂ : Finset ι} (hdisj : Disjoint D₁ D₂)
@@ -441,7 +443,7 @@ lemma SS_union [DecidableEq ι] (hβ : ∀ e, 0 < β e) {D₁ D₂ : Finset ι} 
         exact sum_congr rfl fun e _ => by ring
       rw [hlin, mbar, div_mul_cancel₀ _ hb.ne', sub_self]
     rw [hsq, hcross, mul_zero, add_zero, div_div_eq_mul_div, div_one]
-  -- so `SS(D₁ ∪ D₂) = SS(D₁) + SS(D₂) + ∑_i (m̄_{D_i} − m̄)²/(1/β⁻¹(D_i))`.
+  -- so `S_2(D₁ ∪ D₂) = S_2(D₁) + S_2(D₂) + ∑_i (m̄_{D_i} − m̄)²/(1/β⁻¹(D_i))`.
   have hsplit : SS m β (D₁ ∪ D₂) = SS m β D₁ + SS m β D₂ +
       ((mbar m β D₁ - mbar m β (D₁ ∪ D₂)) ^ 2 / (1 / ∑ e ∈ D₁, 1 / β e) +
         (mbar m β D₂ - mbar m β (D₁ ∪ D₂)) ^ 2 / (1 / ∑ e ∈ D₂, 1 / β e)) := by
@@ -978,7 +980,7 @@ if `c β⁻¹(S) ≤ t(S)` for every `S ∋ b`, then `ρ^g_b(α) + c Δ ≤ ρ^g
 theorem rho_add_ge_of (H : FPHyp g β) {b : E} {c : ℝ}
     (hc : ∀ S : Finset E, b ∈ S → c * ∑ e ∈ S, 1 / β e ≤ ∑ e ∈ S, m e / β e)
     (α : ℝ) {δ : ℝ} (hδ : 0 ≤ δ) : rho g m β α b + δ * c ≤ rho g m β (α + δ) b := by
-  -- (1) "Let `Δ ≥ 0`, `ρ_0 := ρ^g_b(α)`, `A := A^g_{ρ_0}(α)` and `A' := A^g_{ρ_0+cΔ}(α + Δ)`, so
+  -- (1) "Let `Δ ≥ 0`, `ρ_0 := ρ^g_b(α)`, `A := A^g_{ρ_0}(α)`, and `A' := A^g_{ρ_0+cΔ}(α + Δ)`, so
   -- that `b ∈ A`, and suppose that `b ∉ A'`."
   -- The Lean writes `δ` for `Δ` and supposes the negation of the claim, which gives `b ∉ A'`.
   set ρ₀ := rho g m β α b
@@ -1029,7 +1031,7 @@ theorem rho_add_ge_of (H : FPHyp g β) {b : E} {c : ℝ}
 theorem rho_add_le (H : FPHyp g β) {C : ℝ} (hC : ∀ e, m e ≤ C) (α : ℝ) {δ : ℝ} (hδ : 0 ≤ δ)
     (e : E) : rho g m β (α + δ) e ≤ rho g m β α e + δ * C := by
   -- (1) "For the upper rate, let `e ∈ E`, `m_max := max_{e'∈E} m_{e'}`, `ρ_1 := ρ^g_e(α + Δ)`,
-  -- `A' := A^g_{ρ_1}(α + Δ)` and `A := A^g_{ρ_1−m_max Δ}(α)`, so that `e ∈ A'`, and suppose that
+  -- `A' := A^g_{ρ_1}(α + Δ)`, and `A := A^g_{ρ_1−m_max Δ}(α)`, so that `e ∈ A'`, and suppose that
   -- `e ∉ A`."
   -- The Lean writes `C` for `m_max`, for any `C` with `m_{e'} ≤ C` for all `e'`, and `δ` for `Δ`;
   -- it supposes the negation of the claim, which gives `e ∉ A`.
@@ -1081,7 +1083,7 @@ be submodular with `g(∅) = 0`, `m, β > 0`, and let `b ∈ E` and `c ∈ ℝ` 
 every `S ∋ b`. Then `ρ^g_b` grows at least at the rate `c`, and every `ρ^g_e` grows at most at the
 rate `max_{e'} m_{e'}`. In particular, every `ρ^g_e` grows at least at the rate
 `min_{e'} m_{e'} > 0` and at most at the rate `max_{e'} m_{e'}`, so it is nondecreasing, and `ρ^g`,
-`ξ^g` and `α ↦ r(ξ^g(α))` are continuous. Moreover, `ρ^g_b` grows at least at the rate
+`ξ^g`, and `α ↦ r(ξ^g(α))` are continuous. Moreover, `ρ^g_b` grows at least at the rate
 `t_b/β⁻¹(E)`. (`max` and `min` are `univ.sup' _ m` and `univ.inf' _ m`, for `E ∋ e` nonempty.)
 Steps: (1) the lower rate `rho_add_ge_of`; (2) the upper rate `rho_add_le` with `C = m_max`;
 (3) `c = min m` satisfies `c β⁻¹(S) ≤ t(S)` for every `S`, and `c = t_b/β⁻¹(E)` satisfies
@@ -1321,11 +1323,11 @@ theorem fullplane_d (hg : Submodular g) (hg0 : g ∅ = 0) (_hm : ∀ e, 0 < m e)
 omit [DecidableEq E] in
 /-- `lem:fullplane`(e), auxiliary form (`appB-tools.tex:199-205`, for `β > 0` only): if the
 elements of a nonempty `D ⊆ E` have equal marginals at `α`, then `ξ = ξ^g(α)` satisfies
-`∑_{e∈D} m_e ξ_e = α SS(D) + ξ(D) m̄_D`. Steps: (1) with the common marginal `ρ_D`,
+`∑_{e∈D} m_e ξ_e = α S_2(D) + ξ(D) m̄_D`. Steps: (1) with the common marginal `ρ_D`,
 `ξ_e = α t_e − ρ_D/β_e` for `e ∈ D`; (2) summing over `D` gives
 `ρ_D = (α t(D) − ξ(D))/β⁻¹(D)`; (3)
 `∑_{e∈D} m_e ξ_e = α ∑_{e∈D} m_e²/β_e − ρ_D t(D) = α (∑_{e∈D} m_e²/β_e − t(D)²/β⁻¹(D)) + ξ(D) m̄_D`;
-(4) `= α SS(D) + ξ(D) m̄_D`, by expanding the square in `SS(D)`. -/
+(4) `= α S_2(D) + ξ(D) m̄_D`, by expanding the square in `S_2(D)`. -/
 theorem sum_mul_xi_of_rho_eq (hβ : ∀ e, 0 < β e) (α : ℝ) {D : Finset E} (hD : D.Nonempty)
     (heq : ∀ e ∈ D, ∀ e' ∈ D, rho g m β α e = rho g m β α e') :
     ∑ e ∈ D, m e * xi g m β α e = α * SS m β D + (∑ e ∈ D, xi g m β α e) * mbar m β D := by
@@ -1358,17 +1360,17 @@ theorem sum_mul_xi_of_rho_eq (hβ : ∀ e, 0 < β e) (α : ℝ) {D : Finset E} (
     rw [h3, h2, mbar]
     field_simp
     ring
-  -- (4) "… `= α SS(D) + ξ(D) m̄_D`, the last step by expanding the square in `SS(D)`."
+  -- (4) "… `= α S_2(D) + ξ(D) m̄_D`, the last step by expanding the square in `S_2(D)`."
   rw [h3', SS_eq hβ ⟨e₀, he₀⟩]
 
 /-- **`lem:fullplane`(e)** (`appB-tools.tex:92-95`, proof
 `appB-tools.tex:199-205`): for `g` submodular with `g(∅) = 0` and `m, β > 0`, if the elements of a
 nonempty `D ⊆ E` have equal marginals at `α`, then `ξ = ξ^g(α)` satisfies
-`∑_{e∈D} m_e ξ_e = α SS(D) + ξ(D) m̄_D`. Steps (in `sum_mul_xi_of_rho_eq`): (1) with the common
+`∑_{e∈D} m_e ξ_e = α S_2(D) + ξ(D) m̄_D`. Steps (in `sum_mul_xi_of_rho_eq`): (1) with the common
 marginal `ρ_D`, `ξ_e = α t_e − ρ_D/β_e` for `e ∈ D`; (2) summing over `D` gives
 `ρ_D = (α t(D) − ξ(D))/β⁻¹(D)`; (3) so
 `∑_{e∈D} m_e ξ_e = α ∑_{e∈D} m_e²/β_e − ρ_D t(D) = α (∑_{e∈D} m_e²/β_e − t(D)²/β⁻¹(D)) + ξ(D) m̄_D`;
-(4) `= α SS(D) + ξ(D) m̄_D` by expanding the square in `SS(D)`. The hypotheses on `g` and `m > 0`
+(4) `= α S_2(D) + ξ(D) m̄_D` by expanding the square in `S_2(D)`. The hypotheses on `g` and `m > 0`
 are not used. -/
 theorem fullplane_e (_hg : Submodular g) (_hg0 : g ∅ = 0) (_hm : ∀ e, 0 < m e)
     (hβ : ∀ e, 0 < β e) (α : ℝ) {D : Finset E} (hD : D.Nonempty)
@@ -1768,11 +1770,11 @@ contains every minimizer. (c) Let `b ∈ E` and `c ∈ ℝ` with `c β⁻¹(S) �
 with `b ∈ S`. Then `ρ^g_b` grows at least at the rate `c`, and every `ρ^g_e` grows at most at the
 rate `max_{e'∈E} m_{e'}`. In particular, every `ρ^g_e` grows at least at the rate
 `min_{e'∈E} m_{e'} > 0` and at most at the rate `max_{e'∈E} m_{e'}`, so it is nondecreasing, and
-`ρ^g`, `ξ^g` and `α ↦ r(ξ^g(α))` are continuous. Moreover, `ρ^g_b` grows at least at the rate
+`ρ^g`, `ξ^g`, and `α ↦ r(ξ^g(α))` are continuous. Moreover, `ρ^g_b` grows at least at the rate
 `t_b/β⁻¹(E)`. (d) If `U ⊆ E` is tight for `ξ^g(a)` and for `ξ^g(a')`, where `a ≤ a'`, then
 `∑_{e∈U} m_e ξ^g_e` and `∑_{e∈E∖U} m_e ξ^g_e` are both at least as large at `a'` as at `a`. In
 particular, `α ↦ r(ξ^g(α))` is nondecreasing. (e) If the elements of a nonempty `D ⊆ E` have equal
-marginals at `α`, then `ξ := ξ^g(α)` satisfies `∑_{e∈D} m_e ξ_e = α SS(D) + ξ(D) m̄_D`. (f) Let
+marginals at `α`, then `ξ := ξ^g(α)` satisfies `∑_{e∈D} m_e ξ_e = α S_2(D) + ξ(D) m̄_D`. (f) Let
 `g = g_1 ⊕ g_2`, that is, `g(S) = g_1(S ∩ E_1) + g_2(S ∩ E_2)` for `S ⊆ E`, for submodular
 `g_i : 2^{E_i} → ℝ` with `g_i(∅) = 0` on disjoint sets `E_1, E_2` with `E = E_1 ∪ E_2` (given by
 `σ : E₁ ⊕ E₂ ≃ E`), and let `ξ^{g_i}` and `ρ^{g_i}` be taken with respect to `m|_{E_i}` and

@@ -1,4 +1,4 @@
--- stamp r7 2026-11-02
+-- stamp r8 2026-11-03
 import ContractDesignPolymatroids.Hardness.Splice
 
 /-!
@@ -7,7 +7,7 @@ import ContractDesignPolymatroids.Hardness.Splice
 The STOC version's Appendix B.7 (`stoc-sections/appC-bits.tex`): Corollary `cor:witness` (the
 translation step) and Proposition `prop:witness` (a witness for every subset).
 
-For a finite set `E`, `t ∈ ℝ^E_{>0}`, `g : 2^E → ℝ` and `w = (λ, θ) ∈ ℝ²`,
+For a finite set `E`, `t ∈ ℝ^E_{>0}`, `g : 2^E → ℝ`, and `w = (λ, θ) ∈ ℝ²`,
 `F^g_w(S) = g(S) − λ t(S) + θ |S|` (`Stoc.Witness.F`), the function `F^g_{λ,θ}` of
 `sec:B-fullplane` with `β = 1` (`F_eq_levelFun`), and `min F^g_w = min_{S ⊆ E} F^g_w(S)`
 (`minF`). `w` is a witness of `S` for `g` with respect to `t` if `S` is the unique minimizer of
@@ -126,10 +126,10 @@ to `g'` and the vector `t` extended by `t_b` (`extT`), the point `w_S` is a witn
 point `w_S + ŵ` is a witness of `S ∪ {b}`.
 
 The paper's steps: (1) `lem:translation` is applied to `g` with `β = 1`, `m = t`, `m_b = t_b`,
-`β_b = 1`, the constant `K` and `(μ_α, μ_θ) = (λ̂, θ̂)`; its hypotheses `m, m_b > 0` are `t > 0` and
-`t_b > 0`, its `d = μ_θ β⁻¹ − μ_α t = θ̂ 1 − λ̂ t` is the `d` above, and its `g'` is the `g'` above,
-so `lem:translation` (a) (`Stoc.Hardness.translation_a`) gives the submodularity of `g'`; (2) with
-`ℓ(w) = λ t_b − θ − K`: `F^{g'}_w(T) = F^g_w(T)` by `lem:translation` (b)
+`β_b = 1`, the constant `K`, and `(μ_α, μ_θ) = (λ̂, θ̂)`; its hypotheses `m, m_b > 0` are `t > 0`
+and `t_b > 0`, its `d = μ_θ β⁻¹ − μ_α t = θ̂ 1 − λ̂ t` is the `d` above, and its `g'` is the `g'`
+above, so `lem:translation` (a) (`Stoc.Hardness.translation_a`) gives the submodularity of `g'`;
+(2) with `ℓ(w) = λ t_b − θ − K`: `F^{g'}_w(T) = F^g_w(T)` by `lem:translation` (b)
 (`Stoc.Hardness.translation_b`), `F^g_{w−ŵ} = F^{g−d}_w` on `2^E` by `lem:translation` (c)
 (`Stoc.Hardness.translation_c`), equivalently (`eq:C-shift`) `F^g_{w−ŵ}(T) = F^g_w(T) − d(T)`, and
 (`eq:C-extend`) `F^{g'}_w(T ∪ {b}) = F^g_{w−ŵ}(T) − ℓ(w)` by `lem:translation` (b) with `β_b = 1`;
@@ -155,7 +155,7 @@ theorem witness_step {g : Finset E → ℝ} (hg : Submodular g) (hg0 : g ∅ = 0
   -- the translation vector `ŵ = (λ̂, θ̂)` of the statement
   set what : ℝ × ℝ := (lhat, θhat) with hwhat_def
   -- (1) "We apply `lem:translation` to `g` with `β := 1`, `m := t`, `m_b := t_b`, `β_b := 1`, the
-  -- constant `K` and `(μ_α, μ_θ) := (λ̂, θ̂)`." Its hypotheses `m, m_b > 0` are `t > 0` and
+  -- constant `K`, and `(μ_α, μ_θ) := (λ̂, θ̂)`." Its hypotheses `m, m_b > 0` are `t > 0` and
   -- `t_b > 0`.
   have hm : ∀ o, 0 < t' o := fun o => by
     cases o with
@@ -235,7 +235,7 @@ theorem witness_step {g : Finset E → ℝ} (hg : Submodular g) (hg0 : g ∅ = 0
   have hminS : minF g t (w S) = F g t (w S) S := hwit.minF_eq
   refine ⟨fun X hX => ?_, fun X hX => ?_⟩
   · -- (4) "We now show that `w_S` is a witness of `S` for `g'`, for every `S ∈ 𝓕`. Let
-    -- `w := w_S = (λ, θ)`. As `λ ≤ λ̄`, `θ ≥ 0` and `t_b > 0`, the left inequality in
+    -- `w := w_S = (λ, θ)`. As `λ ≤ λ̄`, `θ ≥ 0`, and `t_b > 0`, the left inequality in
     -- (`eq:C-window`) gives `ℓ(w) ≤ t_b λ̄ − K < −d(E)`."
     have hℓ : ℓ (w S) < -∑ e, d e := by
       have : (w S).1 * tb ≤ lbar * tb := mul_le_mul_of_nonneg_right hl1 htb.le
@@ -744,7 +744,7 @@ holds for every `k ∈ {0, …, n}`, from the first part of (i) for `n` (the hyp
 The paper's steps: (1) for `k = 0`, the only set is `∅`, `g_0(∅) = 0`, and `(0, 0)` is a witness of
 `∅`; (2) for `k ∈ {1, …, n}`, assuming `(C_{k−1})`, `cor:witness` (`witness_step`) is applied to
 `E_{k−1}`, `g_{k−1}`, the family `2^{E_{k−1}}` with the witnesses
-`(λ_S, θ_S) ∈ [0, λ̄_k] × [0, θ̄_k]`, `b = k`, `t_b = t_k`, `ŵ = (λ_k, θ_k)` and `K = K_k`; (3) its
+`(λ_S, θ_S) ∈ [0, λ̄_k] × [0, θ̄_k]`, `b = k`, `t_b = t_k`, `ŵ = (λ_k, θ_k)`, and `K = K_k`; (3) its
 hypotheses: `d = θ_k 1 − λ_k t` is the vector `(d_i^{(k)})_{i<k}`, nonnegative by (i), with
 `d(E_{k−1}) = D_k`; (4) the left inequality of the window (`eq:C-window`) holds as
 `K_k = t_k λ̄_k + D_k + 1`; (5) as `λ_k = 2 λ̄_k + 1`, its right inequality is equivalent to
@@ -784,7 +784,7 @@ lemma claim_ii {n : ℕ} (hi : t 1 = 2 ∧ (∀ k, 1 ≤ k → k < n → t k < t
     set Kb : ℝ := (K (k + 1) : ℝ)
     -- (2) "We apply `cor:witness` to `E_{k−1}`, `g_{k−1}`, the family `𝓕 := 2^{E_{k−1}}` with the
     -- witnesses `(λ_S, θ_S)`, which lie in `[0, λ̄_k] × [0, θ̄_k]` as `S ⊆ E_{k−1}`, the new
-    -- element `b := k` with `t_b := t_k`, `ŵ := (λ_k, θ_k)` and `K := K_k`." (Its `t > 0` and
+    -- element `b := k` with `t_b := t_k`, `ŵ := (λ_k, θ_k)`, and `K := K_k`." (Its `t > 0` and
     -- `t_b > 0` are those of (i).)
     have ht : ∀ i, 0 < tE k i := fun i => by
       have := lt_of_mem_map_emb (S := {i}) (j := emb k i) (by simp)

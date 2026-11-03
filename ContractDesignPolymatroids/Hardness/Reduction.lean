@@ -1,14 +1,14 @@
--- stamp r9 2026-11-02
+-- stamp r10 2026-11-03
 import ContractDesignPolymatroids.Hardness.Gadget
 
 /-!
 # The reduction from Subset Sum: `lem:coincidence`, `def:reduction`, `prop:correct`
 
 The reduction of the STOC version's Appendix C.3 (`sec:D-correct`, "The gadget",
-`stoc-sections/appD-hardness.tex:203-351`): `lem:coincidence` (lines 205-222; `fig:coincidence` at
-lines 224-253 and the sentence "Both `μ` and `μ'` lie in `𝔉`" at line 255), `def:reduction` (lines
-257-266, the sentence after it at line 268) and `prop:correct` (lines 270-272, proof lines 275-349,
-and the sentence after the proof at line 351).
+`stoc-sections/appD-hardness.tex:201-349`): `lem:coincidence` (lines 203-220; `fig:coincidence` at
+lines 222-251 and the sentence "Both `μ` and `μ'` lie in `𝔉`" at line 253), `def:reduction` (lines
+255-264, the sentence after it at line 266) and `prop:correct` (lines 268-270, proof lines 273-347,
+and the sentence after the proof at line 349).
 
 * `SubsetSum`: an instance `(a, T)` of Subset Sum; `SubsetSum.Yes`, `sumA` (`∑_i a_i`), `H`, `μ`,
   `μ'`, `Γ₁`, `Γ₂` (the notation of `lem:coincidence`);
@@ -44,7 +44,7 @@ noncomputable section
 
 /-! ### Subset Sum -/
 
-/-- An instance `(a, T)` of Subset Sum (`stoc-sections/appD-hardness.tex:203`: "Let `(a, T)` be an
+/-- An instance `(a, T)` of Subset Sum (`stoc-sections/appD-hardness.tex:201`: "Let `(a, T)` be an
 instance of Subset Sum with `k ≥ 1` and `a ∈ ℤ^k_{>0}`"): `k ≥ 1` items `a ∈ ℤ^k_{>0}` and a target
 `T ∈ ℤ` (any integer: step (1) of `def:reduction` replaces `T < 0`). The items are
 `a 0, …, a (k − 1)` (indices from `0`), natural numbers with `a i > 0`. -/
@@ -90,8 +90,8 @@ end SubsetSum
 
 /-! ### `lem:coincidence` -/
 
-/-- **`lem:coincidence`** (Lemma C.7, `stoc-sections/appD-hardness.tex:205-216`, proof lines
-220-222): let `0 ≤ T ≤ ∑_i a_i`, let `N_0 ∈ ℤ` and `δ_1 > 0`, and let `H := 10∑_i a_i + 1`. Define
+/-- **`lem:coincidence`** (Lemma C.7, `stoc-sections/appD-hardness.tex:203-214`, proof lines
+218-220): let `0 ≤ T ≤ ∑_i a_i`, let `N_0 ∈ ℤ` and `δ_1 > 0`, and let `H := 10∑_i a_i + 1`. Define
 `μ, μ' ∈ ℤ^k_{>0}` by `μ_i := H 8^{i−1} + a_i` and `μ'_i := H 8^{i−1}` for `i ∈ [k]` (`SubsetSum.μ`,
 `SubsetSum.μ'`), and the sets `Γ_1 := {δ_1(N_0 + μ^⊤χ) : χ ∈ {0, 1}^k}` and
 `Γ_2 := {δ_1(N_0 + T + μ'^⊤χ') : χ' ∈ {0, 1}^k}` (`SubsetSum.Γ₁`, `SubsetSum.Γ₂`). Then the common
@@ -203,7 +203,7 @@ theorem coincidence (P : SubsetSum) (hT : 0 ≤ P.T) (hTA : P.T ≤ P.sumA) (N�
     exact ⟨Q, mem_powerset.2 hQ, h⟩
 
 /-- "Both `μ` and `μ'` lie in `𝔉`, as `a_i ≤ ∑_j a_j < H/10`" (after `lem:coincidence`,
-`stoc-sections/appD-hardness.tex:255`). -/
+`stoc-sections/appD-hardness.tex:253`). -/
 theorem inF_μ (P : SubsetSum) : InF P.μ P.k ∧ InF P.μ' P.k := by
   have hH : (1 : ℝ) ≤ P.H := by
     have : 1 ≤ P.H := by unfold SubsetSum.H; omega
@@ -238,15 +238,15 @@ theorem inF_μ (P : SubsetSum) : InF P.μ P.k ∧ InF P.μ' P.k := by
 
 /-! ### `def:reduction`
 
-The steps (1)-(5) of `def:reduction` (`stoc-sections/appD-hardness.tex:257-266`); the sentence after
-the definition (line 268) is `rhsMin` and `σ_spec` (`σ` exists), `C > 0` (in `correct_step3`) and
+The steps (1)-(5) of `def:reduction` (`stoc-sections/appD-hardness.tex:255-264`); the sentence after
+the definition (line 266) is `rhsMin` and `σ_spec` (`σ` exists), `C > 0` (in `correct_step3`) and
 the vertex of the parabola (`correct_step4`). -/
 
 namespace SubsetSum
 
 variable (P : SubsetSum)
 
-/-- **`def:reduction`** (Definition C.8, `stoc-sections/appD-hardness.tex:257-266`), step (1): if
+/-- **`def:reduction`** (Definition C.8, `stoc-sections/appD-hardness.tex:255-264`), step (1): if
 `T < 0` or `T > ∑_i a_i`, replace `(a, T)` by the no-instance `a = (2)`, `T = 1`. The steps (2)-(5)
 are the definitions that follow: (2) `N₀`, with `H`, `μ` and `μ'` of `lem:coincidence`; (3) `I_2'`
 and `I* := I_1 ⊕ I_2'` (`N₂`, `δ₁`, `δ₂`, `fStar`, `mStar`, `βStar`, with `p`, `q`, `κStar`, `c`,
@@ -315,7 +315,7 @@ def c : ℝ := (P.δ₁ * P.N₀ + P.δ₁ * (P.N₀ + ∑ i ∈ range P.k, (P.�
 /-- Step (3): `ℓ`, the half-length of `[δ_1N_0, δ_1(N_0 + ∑_iμ_i)]`. -/
 def ℓ : ℝ := (P.δ₁ * (P.N₀ + ∑ i ∈ range P.k, (P.μ i : ℝ)) - P.δ₁ * P.N₀) / 2
 
-/-- The four conditions of step (4) on `σ`: `σ ≤ 1`, `σ ≤ κ*δ_1/(4qℓ²)`, `σ(c + ℓ) ≤ 1/4` and
+/-- The four conditions of step (4) on `σ`: `σ ≤ 1`, `σ ≤ κ*δ_1/(4qℓ²)`, `σ(c + ℓ) ≤ 1/4`, and
 `σ(p + 2qc) < q`. -/
 def Cond4 (σ : ℝ) : Prop :=
   σ ≤ 1 ∧ σ ≤ P.κStar * P.δ₁ / (4 * P.q * P.ℓ ^ 2) ∧ σ * (P.c + P.ℓ) ≤ 1 / 4 ∧
@@ -351,7 +351,7 @@ def βHat : ((Gr (P.k - 1) ⊕ Unit) ⊕ (Gr (P.k - 1) ⊕ Unit)) ⊕ Unit → �
 def ϑ : ℝ := P.q / P.σ ^ 2 * ((1 - P.σ * P.c) ^ 2 - P.σ ^ 2 * P.ℓ ^ 2)
 
 /-- The smallest of the positive right-hand sides of the conditions of step (4) (the sentence
-after `def:reduction`, `stoc-sections/appD-hardness.tex:268`): of `σ ≤ 1`,
+after `def:reduction`, `stoc-sections/appD-hardness.tex:266`): of `σ ≤ 1`,
 `σ ≤ κ*δ_1/(4qℓ²)`, `σ ≤ 1/(4(c + ℓ))` (that is, `σ(c + ℓ) ≤ 1/4`) and, if `p + 2qc > 0`,
 `σ < q/(p + 2qc)` (that is, `σ(p + 2qc) < q`); for `p + 2qc ≤ 0` the last condition is vacuous
 and has no right-hand side. -/
@@ -386,7 +386,7 @@ end SubsetSum
 /-! ### `prop:correct` -/
 
 /-- **Part (1) of the proof of `prop:correct`** (our numbering of the six parts, see `correct`;
-`stoc-sections/appD-hardness.tex:276-280`): "We first show that step (1) of `def:reduction` does
+`stoc-sections/appD-hardness.tex:274-278`): "We first show that step (1) of `def:reduction` does
 not change the answer." (1a) If it applies, then `(a, T)` is a no-instance, as `0 ≤ a^⊤χ ≤ ∑_i a_i`;
 (1b) it is replaced by `a = (2)`, `T = 1`, which is a no-instance as well, as `2χ_1 ≠ 1`, and
 which satisfies `0 ≤ T ≤ ∑_i a_i = 2`; (1c) so the steps (2) to (5) are applied to a pair with
@@ -422,7 +422,7 @@ theorem correct_step1 (P : SubsetSum) :
     exact ⟨h.1, h.2, Iff.rfl⟩
 
 /-- `σ` exists (the sentence after `def:reduction`, Definition C.8,
-`stoc-sections/appD-hardness.tex:268`): "Every condition in step (4) is an upper bound on `σ` with a
+`stoc-sections/appD-hardness.tex:266`): "Every condition in step (4) is an upper bound on `σ` with a
 positive right-hand side, or vacuous, so `σ` exists and is at least half the smallest of these
 right-hand sides", given `q, ℓ, κ*, δ_1 > 0` and `c + ℓ > 0` (which part (2) of the proof of
 `prop:correct` shows). Here `σ = 2^{−j}` for the least `j ≥ 0` with the four conditions: `σ > 0`
@@ -495,21 +495,21 @@ theorem σ_spec (P : SubsetSum) (hq : 0 < P.q) (hl : 0 < P.ℓ) (hκ : 0 < P.κS
   exact ⟨hσ ▸ Nat.find_spec hex, by rw [hσ]; positivity, hlargest,
     hj2.trans (hlargest _ (hbelow _ (by positivity) hj1))⟩
 
-/-- **Part (2) of the proof of `prop:correct`** (`stoc-sections/appD-hardness.tex:282-292`), for a
+/-- **Part (2) of the proof of `prop:correct`** (`stoc-sections/appD-hardness.tex:280-290`), for a
 pair with `0 ≤ T ≤ ∑_i a_i`: "Next we show that `I*` is a comb whose contacts lie in the window
 `[c − ℓ, c + ℓ]` and exist if and only if `(a, T)` is a yes-instance." That is, `I* = I_1 ⊕ I_2'`
-is a comb with line `p + qα`, dip `κ*`, width `δ_1/2` and contact set `Γ* := Γ_1 ∩ Γ_2`
+is a comb with line `p + qα`, dip `κ*`, width `δ_1/2`, and contact set `Γ* := Γ_1 ∩ Γ_2`
 (`Γstar`), which is nonempty exactly for yes-instances and lies in `[c − ℓ, c + ℓ]`; moreover
 `q ≥ q_1 > 0`, `ℓ > 0` and `c − ℓ = δ_1N_0 > 0`.
 
 The part's sentences: (2a) `μ, μ' ∈ 𝔉`, `N_0 ≥ N_min(μ)` and `N_0 + T ≥ N_0 ≥ N_min(μ')`, so
 `thm:gadget` applies to both calls; (2b) so `I_1` is a comb with the contact set `Γ_1`, line
-`p_1 + q_1α`, dip `κ_1` and width `δ_1`, and `I_2` one with contact set
-`{δ_2(N_0 + T + μ'^⊤χ')}`, line `p_2 + q_2α`, dip `κ_2` and width `δ_2`, with `q_1, q_2 > 0`;
+`p_1 + q_1α`, dip `κ_1`, and width `δ_1`, and `I_2` one with contact set
+`{δ_2(N_0 + T + μ'^⊤χ')}`, line `p_2 + q_2α`, dip `κ_2`, and width `δ_2`, with `q_1, q_2 > 0`;
 (2c) by `lem:combsum`(a) with `δ_1/δ_2` in place of `σ`, `I_2'` is a comb with contact set `Γ_2`,
-line `(δ_2/δ_1)p_2 + (δ_2/δ_1)²q_2α`, dip `(δ_2/δ_1)²κ_2` and width `δ_1`; (2d) both contact sets
+line `(δ_2/δ_1)p_2 + (δ_2/δ_1)²q_2α`, dip `(δ_2/δ_1)²κ_2`, and width `δ_1`; (2d) both contact sets
 lie in `δ_1ℤ`; (2e) so, by `lem:combsum`(b), `I*` is a comb with line `p + qα`, dip `κ*`, width
-`δ_1/2` and contact set `Γ*`; (2f) by `lem:coincidence`, `Γ* ≠ ∅` if and only if `(a, T)` is a
+`δ_1/2`, and contact set `Γ*`; (2f) by `lem:coincidence`, `Γ* ≠ ∅` if and only if `(a, T)` is a
 yes-instance, and `Γ* ⊆ Γ_1 ⊆ [δ_1N_0, δ_1(N_0 + ∑_iμ_i)] = [c − ℓ, c + ℓ]`; (2g) `q ≥ q_1 > 0`,
 `ℓ = (1/2)δ_1∑_iμ_i > 0` and `c − ℓ = δ_1N_0 > 0`, as `N_0 ≥ 1`. -/
 theorem correct_step2 (R : SubsetSum) (hT : 0 ≤ R.T) (hTA : R.T ≤ R.sumA) :
@@ -525,9 +525,9 @@ theorem correct_step2 (R : SubsetSum) (hT : 0 ≤ R.T) (hTA : R.T ≤ R.sumA) :
   have hN₁ : gNmin R.μ R.k ≤ R.N₀ := le_max_left _ _
   have hN₂ : gNmin R.μ' R.k ≤ R.N₂ := (le_max_right _ _).trans (Nat.le_add_right _ _)
   -- (2b) "So `I_1` is a comb with the contact set `Γ_1` of `lem:coincidence`, line `p_1 + q_1α`,
-  -- dip `κ_1` and width `δ_1`, and `I_2` is a comb with contact set
-  -- `{δ_2(N_0 + T + μ'^⊤χ') : χ' ∈ {0, 1}^k}`, line `p_2 + q_2α`, dip `κ_2` and width `δ_2`, where
-  -- `q_1, q_2 > 0`."
+  -- dip `κ_1`, and width `δ_1`, and `I_2` is a comb with contact set
+  -- `{δ_2(N_0 + T + μ'^⊤χ') : χ' ∈ {0, 1}^k}`, line `p_2 + q_2α`, dip `κ_2`, and width `δ_2`,
+  -- where `q_1, q_2 > 0`."
   obtain ⟨hNmin, hg₁⟩ := gadget hF₁
   obtain ⟨hc₁, -, hq₁, h₁⟩ := hg₁ R.N₀ hN₁
   obtain ⟨hc₂, -, hq₂, h₂⟩ := (gadget hF₂).2 R.N₂ hN₂
@@ -546,7 +546,7 @@ theorem correct_step2 (R : SubsetSum) (hT : 0 ≤ R.T) (hTA : R.T ≤ R.sumA) :
     exact h₁
   -- (2c) "By `lem:combsum`(a), applied with `δ_1/δ_2` in place of `σ`, the instance `I_2'` is a
   -- comb with the contact set `Γ_2` of `lem:coincidence`, line
-  -- `(δ_2/δ_1)p_2 + (δ_2/δ_1)²q_2α`, dip `(δ_2/δ_1)²κ_2` and width `δ_1`."
+  -- `(δ_2/δ_1)p_2 + (δ_2/δ_1)²q_2α`, dip `(δ_2/δ_1)²κ_2`, and width `δ_1`."
   have h₂' : IsComb (gadgetF R.μ' R.k R.N₂) (fun e => R.δ₂ / R.δ₁ * gadgetM R.μ' R.k e)
       (gadgetB R.μ' R.k R.N₂) (R.Γ₂ R.N₀ R.δ₁) (R.δ₂ / R.δ₁ * R.p₂) ((R.δ₂ / R.δ₁) ^ 2 * R.q₂)
       ((R.δ₂ / R.δ₁) ^ 2 * R.κ₂) R.δ₁ := by
@@ -576,7 +576,7 @@ theorem correct_step2 (R : SubsetSum) (hT : 0 ≤ R.T) (hTA : R.T ≤ R.sumA) :
       field_simp
     rw [eΓ, em, ep, eq, eκ, eδ] at h
     exact h
-  -- (2d) "Both contact sets lie in `δ_1ℤ`, as `N_0`, `T`, `μ` and `μ'` are integral."
+  -- (2d) "Both contact sets lie in `δ_1ℤ`, as `N_0`, `T`, `μ`, and `μ'` are integral."
   have hZ₁ : ∀ γ ∈ R.Γ₁ R.N₀ R.δ₁, ∃ n : ℤ, γ = R.δ₁ * n := by
     intro γ hγ
     obtain ⟨Q, -, rfl⟩ := mem_image.1 hγ
@@ -586,7 +586,7 @@ theorem correct_step2 (R : SubsetSum) (hT : 0 ≤ R.T) (hTA : R.T ≤ R.sumA) :
     obtain ⟨Q, -, rfl⟩ := mem_image.1 hγ
     exact ⟨R.N₀ + R.T + ∑ i ∈ Q, (R.μ' i : ℤ), by push_cast; ring⟩
   -- (2e) "So, by `lem:combsum`(b), the instance `I* = I_1 ⊕ I_2'` is a comb with line `p + qα`,
-  -- dip `κ*`, width `δ_1/2` and contact set `Γ* := Γ_1 ∩ Γ_2`."
+  -- dip `κ*`, width `δ_1/2`, and contact set `Γ* := Γ_1 ∩ Γ_2`."
   have hcomb : IsComb R.fStar R.mStar R.βStar R.Γstar R.p R.q R.κStar (R.δ₁ / 2) :=
     combsum_b hc₁.rank hc₂.rank hc₁.β_pos hc₂.β_pos h₁' h₂' hZ₁ hZ₂
   -- (2f) "By `lem:coincidence`, `Γ* ≠ ∅` if and only if `(a, T)` is a yes-instance, and
@@ -649,17 +649,17 @@ lemma σ_spec' (R : SubsetSum) (hT : 0 ≤ R.T) (hTA : R.T ≤ R.sumA) :
   obtain ⟨h1, h2, -, -⟩ := σ_spec R (by linarith) hl hκ hδ (by linarith)
   exact ⟨h1, h2⟩
 
-/-- **Part (3) of the proof of `prop:correct`** (`stoc-sections/appD-hardness.tex:294-305`), for a
+/-- **Part (3) of the proof of `prop:correct`** (`stoc-sections/appD-hardness.tex:292-303`), for a
 pair with `0 ≤ T ≤ ∑_i a_i`: "Then we show that the reward of `Î`, the rescaled sum plus the
 centering summand, stays below a line and touches it at the contacts." Here `I'` is `I*` with `m`
 replaced by `m/σ`, `r'(x'*(α))` is the reward of `I'` under its best response, and `r̂(x̂*(α))` is
 that of `Î`.
 
 The part's sentences: (3a) by `lem:combsum`(a), `I'` is a comb with contact set `σΓ*`, line
-`L'(α) = p/σ + qα/σ²`, dip `κ*/σ²` and width `σδ_1/2`; (3b) the centering summand has
+`L'(α) = p/σ + qα/σ²`, dip `κ*/σ²`, and width `σδ_1/2`; (3b) the centering summand has
 `α_∘ = σδ_1N_0 > 0` and `C > 0`, by the condition `σ(p + 2qc) < q` of step (4), so, by
 `lem:ops`(c), `r̂(x̂*(α)) = r'(x'*(α)) + C min(α/α_∘, 1)` for `α ≥ 0`; (3c) with `L̃ := L' + C`,
-`c' := σc` and `ℓ' := σℓ`, as `C min(α/α_∘, 1) ≤ C`, `L̃(α) − r̂(x̂*(α)) ≥ L'(α) − r'(x'*(α))`
+`c' := σc`, and `ℓ' := σℓ`, as `C min(α/α_∘, 1) ≤ C`, `L̃(α) − r̂(x̂*(α)) ≥ L'(α) − r'(x'*(α))`
 for all `α ≥ 0`; (3d) as `Γ* ⊆ [c − ℓ, c + ℓ]`, the contacts satisfy
 `σΓ* ⊆ [c' − ℓ', c' + ℓ']`, and `c' − ℓ' = σδ_1N_0 = α_∘`; (3e) so the centering summand adds `C`
 at every contact, and `L̃(γ) = L'(γ) + C = r̂(x̂*(γ))` for every `γ ∈ σΓ*`. -/
@@ -678,7 +678,7 @@ theorem correct_step3 (R : SubsetSum) (hT : 0 ≤ R.T) (hTA : R.T ≤ R.sumA) :
   obtain ⟨hcond, hσ⟩ := σ_spec' R hT hTA
   -- (3a) "Let `I'` be `I*` with `m` replaced by `m/σ`. We write `r'(x'*(α))` for the reward of
   -- `I'` under its best response, and `r̂(x̂*(α))` for that of `Î`. By `lem:combsum`(a), `I'` is a
-  -- comb with contact set `σΓ*`, line `L'(α) := p/σ + qα/σ²`, dip `κ*/σ²` and width `σδ_1/2`."
+  -- comb with contact set `σΓ*`, line `L'(α) := p/σ + qα/σ²`, dip `κ*/σ²`, and width `σδ_1/2`."
   have hcomb' := combsum_a hcomb hσ
   -- (3b) "The centering summand has `α_∘ = σδ_1N_0 > 0` and `C > 0`, by the condition
   -- `σ(p + 2qc) < q` in step (4), so, by `lem:ops`(c),
@@ -694,7 +694,7 @@ theorem correct_step3 (R : SubsetSum) (hT : 0 ≤ R.T) (hTA : R.T ≤ R.sumA) :
   have hr : ∀ α, 0 ≤ α → grossValue R.fHat R.mHat R.βHat α =
       grossValue R.fStar (fun e => R.mStar e / R.σ) R.βStar α + R.C * min (α / R.αknob) 1 :=
     fun α hα => ops_c_aux hrank hβ hC hαk hα
-  -- (3c) "Put `L̃ := L' + C`, `c' := σc` and `ℓ' := σℓ`. As `C min(α/α_∘, 1) ≤ C`, we have
+  -- (3c) "Put `L̃ := L' + C`, `c' := σc`, and `ℓ' := σℓ`. As `C min(α/α_∘, 1) ≤ C`, we have
   -- `L̃(α) − r̂(x̂*(α)) ≥ L'(α) − r'(x'*(α))` for all `α ≥ 0`."
   have hle : ∀ α, 0 ≤ α → R.L' α - grossValue R.fStar (fun e => R.mStar e / R.σ) R.βStar α ≤
       R.Lt α - grossValue R.fHat R.mHat R.βHat α := by
@@ -725,7 +725,7 @@ theorem correct_step3 (R : SubsetSum) (hT : 0 ≤ R.T) (hTA : R.T ≤ R.sumA) :
     hcomb'.contact γ hγ]
   rfl
 
-/-- **Part (4) of the proof of `prop:correct`** (`stoc-sections/appD-hardness.tex:307-318`), for a
+/-- **Part (4) of the proof of `prop:correct`** (`stoc-sections/appD-hardness.tex:305-316`), for a
 pair with `0 ≤ T ≤ ∑_i a_i`: "We now show that `(1 − α)L̃(α)` is a parabola with its top at the
 center `c'` of the window of contacts." (4a) With `q' := q/σ²`, by the choice of `C` in step (4),
 `L̃(α) = p/σ + qα/σ² + q/σ² − 2qc/σ − p/σ = q'(1 − 2c' + α)`; (4b) so
@@ -770,8 +770,8 @@ theorem correct_step4 (R : SubsetSum) (hT : 0 ≤ R.T) (hTA : R.T ≤ R.sumA) :
     simp only [SubsetSum.c', SubsetSum.ℓ']
     linarith
 
-/-- **`prop:correct`** (Proposition C.9, `stoc-sections/appD-hardness.tex:270-272`, proof lines
-275-349): let `(Î, ϑ)` be the output of `def:reduction` for `(a, T)` (the steps (2)-(5) applied to
+/-- **`prop:correct`** (Proposition C.9, `stoc-sections/appD-hardness.tex:268-270`, proof lines
+273-347): let `(Î, ϑ)` be the output of `def:reduction` for `(a, T)` (the steps (2)-(5) applied to
 the pair `P.step1` of step (1)), and let `α*` be an optimal share of `Î` (a maximizer of
 `U_P(α) = (1 − α)r̂(x̂*(α))` over `[0, 1]`). If `(a, T)` is a yes-instance, then `U_P(α*) ≥ ϑ`.
 Otherwise `U_P(α*) ≤ ϑ − qℓ²/2 < ϑ`.

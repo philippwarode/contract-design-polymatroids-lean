@@ -1,4 +1,4 @@
--- stamp r8 2026-11-02
+-- stamp r9 2026-11-03
 import ContractDesignPolymatroids.Hardness.Splice
 
 /-!
@@ -6,7 +6,7 @@ import ContractDesignPolymatroids.Hardness.Splice
 
 The STOC version's `lem:dmt` (Appendix B.6.4, `sec:B-dmt`, "The doubly merged translation",
 `stoc-sections/appB-tools.tex:458-539`), with its setting, and the configuration `(∅, ∅)` of the
-proof of `lem:onelevel` (Appendix C.6, `stoc-sections/appD-hardness.tex:912-918`, `config_empty`).
+proof of `lem:onelevel` (Appendix C.6, `stoc-sections/appD-hardness.tex:911-917`, `config_empty`).
 
 Step `j` builds level `j` from level `j − 1`, the old function `(f_C, m_C, β_C)` (here
 `(gC, mC, βC)`) on a finite type `C`, with two auxiliary elements (the dummies) and one new element.
@@ -163,7 +163,7 @@ section Densities
 variable (H : P.Hyp gC mC βC) (α : ℝ)
 include H
 
-/-- `eq:D-bands` (`stoc-sections/appD-hardness.tex:724-730`), by `lem:fullplane`(f):
+/-- `eq:D-bands` (`stoc-sections/appD-hardness.tex:722-728`), by `lem:fullplane`(f):
 `ρ^f_e(α) = ρ^{f_C}_e(α)` for `e ∈ C`. -/
 theorem rho_f_old (c : C) : rho (P.fStep gC) (P.mf mC) (P.βf βC) α (some (some c)) =
     rho gC mC βC α c := by
@@ -172,7 +172,7 @@ theorem rho_f_old (c : C) : rho (P.fStep gC) (P.mf mC) (P.βf βC) α (some (som
     H.βδ_pos P.Fτ₁) H.βδ_pos]
   exact rho_addSingleton_some (β' := fun o => Option.elim o P.βδ βC) H.old H.βδ_pos P.Fτ₁ α c
 
-/-- By `lem:fullplane`(f) (`stoc-sections/appD-hardness.tex:731`):
+/-- By `lem:fullplane`(f) (`stoc-sections/appD-hardness.tex:729`):
 `ρ^f_{τ_1}(α) = α m_δ − β_δ F_{τ_1}`. -/
 theorem rho_f_τ₁ :
     rho (P.fStep gC) (P.mf mC) (P.βf βC) α (some none) = α * P.mδ - P.βδ * P.Fτ₁ := by
@@ -229,13 +229,13 @@ theorem xi_h (e : Option (Option C)) : xi (P.hStep gC mC βC) (P.mf mC) (P.βf �
   unfold dStep σ
   ring
 
-/-- `eq:D-bands` (`stoc-sections/appD-hardness.tex:724-730`), by `lem:fullplane`(f) and
+/-- `eq:D-bands` (`stoc-sections/appD-hardness.tex:722-728`), by `lem:fullplane`(f) and
 `lem:translation`(c): `ρ^h_e(α) = ρ^{f_C}_e(α − μ) + m* μ` for `e ∈ C`. -/
 theorem rho_h_old (c : C) : rho (P.hStep gC mC βC) (P.mf mC) (P.βf βC) α (some (some c)) =
     rho gC mC βC (α - P.μ) c + P.σ := by
   rw [rho_h H, rho_f_old H]
 
-/-- `ρ^h_{τ_1} = ρ^f_{τ_1} + w` (`stoc-sections/appD-hardness.tex:733-734`), as
+/-- `ρ^h_{τ_1} = ρ^f_{τ_1} + w` (`stoc-sections/appD-hardness.tex:731-732`), as
 `m* μ − μ m_δ = w`. -/
 theorem rho_h_τ₁ : rho (P.hStep gC mC βC) (P.mf mC) (P.βf βC) α (some none) =
     α * P.mδ - P.βδ * P.Fτ₁ + P.w := by
@@ -243,7 +243,7 @@ theorem rho_h_τ₁ : rho (P.hStep gC mC βC) (P.mf mC) (P.βf βC) α (some non
   unfold σ w
   ring
 
-/-- `ρ^h_{τ_2} = ρ^f_{τ_2} + w` (`stoc-sections/appD-hardness.tex:733-734`), as
+/-- `ρ^h_{τ_2} = ρ^f_{τ_2} + w` (`stoc-sections/appD-hardness.tex:731-732`), as
 `m* μ − μ m_δ = w`. -/
 theorem rho_h_τ₂ : rho (P.hStep gC mC βC) (P.mf mC) (P.βf βC) α none =
     α * P.mδ - P.βδ * P.Fτ₂ + P.w := by
@@ -277,11 +277,11 @@ def mbar' : ℝ := (12 * P.mb + P.mδ) / 13
 /-- `s = m̄ − m_δ` (`appB-tools.tex:475`). -/
 def s : ℝ := P.mbar' - P.mδ
 
-/-- `ψ = 12 (m_b − m_δ)²/(13 β_δ)` (`appB-tools.tex:475`), which is `SS({b, τ_1}) = SS({b, τ_2})`
+/-- `ψ = 12 (m_b − m_δ)²/(13 β_δ)` (`appB-tools.tex:475`), which is `S_2({b, τ_1}) = S_2({b, τ_2})`
 (`SS_block_τ₁`, `SS_block_τ₂`). -/
 def ψ : ℝ := 12 * (P.mb - P.mδ) ^ 2 / (13 * P.βδ)
 
-/-- `θ_out = α m_b − β_b K` (`stoc-sections/appD-hardness.tex:893`), the marginal of `b` in the
+/-- `θ_out = α m_b − β_b K` (`stoc-sections/appD-hardness.tex:892`), the marginal of `b` in the
 configuration `(∅, ∅)`, which is `θ_{U,W}` for `U = W = ∅` (`config_empty`). -/
 def θout (α : ℝ) : ℝ := α * P.mb - P.βδ / 12 * P.K
 
@@ -535,8 +535,8 @@ lemma mbar_block_τ₂ : mbar (P.mNew mC) (P.βNew βC) {none, some none} = P.mb
   have := H.βδ_pos.ne'
   field_simp
 
-/-- The setting (`appB-tools.tex:479`): `ψ = SS({b, τ_1})`, as
-`SS({b, τ_1}) = (m_b − m_δ)²/(β_b + β_δ)` by `eq:B-pair` (`Stoc.Hardness.SS_pair`). -/
+/-- The setting (`appB-tools.tex:479`): `ψ = S_2({b, τ_1})`, as
+`S_2({b, τ_1}) = (m_b − m_δ)²/(β_b + β_δ)` by `eq:B-pair` (`Stoc.Hardness.SS_pair`). -/
 lemma SS_block_τ₁ : SS (P.mNew mC) (P.βNew βC) {none, some (some none)} = P.ψ := by
   have hne : (none : Option (Option (Option C))) ≠ some (some none) := by simp
   rw [SS_pair (newPos H) hne]
@@ -545,7 +545,7 @@ lemma SS_block_τ₁ : SS (P.mNew mC) (P.βNew βC) {none, some (some none)} = P
   field_simp
   ring
 
-/-- The setting (`appB-tools.tex:479`): `ψ = SS({b, τ_2})`, by `eq:B-pair`. -/
+/-- The setting (`appB-tools.tex:479`): `ψ = S_2({b, τ_2})`, by `eq:B-pair`. -/
 lemma SS_block_τ₂ : SS (P.mNew mC) (P.βNew βC) {none, some none} = P.ψ := by
   have hne : (none : Option (Option (Option C))) ≠ some none := by simp
   rw [SS_pair (newPos H) hne]
@@ -570,7 +570,7 @@ lemma mbar_block_b : mbar (P.mNew mC) (P.βNew βC) {none} = P.mb := by
   simp only [mbar, sum_singleton, βNew_none, mNew_none]
   field_simp
 
-/-- The block `D = {b}`: `SS({b}) = (m_b − m̄_{{b}})²/β_b = 0`. -/
+/-- The block `D = {b}`: `S_2({b}) = (m_b − m̄_{{b}})²/β_b = 0`. -/
 lemma SS_block_b : SS (P.mNew mC) (P.βNew βC) {none} = 0 := by
   rw [SS, sum_singleton, mbar_block_b H, mNew_none, sub_self]
   ring
@@ -648,7 +648,7 @@ weak configuration at `α`, then `r(ξ^{f'}(α)) = r(ξ^{f_C}(α)) + ψ α + Δ_
 (1) `lem:windows`(a) with `U = E ∖ {τ_1}` and `W = E`: `D = {b, τ_1}`, and
 `X_{U,W} = K + h(E) − f(E ∖ {τ_1}) = K − d(E) + F_{τ_1}`, as `f(E) − f(E ∖ {τ_1}) = F_{τ_1}`; (2) by
 `lem:fullplane`(f), `ξ^f(α) = (ξ^{f_C}(α), F_{τ_1}, F_{τ_2})`, so the first sum in (`eq:windows`) is
-`r(ξ^{f_C}(α)) + m_δ F_{τ_2}`, while the second is empty; (3) with `SS({b, τ_1}) = ψ` and
+`r(ξ^{f_C}(α)) + m_δ F_{τ_2}`, while the second is empty; (3) with `S_2({b, τ_1}) = ψ` and
 `m̄_{{b,τ_1}} = m̄`, (`eq:windows`) becomes
 `r(ξ^{f'}(α)) = r(ξ^{f_C}(α)) + m_δ F_{τ_2} + ψ α + (K − d(E) + F_{τ_1}) m̄`, which is the claim. -/
 theorem dmt_a_aux {α : ℝ}
@@ -679,7 +679,7 @@ theorem dmt_a_aux {α : ℝ}
   have hsecond : ∑ e ∈ Wᶜ, P.mNew mC (some e) * xi (subMod (P.fStep gC) (P.dStep mC βC))
       (fun e => P.mNew mC (some e)) (fun e => P.βNew βC (some e)) α e = 0 := by
     simp [W]
-  -- (3) "With `SS({b, τ_1}) = ψ` and `m̄_{{b,τ_1}} = m̄`, (`eq:windows`) becomes
+  -- (3) "With `S_2({b, τ_1}) = ψ` and `m̄_{{b,τ_1}} = m̄`, (`eq:windows`) becomes
   -- `r(ξ^{f'}(α)) = r(ξ^{f_C}(α)) + m_δ F_{τ_2} + ψα + (K − d(E) + F_{τ_1})m̄`, which is the
   -- claim."
   show reward (P.mNew mC)
@@ -698,7 +698,7 @@ sum of `f_C − d|_C` and the two modular singletons with the values `F_{τ_1} �
 `∑_{e∈C} m_e ξ^h_e(α) = r(ξ^{f_C}(α − μ)) − ∑_{e∈C} m_e d_e`, and `ξ^h_{τ_1}(α) = F_{τ_1} − w/β_δ`
 (`xi_h_of_addSingleton`); (3) the first sum in (`eq:windows`) is empty, and the second, over
 `E ∖ W = C ∪ {τ_1}`, is `r(ξ^{f_C}(α − μ)) − ∑_{e∈C} m_e d_e + m_δ (F_{τ_1} − w/β_δ)`; (4) we insert
-this into (`eq:windows`), with `SS({b, τ_2}) = ψ` and `m̄_{{b,τ_2}} = m̄`, and subtract
+this into (`eq:windows`), with `S_2({b, τ_2}) = ψ` and `m̄_{{b,τ_2}} = m̄`, and subtract
 `r(ξ^{f_C}(α − μ)) + ψ α + Δ_p`; using `d(E) = d(C) + 2w/β_δ`, the remaining constant is
 `∑_{e∈C} (m̄ − m_e) d_e + s (w/β_δ − ΔF)`. -/
 theorem dmt_b_aux {α : ℝ}
@@ -748,7 +748,7 @@ theorem dmt_b_aux {α : ℝ}
     simp only [mNew_some_apply]
     rw [hτ₁, hCs, mf_τ₁]
     ring
-  -- (4) "We insert this into (`eq:windows`), with `SS({b, τ_2}) = ψ` and `m̄_{{b,τ_2}} = m̄`, and
+  -- (4) "We insert this into (`eq:windows`), with `S_2({b, τ_2}) = ψ` and `m̄_{{b,τ_2}} = m̄`, and
   -- subtract `r(ξ^{f_C}(α − μ)) + ψα + Δ_p`. Using `d(E) = d(C) + 2w/β_δ`, the remaining constant
   -- is `−∑_{e∈C} m_e d_e + m_δ(F_{τ_1} − w/β_δ) + (K + F_{τ_2} − w/β_δ)m̄`
   -- `− m_δ F_{τ_2} − (K − d(C) − 2w/β_δ + F_{τ_1})m̄`
@@ -775,17 +775,17 @@ theorem dmt_b_aux {α : ℝ}
   linarith [hconst]
 
 /-- The configuration `(∅, ∅)` in the proof of `lem:onelevel`(b)
-(`stoc-sections/appD-hardness.tex:912-918`), which `ContractDesignPolymatroids/Hardness/OneLevel.lean` uses: if every
+(`stoc-sections/appD-hardness.tex:911-917`), which `ContractDesignPolymatroids/Hardness/OneLevel.lean` uses: if every
 `h`-marginal is at most `θ_b` at `α`, then `θ_b = θ_out = α m_b − β_b K`, which is `θ_{U,W}` for
-`U = W = ∅` (`appD-hardness.tex:893-894`), and (`eq:windows`), with `lem:fullplane`(f) and
+`U = W = ∅` (`appD-hardness.tex:892-893`), and (`eq:windows`), with `lem:fullplane`(f) and
 `lem:translation`(c) (translation vector `(μ, m* μ)`), gives
 `r(ξ^{f'}(α)) = r(ξ^{f_C}(α − μ)) + m_δ(F_{τ_1} + F_{τ_2}) − ∑_{e∈E} m_e d_e + K m_b`, where
 `∑_{e∈E} m_e d_e = 2 m_δ w/β_δ + ∑_{e∈C} m_e d_e` as `d_{τ_1} = d_{τ_2} = w/β_δ`. Steps: (1)
 `(∅, ∅)` is a weak configuration at `α`: `ρ^h_e ≤ θ_b` for `e ∈ E`, and `∅` is tight for `ξ^f(α)`
 and for `ξ^h(α)`; (2) `lem:windows`(a) with `U = W = ∅` (`windows_a_aux`): `D = {b}` and
 `X_{∅,∅} = K + h(∅) − f(∅) = K`, so `θ_b = θ_{∅,∅} = (α t_b − K)/(1/β_b) = θ_out`, and
-(`eq:windows`) reads `r(ξ^{f'}(α)) = ∑_{e∈E} m_e ξ^h_e(α) + α SS({b}) + K m̄_{{b}}`, with
-`SS({b}) = 0` and `m̄_{{b}} = m_b`; (3) by `lem:translation`(c), applied to `f` with
+(`eq:windows`) reads `r(ξ^{f'}(α)) = ∑_{e∈E} m_e ξ^h_e(α) + α S_2({b}) + K m̄_{{b}}`, with
+`S_2({b}) = 0` and `m̄_{{b}} = m_b`; (3) by `lem:translation`(c), applied to `f` with
 `(μ_α, μ_θ) = (μ, m* μ)`, `ξ^h(α) = ξ^f(α − μ) − d` (`xi_h`), and by `lem:fullplane`(f),
 `ξ^f(α − μ) = (ξ^{f_C}(α − μ), F_{τ_1}, F_{τ_2})` (`xi_f_old`, `xi_f_τ₁`, `xi_f_τ₂`). -/
 theorem config_empty {α : ℝ}
@@ -814,8 +814,8 @@ theorem config_empty {α : ℝ}
     rw [hθ, thetaUW, hD, hX, (block_b_sums H).1, (block_b_sums H).2]
     unfold θout
     field_simp
-  · -- and (`eq:windows`) reads `r(ξ^{f'}(α)) = ∑_{e∈E} m_e ξ^h_e(α) + α SS({b}) + K m̄_{{b}}`,
-    -- with `SS({b}) = 0` and `m̄_{{b}} = m_b`
+  · -- and (`eq:windows`) reads `r(ξ^{f'}(α)) = ∑_{e∈E} m_e ξ^h_e(α) + α S_2({b}) + K m̄_{{b}}`,
+    -- with `S_2({b}) = 0` and `m̄_{{b}} = m_b`
     show reward (P.mNew mC)
       (xiPrime (P.fStep gC) (P.dStep mC βC) P.K (P.mNew mC) (P.βNew βC) α) = _
     rw [hr, mNew_some, βNew_some, hD, hX, SS_block_b H, mbar_block_b H]
@@ -841,7 +841,7 @@ end Windows
 `U = E ∖ {τ_1}` and `W = E`: `D = {b, τ_1}` and `X_{U,W} = K − d(E) + F_{τ_1}`, as
 `f(E) − f(E ∖ {τ_1}) = F_{τ_1}`; (2) by `lem:fullplane`(f),
 `ξ^f(α) = (ξ^{f_C}(α), F_{τ_1}, F_{τ_2})`, so the first sum in (`eq:windows`) is
-`r(ξ^{f_C}(α)) + m_δ F_{τ_2}`, and the second is empty; (3) with `SS({b, τ_1}) = ψ` and
+`r(ξ^{f_C}(α)) + m_δ F_{τ_2}`, and the second is empty; (3) with `S_2({b, τ_1}) = ψ` and
 `m̄_{{b,τ_1}} = m̄`, (`eq:windows`) becomes the claim. -/
 theorem dmt_a (hS : P.DmtSetting gC mC βC) {α : ℝ}
     (hconf : IsWeakConfig (P.fStep gC) (P.dStep mC βC) P.K (P.mNew mC) (P.βNew βC) α
@@ -860,7 +860,7 @@ singletons with the values `F_{τ_1} − w/β_δ` and `F_{τ_2} − w/β_δ` (`h
 `lem:fullplane`(f) and `lem:translation`(c), `ξ^h_e(α) = ξ^{f_C}_e(α − μ) − d_e` for `e ∈ C` and
 `ξ^h_{τ_1}(α) = F_{τ_1} − w/β_δ` (`xi_h_of_addSingleton`); (3) the first sum in (`eq:windows`) is
 empty and the second is `r(ξ^{f_C}(α − μ)) − ∑_{e∈C} m_e d_e + m_δ (F_{τ_1} − w/β_δ)`; (4) with
-`SS({b, τ_2}) = ψ`, `m̄_{{b,τ_2}} = m̄` and `d(E) = d(C) + 2w/β_δ`, the remaining constant is
+`S_2({b, τ_2}) = ψ`, `m̄_{{b,τ_2}} = m̄` and `d(E) = d(C) + 2w/β_δ`, the remaining constant is
 `∑_{e∈C} (m̄ − m_e) d_e + s (w/β_δ − ΔF)`. -/
 theorem dmt_b (hS : P.DmtSetting gC mC βC) {α : ℝ}
     (hconf : IsWeakConfig (P.fStep gC) (P.dStep mC βC) P.K (P.mNew mC) (P.βNew βC) α ∅

@@ -1,4 +1,4 @@
--- stamp r9 2026-11-02
+-- stamp r10 2026-11-03
 import ContractDesignPolymatroids.Hardness.Operations
 import ContractDesignPolymatroids.Hardness.Splice
 import ContractDesignPolymatroids.OptimalShare.Exponential
@@ -7,10 +7,10 @@ import ContractDesignPolymatroids.OptimalShare.Exponential
 # Cut forms
 
 The STOC version's `def:cutform` and `lem:cutforms` (Appendix C.2, `sec:D-cutforms`, "Cut forms",
-`stoc-sections/appD-hardness.tex:98-151`).
+`stoc-sections/appD-hardness.tex:96-149`).
 
 * `CutForm`, `CutForm.cut`, `CutForm.fn`: `def:cutform`. A cut form on `E` is a loopless digraph
-  `D` on `E` (a finite set of arcs `(u, v)` with `u ≠ v`), capacities `cap ≥ 0` on its arcs and
+  `D` on `E` (a finite set of arcs `(u, v)` with `u ≠ v`), capacities `cap ≥ 0` on its arcs, and
   weights `ω`, and defines `f(S) = cut_D(S) + ω(S)` (`eq:cutform`), where `cut_D(S)` is the total
   capacity of the arcs that leave `S`. `HasCutForm f`: `f` is given by a cut form. `Ccut`: the
   class `𝒞_cut` of instances `(f, m, β)` with `m, β > 0` for which `f` is a polymatroid rank
@@ -47,10 +47,10 @@ noncomputable section
 
 /-! ### `def:cutform` -/
 
-/-- A cut form on `E` (`def:cutform`, Definition C.2, `stoc-sections/appD-hardness.tex:98-104`):
+/-- A cut form on `E` (`def:cutform`, Definition C.2, `stoc-sections/appD-hardness.tex:96-102`):
 a loopless digraph `D` on `E`, given by its finite set of arcs `(u, v)` with `u ≠ v`, capacities
-`cap(u, v) ≥ 0` on the arcs of `D` (the values of `cap` off `D` play no role) and weights `ω`. The
-STOC version takes rational capacities and weights; here they are real. -/
+`cap(u, v) ≥ 0` on the arcs of `D` (the values of `cap` off `D` play no role), and weights `ω`.
+The STOC version takes rational capacities and weights; here they are real. -/
 structure CutForm (E : Type*) where
   /-- the arcs of the digraph -/
   D : Finset (E × E)
@@ -81,7 +81,7 @@ end CutForm
 def HasCutForm {E : Type*} [Fintype E] [DecidableEq E] (f : Finset E → ℝ) : Prop :=
   ∃ F : CutForm E, ∀ S, f S = F.fn S
 
-/-- The class `𝒞_cut` (`def:cutform`, `stoc-sections/appD-hardness.tex:103`): instances
+/-- The class `𝒞_cut` (`def:cutform`, `stoc-sections/appD-hardness.tex:101`): instances
 `(f, m, β)` with `m, β > 0` for which `f` is a polymatroid rank function given by a cut form.
 The STOC version asks for rational `m`, `β` and a rational cut form, all encoded in binary; the
 rational data and their encoding length are `RatInst` and `RatInst.encI` in
@@ -140,7 +140,7 @@ lemma submodular_sum {ι : Type*} (s : Finset ι) {g : ι → Finset E → ℝ}
 
 end PartA
 
-/-- **`lem:cutforms`(a)** (Lemma C.3, `stoc-sections/appD-hardness.tex:108`, proof lines 130-133):
+/-- **`lem:cutforms`(a)** (Lemma C.3, `stoc-sections/appD-hardness.tex:106`, proof lines 128-131):
 every function given by a cut form is submodular.
 
 The proof's steps: (1) a directed cut function with nonnegative capacities is submodular (the
@@ -221,7 +221,7 @@ theorem CutForm.fn_top (F : CutForm E) (e : E) :
   rw [h1, h2]
   linarith
 
-/-- **`lem:cutforms`(b)** (`stoc-sections/appD-hardness.tex:109`, proof lines 135-141): the cut
+/-- **`lem:cutforms`(b)** (`stoc-sections/appD-hardness.tex:107`, proof lines 133-139): the cut
 form `(D, cap, ω)` defines a polymatroid rank function if and only if, for every `e ∈ E`, `ω_e`
 is at least the total capacity of the arcs of `D` that enter `e`. (Its "in particular",
 membership in `𝒞_cut` is decided in polynomial time, is `RatInst.inCcut_iff` for rational data.)
@@ -416,7 +416,7 @@ lemma sum_option_weights (ω : Option E → ℝ) (T : Finset (Option E)) :
     ∑ o ∈ T, ω o = (if none ∈ T then ω none else 0) + ∑ e ∈ eraseNone T, ω (some e) :=
   sum_option_finset T ω
 
-/-- **`lem:cutforms`(c)** (`stoc-sections/appD-hardness.tex:110-120`, proof lines 143-150): let `g`
+/-- **`lem:cutforms`(c)** (`stoc-sections/appD-hardness.tex:108-118`, proof lines 141-148): let `g`
 be given by a cut form `(D, cap, ω)` on `E`. Then (i) `g` plus a modular function `S ↦ y(S)`
 has the form with `ω` replaced by `ω + y`; (ii) the direct sum of `g` and a modular singleton `π_F`
 on a new element `b` has the form
@@ -530,7 +530,7 @@ theorem cutforms_c {E₂ : Type*} [Fintype E₂] [DecidableEq E₂] {g : Finset 
     ring
   exact ⟨hi, hii, hiii, hdu⟩
 
-/-- **`lem:cutforms`** (Lemma C.3, `stoc-sections/appD-hardness.tex:106-122`): (a) every
+/-- **`lem:cutforms`** (Lemma C.3, `stoc-sections/appD-hardness.tex:104-120`): (a) every
 function given by a cut form as in (`eq:cutform`) is submodular. (b) The cut form `(D, cap, ω)`
 defines a polymatroid rank function if and only if, for every `e ∈ E`, `ω_e` is at least the total
 capacity of the arcs of `D` that enter `e`. In particular, membership in `𝒞_cut` is decided in

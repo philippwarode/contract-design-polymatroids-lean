@@ -1,4 +1,4 @@
--- stamp r8 2026-11-02
+-- stamp r9 2026-11-03
 import ContractDesignPolymatroids.Approximation.Agent
 
 /-!
@@ -32,8 +32,9 @@ cite.
   best responses only `lem:monreward`. `fptas` follows from it by `lem:monreward` on any action set,
   and the proof of `prop:convexscheme` cites it for the best responses of `app:convex` ("The proof
   of `thm:fptas` uses only `lem:monreward`, which holds for all maximizers, so the theorem applies
-  to the best responses `x*(α)`", appF-convex.tex:103), and for the shares `α̂_j` themselves ("the
-  shares constructed in the proof of `thm:fptas`", appF-convex.tex:75).
+  to the best responses `x*(α)`", appF-convex.tex:100), and for the shares `α̂_j` themselves:
+  `alg:convex` evaluates "every share `α̂_j` constructed in the proof of `thm:fptas`"
+  (appF-convex.tex:56), which it gives explicitly for the accuracy `ε/2` (appF-convex.tex:71, 73).
 * `cor:probe` (`probe`), with `ᾱ_a = 1 − (1 − a) r(x*(a))/r(x*(1))` (`probeAlpha`). The paragraph
   before it (08-approximation.tex:17) outlines its proof.
 
@@ -68,7 +69,7 @@ paper as a result: `lem:monreward` is stated for `P₊(f)`, 06-optimal-share.tex
 `thm:fptas` and `cor:probe` cite it on the action set of the oracle, as its argument "uses only the
 optimality of `x` and `x'`" (appB-quadratic.tex:277), so that the argument of `thm:fptas` "applies
 to any action set" (08-approximation.tex:8), and `prop:convexscheme` cites it as "`lem:monreward`,
-which holds for all maximizers" (appF-convex.tex:103)). -/
+which holds for all maximizers" (appF-convex.tex:100)). -/
 theorem monotoneOn_reward {C : Set (E → ℝ)} (m : E → ℝ) (c : (E → ℝ) → ℝ) {I : Set ℝ}
     {xs : ℝ → E → ℝ} (hC : ∀ α ∈ I, xs α ∈ C)
     (hmax : ∀ α ∈ I, ∀ y ∈ C, α * reward m y - c y ≤ α * reward m (xs α) - c (xs α)) :
@@ -253,7 +254,7 @@ lemma lt_of_lt_schemeJ {j : ℕ} (hj : j < schemeJ ε ᾱ) : 1 - ᾱ < (1 - sche
 /-- `2^{−s} ≤ ε(1 − ᾱ)/4`, as `2^s ≥ 4/(ε(1 − ᾱ))` by the definition of `s`: the bound with
 which step (6) of the proof of `thm:fptas` begins, and which (3) of the proof of
 `prop:convexscheme` recalls for the accuracy `ε/2` ("the grid in the proof of `thm:fptas` uses …
-`2^{−s} ≤ ε(1 − ᾱ)/8`", appF-convex.tex:101). -/
+`2^{−s} ≤ ε(1 − ᾱ)/8`", appF-convex.tex:98). -/
 lemma one_div_two_pow_schemeS_le (hε : ε ∈ Set.Ioo (0 : ℝ) 1) (hᾱ : ᾱ < 1) :
     1 / (2 : ℝ) ^ schemeS ε ᾱ ≤ ε * (1 - ᾱ) / 4 := by
   have hεᾱ : 0 < ε * (1 - ᾱ) := mul_pos hε.1 (sub_pos.2 hᾱ)
@@ -415,9 +416,10 @@ nondecreasing, by `lem:monreward` ("By `lem:monreward`, `r(x*(α̂_j)) ≥ r(x*(
 appE-halfrule.tex:15), which is the hypothesis on `S` here; it uses tacitly that the reward is
 nonnegative. The exact statement `fptas` follows with `lem:monreward` on any action set, and the
 proof of `prop:convexscheme` takes this form for the shares `α̂_j` and the best responses `x*(α)` of
-`app:convex`: "the shares constructed in the proof of `thm:fptas`" (appF-convex.tex:75), and "The
-proof of `thm:fptas` uses only `lem:monreward`, which holds for all maximizers, so the theorem
-applies to the best responses `x*(α)` and the share bound `ᾱ` shown above" (appF-convex.tex:103).
+`app:convex`: `alg:convex` evaluates "every share `α̂_j` constructed in the proof of `thm:fptas`"
+(appF-convex.tex:56), for the accuracy `ε/2` (appF-convex.tex:71, 73), and "The proof of
+`thm:fptas` uses only `lem:monreward`, which holds for all maximizers, so the theorem applies to the
+best responses `x*(α)` and the share bound `ᾱ` shown above" (appF-convex.tex:100).
 
 The proof is that of appE-halfrule.tex:5-19: (0) the definitions of `ε'`, `J`, `s` and the shares
 `α̂_j` (`schemeEps`, `schemeJ`, `schemeS`, `schemeShare`, `schemeShares`), and "There are at most
@@ -444,7 +446,7 @@ theorem fptas_aux {ε ᾱ : ℝ} (hε : ε ∈ Set.Ioo (0 : ℝ) 1) (hᾱ : ᾱ 
       (∃ j ≤ schemeJ ε ᾱ, (1 - ε) * OPT (profit S) ≤ profit S (schemeShare ε ᾱ j)) ∧
       ∀ q ∈ schemeShares ε ᾱ, (∀ q' ∈ schemeShares ε ᾱ, profit S q' ≤ profit S q) →
         IsApproxOptimal (profit S) ε q := by
-  -- (0) "Put `ε' := ε/2`, `J := min{j ≥ 0 : (1 − ε')^j ≤ 1 − ᾱ}` and
+  -- (0) "Put `ε' := ε/2`, `J := min{j ≥ 0 : (1 − ε')^j ≤ 1 − ᾱ}`, and
   -- `s := ⌈log₂(4/(ε(1 − ᾱ)))⌉`. The scheme evaluates the dyadic shares
   -- `α̂_j := 1 − 2^{−s} ⌊2^s (1 − ε')^j⌋`, `j = 0, …, J`, and returns the one with largest
   -- utility." (`schemeEps`, `schemeJ`, `schemeS`, `schemeShare`, `schemeShares`) "There are at most
@@ -563,7 +565,7 @@ theorem fptas_aux {ε ᾱ : ℝ} (hε : ε ∈ Set.Ioo (0 : ℝ) 1) (hᾱ : ᾱ 
   exact ⟨h8J, fun j _ => ⟨schemeShare_mem hε j, schemeShare_dyadic j⟩, h8s, hguar⟩
 
 /-- **`thm:fptas`** (Theorem 5.1, 08-approximation.tex:12-14, proof appE-halfrule.tex:4-20): "Given
-an exact best-response oracle, a share bound `ᾱ ∈ [0, 1)` and `ε ∈ (0, 1)`, a `(1 − ε)`-optimal
+an exact best-response oracle, a share bound `ᾱ ∈ [0, 1)`, and `ε ∈ (0, 1)`, a `(1 − ε)`-optimal
 contract can be found with at most `⌈2ε⁻¹ ln(1/(1 − ᾱ))⌉ + 1` oracle calls. The queried shares are
 rationals with `O(1 + log(1/ε) + log(1/(1 − ᾱ)))` bits."
 

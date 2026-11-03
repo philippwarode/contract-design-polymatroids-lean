@@ -1,6 +1,7 @@
--- stamp r7 2026-11-02
+-- stamp r9 2026-11-03
 import ContractDesignPolymatroids.Approximation.PRule
 import ContractDesignPolymatroids.BestResponse.WaterFilling
+import ContractDesignPolymatroids.Preliminaries.CountedLists
 
 /-!
 # The scheme for homogeneous costs, the FPTAS for quadratic costs and the half rule
@@ -13,7 +14,7 @@ The STOC version's Section 5.1 (`sec:fptas-quadratic`, 08-approximation.tex:25-4
   `O(1 + ε⁻¹ log(p/(p − 1)))` exact best-response calls, at shares that do not depend on the
   instance ("Combining `thm:fptas,thm:prule` gives the following guarantee",
   08-approximation.tex:35). Its proof, with what "Substituting this bound into `thm:fptas` gives",
-  the shares, their number and their bit length, is `fptashom_aux`.
+  the shares, their number, and their bit length, is `fptashom_aux`.
 * `fptasquad` (`cor:fptasquad`): for quadratic costs with rational data, on explicitly described
   rational polytopes containing zero (`ratPolytope`) and on value-oracle polymatroids, with the
   shares of `cor:fptashom` for `p = 2` ("Taking `p = 2` therefore gives the following runtime
@@ -57,17 +58,17 @@ lemma exists_rbar {K : Set (E → ℝ)} (hKc : IsCompact K) (m : E → ℝ) :
 /-! ### `cor:fptashom` -/
 
 /-- **`cor:fptashom`** with what its proof gives: "Substituting this bound into `thm:fptas` gives
-the shares, their number and their bit length" (appE-halfrule.tex:29). For `p > 1` and `ε ∈ (0, 1)`,
-there is a list `Q` of at most `⌈2ε⁻¹ ln(p/(p − 1))⌉ + 1` shares, dyadic rationals in `[0, 1]` with
-`s ≤ 3 + log₂(1/ε) + log₂(p/(p − 1))` bits (those of `thm:fptas` for `ᾱ = 1/p`), such that for costs
-homogeneous of degree `p` on every compact convex `K ⊆ ℝ^E_{≥0}` with `0 ∈ K` and rewards `m ≥ 0`,
-every share of `Q` with the largest utility `(1 − q) r(x*(q))` is `(1 − ε)`-optimal. The exact
-statement `fptashom` follows from it, and the proof of `cor:fptasquad` ("Apply `cor:fptashom` with
-`p = 2`") takes this form, as it uses the bit length of the shares ("each with `O(1 + log(1/ε))`
-bits", appE-halfrule.tex:34).
+the shares, their number, and their bit length" (appE-halfrule.tex:29). For `p > 1` and
+`ε ∈ (0, 1)`, there is a list `Q` of at most `⌈2ε⁻¹ ln(p/(p − 1))⌉ + 1` shares, dyadic rationals in
+`[0, 1]` with `s ≤ 3 + log₂(1/ε) + log₂(p/(p − 1))` bits (those of `thm:fptas` for `ᾱ = 1/p`), such
+that for costs homogeneous of degree `p` on every compact convex `K ⊆ ℝ^E_{≥0}` with `0 ∈ K` and
+rewards `m ≥ 0`, every share of `Q` with the largest utility `(1 − q) r(x*(q))` is
+`(1 − ε)`-optimal. The exact statement `fptashom` follows from it, and the proof of `cor:fptasquad`
+("Apply `cor:fptashom` with `p = 2`") takes this form, as it uses the bit length of the shares
+("each with `O(1 + log(1/ε))` bits", appE-halfrule.tex:34).
 
 The proof (appE-halfrule.tex:28-30): (1) "By `thm:prule`, `ᾱ = 1/p` is a share bound"
-(`PRule.prule`); (2) "Substituting this bound into `thm:fptas` gives the shares, their number and
+(`PRule.prule`); (2) "Substituting this bound into `thm:fptas` gives the shares, their number, and
 their bit length" (`fptas` with `ᾱ = 1/p`, and `1/(1 − 1/p) = p/(p − 1)`, `one_div_one_sub_inv`;
 the exact best-response oracle is `IsExactOracle`, whose reward bound `r̄` is `exists_rbar`);
 (3) "Evaluate `(1 − α) r(x*(α))` at each share and return one with the largest value". -/
@@ -84,7 +85,7 @@ theorem fptashom_aux {p : ℝ} (hp : 1 < p) {ε : ℝ} (hε : ε ∈ Set.Ioo (0 
   have hp0 : 0 ≤ 1 / p := by apply div_nonneg zero_le_one; linarith
   have hplt : 1 / p < 1 := by rw [div_lt_one (by linarith)]; exact hp
   -- (1) "By `thm:prule`, `ᾱ = 1/p` is a share bound." (for every instance, below)
-  -- (2) "Substituting this bound into `thm:fptas` gives the shares, their number and their bit
+  -- (2) "Substituting this bound into `thm:fptas` gives the shares, their number, and their bit
   -- length."
   obtain ⟨Q, hne, hlen, ⟨s, hs, hQ⟩, hguar⟩ := fptas (E := E) hε ⟨hp0, hplt⟩
   rw [one_div_one_sub_inv hp] at hlen hs
@@ -187,6 +188,181 @@ lemma isCompact_ratPolytope (hbd : Bornology.IsBounded (ratPolytope A b)) :
 
 end Polytope
 
+/-! ### The counted scheme of `cor:fptasquad` on polymatroids
+
+Step (6) of the proof of `cor:fptasquad`: "For a polymatroid, each of the `O(1/ε)` best responses
+takes time `O(n⁷ log n)·FO + O(n⁸ log n)` by `thm:waterfilling`. Evaluating the reward takes `O(n)`
+further operations per response" (appE-halfrule.tex:36), with the selection of `cor:fptashom`,
+"Evaluate `(1 − α) r(x*(α))` at each share and return one with the largest value"
+(appE-halfrule.tex:29). The counted scheme `schemeC` performs these steps in the cost model of
+`Stoc.Counted`: for each share `q`, the counted water-filling `WaterFilling.waterFillC`, the reward
+`mᵀx` and `U_P(q) = (1 − q) r` (`shareC`), and a share with the largest `U_P` (`argmaxC`).
+`schemeC_spec` shows that it returns a share of `Q` with the largest utility, with the
+minimizations and evaluations of the water-fillings and at most `6n³ + 56n² + 31n + 5` arithmetic
+operations per share. The shares are inputs: they are those of `cor:fptashom` for `p = 2`, which do
+not depend on the instance (`fptashom_aux`), and their computation is not counted. (Not in the
+paper: the paper counts in prose.) -/
+
+namespace FptasQuad
+
+open Counted
+
+/-- A share of `q :: Q` with the largest value `g`, and that value: the values `g` of the shares,
+and one comparison for each share after the first. -/
+noncomputable def argmaxC (g : ℝ → Counted ℝ) : ℝ → List ℝ → Counted (ℝ × ℝ)
+  | q, [] => g q >>=ᶜ fun u => ret (q, u)
+  | q, q' :: Q => argmaxC g q' Q >>=ᶜ fun b => g q >>=ᶜ fun u =>
+      ops 1 (if b.2 ≤ u then (q, u) else b)
+
+/-- `argmaxC` returns a share of `q :: Q` with the largest value of `g`, and that value; its costs
+are those of the values and one comparison for each share after the first (not in the paper). -/
+lemma argmaxC_spec (g : ℝ → Counted ℝ) (q : ℝ) (Q : List ℝ) :
+    (argmaxC g q Q).val.1 ∈ q :: Q ∧ (argmaxC g q Q).val.2 = (g (argmaxC g q Q).val.1).val ∧
+      (∀ q' ∈ q :: Q, (g q').val ≤ (argmaxC g q Q).val.2) ∧
+      (argmaxC g q Q).cost.1 = ((q :: Q).map fun q => (g q).cost.1).sum + Q.length ∧
+      (argmaxC g q Q).cost.2.1 = ((q :: Q).map fun q => (g q).cost.2.1).sum ∧
+      (argmaxC g q Q).cost.2.2 = ((q :: Q).map fun q => (g q).cost.2.2).sum := by
+  induction Q generalizing q with
+  | nil => simp [argmaxC]
+  | cons q' Q ih =>
+    obtain ⟨h1, h2, h3, h4, h5, h6⟩ := ih q'
+    simp only [argmaxC, val_bind, val_ops, cost_bind, cost_ops, Prod.fst_add, Prod.snd_add,
+      List.map_cons, List.sum_cons, List.length_cons, add_zero] at *
+    refine ⟨?_, ?_, ?_, by rw [h4]; ring, by rw [h5]; ring, by rw [h6]; ring⟩
+    · split_ifs
+      · exact List.mem_cons_self
+      · exact List.mem_cons_of_mem _ h1
+    · split_ifs
+      · rfl
+      · exact h2
+    · intro x hx
+      split_ifs with h
+      · rcases List.mem_cons.1 hx with rfl | hx
+        · exact le_rfl
+        · exact (h3 x hx).trans h
+      · rcases List.mem_cons.1 hx with rfl | hx
+        · exact (not_le.1 h).le
+        · exact h3 x hx
+
+variable [DecidableEq E] (f : Finset E → ℝ) (m β : E → ℝ)
+
+/-- The utility `U_P(q) = (1 − q) r(x*(q))` at one share: the counted water-filling, the reward
+`mᵀx` (one multiplication and one addition for each element) and `(1 − q) r` (two operations). -/
+noncomputable def shareC (q : ℝ) : Counted ℝ :=
+  WaterFilling.waterFillC f m β q >>=ᶜ fun x =>
+  Counted.sum univ (fun e => ops 1 (m e * x e)) >>=ᶜ fun r =>
+  ops 2 ((1 - q) * r)
+
+/-- The scheme on the shares `Q`: a share of `Q` with the largest utility `U_P`, by `argmaxC` of
+`shareC`. -/
+noncomputable def schemeC : List ℝ → Counted ℝ
+  | [] => ret 0
+  | q :: Q => argmaxC (shareC f m β) q Q >>=ᶜ fun b => ret b.1
+
+variable {f m β}
+
+/-- `shareC` returns the utility `U_P(q)`, with the minimizations and evaluations of `f` of
+water-filling and at most `6n³ + 56n² + 31n + 4` operations (not in the paper). -/
+lemma shareC_spec {q : ℝ} (H : WaterFilling.Hyp f m β q) :
+    (shareC f m β q).val = profit (grossValue f m β) q ∧
+      (shareC f m β q).cost.1 ≤
+        6 * Fintype.card E ^ 3 + 56 * Fintype.card E ^ 2 + 31 * Fintype.card E + 4 ∧
+      (shareC f m β q).cost.2.1 = WaterFilling.oracleCalls f m β q ∧
+      (shareC f m β q).cost.2.2 = WaterFilling.fEvals f m β q := by
+  obtain ⟨hbr, -, -, ⟨hv, h1, h2, h3⟩, -⟩ := WaterFilling.waterfilling H
+  have hc : (shareC f m β q).cost = (WaterFilling.waterFillC f m β q).cost +
+      ((2 * Fintype.card E, 0, 0) + (2, 0, 0)) := by
+    simp only [shareC, cost_bind, cost_sum, cost_ops, Finset.sum_const, Finset.card_univ,
+      Prod.smul_mk, smul_eq_mul, mul_one]
+    ext <;> simp
+    ring
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · simp only [shareC, val_bind, val_sum, val_ops, hv, hbr, profit, grossValue, reward]
+  · rw [hc]
+    simp only [Prod.fst_add]
+    linarith
+  · rw [hc]
+    simpa using h1
+  · rw [hc]
+    simpa using h2
+
+/-- The counted scheme (step (6) of `cor:fptasquad` with the selection of `cor:fptashom`; not in
+the paper: the paper counts in prose): on a nonempty list `Q` of shares in `[0, 1]`, `schemeC`
+returns a share of `Q` with the largest utility `U_P = profit (grossValue f m β)`, with the
+minimizations and the evaluations of `f` of the water-fillings at the shares, and at most
+`|Q|·(6n³ + 56n² + 31n + 5)` arithmetic operations (comparisons included), `n = |E|`: per share
+at most `6n³ + 56n² + 29n + 2` for the water-filling (`thm:waterfilling`), `2n` for the reward and
+`2` for `(1 − q) r`, and one comparison. -/
+theorem schemeC_spec (hf : IsRankFunction f) (hβ : ∀ e, 0 < β e) (hm : ∀ e, 0 ≤ m e)
+    {Q : List ℝ} (hne : Q ≠ []) (hQ : ∀ q ∈ Q, q ∈ Set.Icc (0 : ℝ) 1) :
+    (schemeC f m β Q).val ∈ Q ∧
+      (∀ q ∈ Q, profit (grossValue f m β) q ≤ profit (grossValue f m β) (schemeC f m β Q).val) ∧
+      (schemeC f m β Q).cost.2.1 = (Q.map (WaterFilling.oracleCalls f m β)).sum ∧
+      (schemeC f m β Q).cost.2.2 = (Q.map (WaterFilling.fEvals f m β)).sum ∧
+      (schemeC f m β Q).cost.1 ≤
+        Q.length *
+          (6 * Fintype.card E ^ 3 + 56 * Fintype.card E ^ 2 + 31 * Fintype.card E + 5) := by
+  obtain _ | ⟨q, Q⟩ := Q
+  · exact absurd rfl hne
+  have H : ∀ q' ∈ q :: Q, WaterFilling.Hyp f m β q' := fun q' hq' => ⟨hf, hβ, hm, (hQ q' hq').1⟩
+  obtain ⟨h1, h2, h3, h4, h5, h6⟩ := argmaxC_spec (shareC f m β) q Q
+  have hv : ∀ q' ∈ q :: Q, (shareC f m β q').val = profit (grossValue f m β) q' :=
+    fun q' hq' => (shareC_spec (H q' hq')).1
+  simp only [schemeC, val_bind, val_ret, cost_bind, cost_ret, add_zero]
+  refine ⟨h1, fun q' hq' => ?_, ?_, ?_, ?_⟩
+  · rw [← hv q' hq', ← hv _ h1, ← h2]
+    exact h3 q' hq'
+  · rw [h5]
+    exact congrArg List.sum (List.map_congr_left fun q' hq' => (shareC_spec (H q' hq')).2.2.1)
+  · rw [h6]
+    exact congrArg List.sum (List.map_congr_left fun q' hq' => (shareC_spec (H q' hq')).2.2.2)
+  · rw [h4]
+    have hb := Counted.sum_map_le_mul (q :: Q) _ fun q' hq' => (shareC_spec (H q' hq')).2.1
+    simp only [List.length_cons] at hb ⊢
+    nlinarith [hb]
+
+/-- The running time of the counted scheme, step (6) of the proof of `cor:fptasquad`
+(`stoc-sections/appE-halfrule.tex:36`; not in the paper: the paper counts in prose), for `n ≥ 1`:
+"For a polymatroid, each of the `O(1/ε)` best responses takes time `O(n⁷ log n)·FO + O(n⁸ log n)`
+by `thm:waterfilling`. Evaluating the reward takes `O(n)` further operations per response". If an
+evaluation of `f` takes time `FO ≥ 0` and a minimization time `TS ≤ sfmTime C₁ C₂ n FO` (cited,
+[IO09]; `Counted.sfmTime`), `schemeC` on a nonempty list `Q` of shares in `[0, 1]` takes time at
+most `|Q|((6 + 4C₁) n⁷ lg n · FO + (98 + 4C₁(C₂ + 1)) n⁸ lg n)`, `lg n = ⌈log₂ n⌉ + 1`: per share
+at most `2n(n + 1) ≤ 4n²` minimizations and `2n(2n + 1) ≤ 6n²` evaluations of `f`
+(`WaterFilling.oracleCalls_fEvals_le`) and `6n³ + 56n² + 31n + 5 ≤ 98n³` operations
+(`schemeC_spec`), with `Counted.time_le_sfm`. -/
+theorem schemeC_time (hf : IsRankFunction f) (hβ : ∀ e, 0 < β e) (hm : ∀ e, 0 ≤ m e)
+    {Q : List ℝ} (hne : Q ≠ []) (hQ : ∀ q ∈ Q, q ∈ Set.Icc (0 : ℝ) 1)
+    (hn : 0 < Fintype.card E) {FO TS C₁ C₂ : ℝ} (hFO : 0 ≤ FO) (hC₁ : 0 ≤ C₁) (hC₂ : 0 ≤ C₂)
+    (hTS : TS ≤ Counted.sfmTime C₁ C₂ (Fintype.card E) FO) :
+    Counted.time FO TS (schemeC f m β Q).cost ≤
+      Q.length * ((6 + 4 * C₁) * (Fintype.card E : ℝ) ^ 7 * Counted.lg (Fintype.card E) * FO +
+        (98 + 4 * C₁ * (C₂ + 1)) * (Fintype.card E : ℝ) ^ 8 * Counted.lg (Fintype.card E)) := by
+  obtain ⟨-, -, h3, h4, h5⟩ := schemeC_spec hf hβ hm hne hQ
+  have H : ∀ q ∈ Q, WaterFilling.Hyp f m β q := fun q hq => ⟨hf, hβ, hm, (hQ q hq).1⟩
+  have hcalls : (schemeC f m β Q).cost.2.1 ≤ Q.length * (4 * Fintype.card E ^ 2) := by
+    rw [h3]
+    refine Counted.sum_map_le_mul _ _ fun q hq => ?_
+    have := (WaterFilling.oracleCalls_fEvals_le (H q hq)).1
+    nlinarith
+  have hevals : (schemeC f m β Q).cost.2.2 ≤ Q.length * (6 * Fintype.card E ^ 2) := by
+    rw [h4]
+    refine Counted.sum_map_le_mul _ _ fun q hq => ?_
+    have := (WaterFilling.oracleCalls_fEvals_le (H q hq)).2
+    nlinarith
+  have hops : (schemeC f m β Q).cost.1 ≤ Q.length * (98 * Fintype.card E ^ 3) := by
+    refine h5.trans (Nat.mul_le_mul_left _ ?_)
+    have h2 : Fintype.card E ^ 2 ≤ Fintype.card E ^ 3 := Nat.pow_le_pow_right hn (by norm_num)
+    have h1 : Fintype.card E ≤ Fintype.card E ^ 3 := by
+      simpa using Nat.pow_le_pow_right hn (show 1 ≤ 3 by norm_num)
+    have h0 : 1 ≤ Fintype.card E ^ 3 := Nat.one_le_pow _ _ hn
+    omega
+  have := Counted.time_le_sfm hn hFO hC₁ hC₂ hTS hops hevals hcalls
+  push_cast at this
+  exact this
+
+end FptasQuad
+
 /-- **`cor:fptasquad`** (Corollary 5.5, 08-approximation.tex:41-43, proof appE-halfrule.tex:33-37):
 "For quadratic costs with rational data and `ε ∈ (0, 1)`, a `(1 − ε)`-optimal contract can be
 computed by an FPTAS on explicitly described rational polytopes `K ⊆ ℝ^E_{≥0}` containing zero. On
@@ -204,11 +380,20 @@ share of `Q` with the largest utility `(1 − q) r(x*(q))` is `(1 − ε)`-optim
 computes the best response `x*(q)` at every share `q ∈ Q` (`WaterFilling.waterFill`, by
 `thm:waterfilling`), and summed over `Q` it makes at most `(⌈2ε⁻¹ ln 2⌉ + 1)·2n(n + 1)` submodular
 minimizations (`WaterFilling.oracleCalls`) and at most `(⌈2ε⁻¹ ln 2⌉ + 1)·2n(2n + 1)` further
-evaluations of `f` (`WaterFilling.fEvals`, the accounting of `thm:waterfilling`), with `n = |E|`.
-Not formalised: the running times, that is, rational convex quadratic programming in polynomial time
-[KTK80], the polynomial bound in the encoding length, the time `O(n⁷ log n)·FO + O(n⁸ log n)` of a
-best response by `thm:waterfilling` (Iwata and Orlin's algorithm), the `O(n)` operations for each
-reward, and the total runtime.
+evaluations of `f` (`WaterFilling.fEvals`, the accounting of `thm:waterfilling`), with `n = |E|`;
+and the counted scheme `FptasQuad.schemeC`, which performs at each share of `Q` the counted
+water-filling, the reward and `U_P` and returns a share with the largest utility, returns a
+`(1 − ε)`-optimal share of `Q`, with exactly the minimizations and the evaluations of `f` of the
+water-fillings summed over `Q`, and at most `(⌈2ε⁻¹ ln 2⌉ + 1)·(6n³ + 56n² + 31n + 5)` arithmetic
+operations (comparisons included; `FptasQuad.schemeC_spec`), among them the `2n` for each reward.
+The shares are inputs of the scheme; their computation is not counted.
+The running time on polymatroids (`FptasQuad.schemeC_time`): for `n ≥ 1`, if an evaluation of `f`
+takes time `FO ≥ 0` and a minimization time `TS ≤ sfmTime C₁ C₂ n FO` (Iwata and Orlin's algorithm,
+cited, a hypothesis), the counted scheme takes time at most
+`4/ε · ((6 + 4C₁) n⁷ lg n · FO + (98 + 4C₁(C₂ + 1)) n⁸ lg n)`, the
+`O(n⁷ log n/ε)·FO + O(n⁸ log n/ε)` of the corollary (`lg n = ⌈log₂ n⌉ + 1`).
+Not formalised: the running time on rational polytopes, that is, rational convex quadratic
+programming in polynomial time [KTK80], and the polynomial bound in the encoding length.
 
 The proof (appE-halfrule.tex:34-36): (1) "Apply `cor:fptashom` with `p = 2`" (`fptashom_aux`, the
 corollary with the bit length of the shares, for the quadratic costs, which are homogeneous of
@@ -223,7 +408,9 @@ reward is evaluated exactly" (not formalised); (4) "The grid has `O(1/ε)` share
 (`WaterFilling.waterfilling`, with its counts; `P₊(f)` is a compact convex set containing zero, and
 the best response `x*(α)` of the quadratic model is the model's, `isPBR_bestResponse`); (6)
 "Evaluating the reward takes `O(n)` further operations per response, so the total runtime is
-`O(n⁷ log n/ε)·FO + O(n⁸ log n/ε)`" (not formalised; the counts are summed over the shares). -/
+`O(n⁷ log n/ε)·FO + O(n⁸ log n/ε)`" (the counts: summed over the shares, and the counted scheme
+`FptasQuad.schemeC` with `2n` operations for each reward, and its running time with the cited
+time of a minimization, `FptasQuad.schemeC_time`). -/
 theorem fptasquad [DecidableEq E] {ε : ℝ} (hε : ε ∈ Set.Ioo (0 : ℝ) 1) :
     ∃ Q : List ℝ, Q ≠ [] ∧ Q.length ≤ ⌈2 / ε * Real.log 2⌉₊ + 1 ∧
       (∃ s : ℕ, (s : ℝ) ≤ 4 + Real.logb 2 (1 / ε) ∧
@@ -248,7 +435,25 @@ theorem fptasquad [DecidableEq E] {ε : ℝ} (hε : ε ∈ Set.Ioo (0 : ℝ) 1) 
         (Q.map (WaterFilling.oracleCalls f (fun e => (m e : ℝ)) fun e => (β e : ℝ))).sum ≤
           (⌈2 / ε * Real.log 2⌉₊ + 1) * (2 * Fintype.card E * (Fintype.card E + 1)) ∧
         (Q.map (WaterFilling.fEvals f (fun e => (m e : ℝ)) fun e => (β e : ℝ))).sum ≤
-          (⌈2 / ε * Real.log 2⌉₊ + 1) * (2 * Fintype.card E * (2 * Fintype.card E + 1)) := by
+          (⌈2 / ε * Real.log 2⌉₊ + 1) * (2 * Fintype.card E * (2 * Fintype.card E + 1)) ∧
+        ((FptasQuad.schemeC f (fun e => (m e : ℝ)) (fun e => (β e : ℝ)) Q).val ∈ Q ∧
+          IsApproxOptimal (profit (grossValue f (fun e => (m e : ℝ)) fun e => (β e : ℝ))) ε
+            (FptasQuad.schemeC f (fun e => (m e : ℝ)) (fun e => (β e : ℝ)) Q).val ∧
+          (FptasQuad.schemeC f (fun e => (m e : ℝ)) (fun e => (β e : ℝ)) Q).cost.2.1 =
+            (Q.map (WaterFilling.oracleCalls f (fun e => (m e : ℝ)) fun e => (β e : ℝ))).sum ∧
+          (FptasQuad.schemeC f (fun e => (m e : ℝ)) (fun e => (β e : ℝ)) Q).cost.2.2 =
+            (Q.map (WaterFilling.fEvals f (fun e => (m e : ℝ)) fun e => (β e : ℝ))).sum ∧
+          (FptasQuad.schemeC f (fun e => (m e : ℝ)) (fun e => (β e : ℝ)) Q).cost.1 ≤
+            (⌈2 / ε * Real.log 2⌉₊ + 1) * (6 * Fintype.card E ^ 3 + 56 * Fintype.card E ^ 2 +
+              31 * Fintype.card E + 5)) ∧
+        (0 < Fintype.card E → ∀ FO TS C₁ C₂ : ℝ, 0 ≤ FO → 0 ≤ C₁ → 0 ≤ C₂ →
+          TS ≤ Counted.sfmTime C₁ C₂ (Fintype.card E) FO →
+          Counted.time FO TS
+              (FptasQuad.schemeC f (fun e => (m e : ℝ)) (fun e => (β e : ℝ)) Q).cost ≤
+            4 / ε * ((6 + 4 * C₁) * (Fintype.card E : ℝ) ^ 7 * Counted.lg (Fintype.card E) *
+                FO +
+              (98 + 4 * C₁ * (C₂ + 1)) * (Fintype.card E : ℝ) ^ 8 *
+                Counted.lg (Fintype.card E))) := by
   -- (1) "Apply `cor:fptashom` with `p = 2`."
   obtain ⟨Q, hne, hlen, ⟨s, hs, hQ⟩, hguar⟩ := fptashom_aux (E := E) one_lt_two hε
   have e2 : (2 : ℝ) / (2 - 1) = 2 := by norm_num
@@ -299,10 +504,13 @@ theorem fptasquad [DecidableEq E] {ε : ℝ} (hε : ε ∈ Set.Ioo (0 : ℝ) 1) 
     have hwf : ∀ q ∈ Q, WaterFilling.waterFill f m' β' q = bestResponse f m' β' q ∧
         WaterFilling.oracleCalls f m' β' q ≤ 2 * Fintype.card E * (Fintype.card E + 1) ∧
         WaterFilling.fEvals f m' β' q ≤ 2 * Fintype.card E * (2 * Fintype.card E + 1) :=
-      fun q hq => WaterFilling.waterfilling ⟨hf, hβ', hm', (hQ q hq).1.1⟩
+      fun q hq => by
+        obtain ⟨h1, h2, h3, -⟩ := WaterFilling.waterfilling ⟨hf, hβ', hm', (hQ q hq).1.1⟩
+        exact ⟨h1, h2, h3⟩
     -- (6) "Evaluating the reward takes `O(n)` further operations per response, so the total runtime
-    -- is `O(n⁷ log n/ε)·FO + O(n⁸ log n/ε)`." (not formalised; the counts summed over the shares)
-    refine ⟨hopt, fun q hq => (hwf q hq).1, ?_, ?_⟩
+    -- is `O(n⁷ log n/ε)·FO + O(n⁸ log n/ε)`." (the counts summed over the shares, the counted
+    -- scheme, and its running time below)
+    refine ⟨hopt, fun q hq => (hwf q hq).1, ?_, ?_, ?_, ?_⟩
     · calc (Q.map (WaterFilling.oracleCalls f m' β')).sum
           ≤ (Q.map fun _ => 2 * Fintype.card E * (Fintype.card E + 1)).sum :=
             List.sum_le_sum fun q hq => (hwf q hq).2.1
@@ -317,13 +525,50 @@ theorem fptasquad [DecidableEq E] {ε : ℝ} (hε : ε ∈ Set.Ioo (0 : ℝ) 1) 
             rw [List.map_const', List.sum_replicate, smul_eq_mul]
         _ ≤ (⌈2 / ε * Real.log 2⌉₊ + 1) * (2 * Fintype.card E * (2 * Fintype.card E + 1)) :=
             Nat.mul_le_mul_right _ hlen
+    · -- the counted scheme (`FptasQuad.schemeC_spec`): a share of `Q` with the largest utility,
+      -- which is `(1 − ε)`-optimal, with the minimizations and evaluations of the water-fillings
+      -- and `O(n³)` operations per share, among them the `O(n)` for the reward
+      obtain ⟨h1, h2, h3, h4, h5⟩ :=
+        FptasQuad.schemeC_spec hf hβ' hm' hne fun q hq => (hQ q hq).1
+      exact ⟨h1, hopt _ h1 h2, h3, h4, h5.trans (Nat.mul_le_mul_right _ hlen)⟩
+    · -- (6) "… so the total runtime is `O(n⁷ log n/ε)·FO + O(n⁸ log n/ε)`": the time of the
+      -- counted scheme (`FptasQuad.schemeC_time`, with the time of a minimization by [IO09] as a
+      -- hypothesis, cited), with `|Q| ≤ ⌈2ε⁻¹ ln 2⌉ + 1 ≤ 4/ε` (not in the paper: the paper counts
+      -- in prose)
+      intro hn FO TS C₁ C₂ hFO hC₁ hC₂ hTS
+      refine (FptasQuad.schemeC_time hf hβ' hm' hne (fun q hq => (hQ q hq).1) hn hFO hC₁ hC₂
+        hTS).trans (mul_le_mul_of_nonneg_right ?_ ?_)
+      · have hε0 : 0 < ε := hε.1
+        have hl : (Q.length : ℝ) ≤ ⌈2 / ε * Real.log 2⌉₊ + 1 := by exact_mod_cast hlen
+        have hc : (⌈2 / ε * Real.log 2⌉₊ : ℝ) < 2 / ε * Real.log 2 + 1 :=
+          Nat.ceil_lt_add_one (by positivity)
+        have hlog : Real.log 2 < 1 := by
+          have := Real.log_two_lt_d9
+          norm_num at this ⊢
+          linarith
+        have h2 : 2 / ε * Real.log 2 ≤ 2 / ε := by
+          have : 0 < 2 / ε := by positivity
+          nlinarith
+        have h3 : (2 : ℝ) ≤ 2 / ε := by
+          rw [le_div_iff₀ hε0]
+          nlinarith [hε.2]
+        have h4 : 4 / ε = 2 / ε + 2 / ε := by ring
+        linarith
+      · have hL : (0 : ℝ) ≤ Counted.lg (Fintype.card E) := Nat.cast_nonneg _
+        have hx : (0 : ℝ) ≤ Fintype.card E := Nat.cast_nonneg _
+        have a1 : 0 ≤ (6 + 4 * C₁) * (Fintype.card E : ℝ) ^ 7 * Counted.lg (Fintype.card E) * FO :=
+          mul_nonneg (mul_nonneg (mul_nonneg (by linarith) (pow_nonneg hx 7)) hL) hFO
+        have a2 : 0 ≤ (98 + 4 * C₁ * (C₂ + 1)) * (Fintype.card E : ℝ) ^ 8 *
+            Counted.lg (Fintype.card E) :=
+          mul_nonneg (mul_nonneg (by nlinarith) (pow_nonneg hx 8)) hL
+        linarith
 
 /-! ### The half rule -/
 
 /-- The half rule, the case `p = 2` of `thm:prule`, for quadratic costs `c(x) = ∑_e β_e x_e²/2` with
 `β > 0` on `P₊(f)`: `1/2` is a share bound, and `U_P` is nonincreasing on `[1/2, 1]`, strictly
 decreasing there if `r(z) > 0` for some `z ∈ P₊(f)`. Not in the paper as a result: the introduction
-states it, "Nevertheless, a share of at most `1/2` suffices (`thm:prule`)" (01-introduction.tex:23),
+states it, "Nevertheless, a share of at most `1/2` suffices (`thm:prule`)" (01-introduction.tex:20),
 as do the abstract ("an optimal contract for quadratic costs always exists with a share of at most
 `1/2`", abstract.tex:4) and the caption of `fig:intro` ("By our share bound (`thm:prule`), `U_P` is
 decreasing on the shaded interval `[1/2, 1]`", fig-intro.tex:63); Section 5 no longer takes `p = 2`

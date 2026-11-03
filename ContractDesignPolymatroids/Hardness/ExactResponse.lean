@@ -1,11 +1,11 @@
--- stamp r11 2026-11-02
+-- stamp r12 2026-11-03
 import ContractDesignPolymatroids.Hardness.CutForms
 
 /-!
 # Exact best responses: `lem:exactbr`
 
 The STOC version's `lem:exactbr` (Appendix C.8, `sec:D-npcomplete`, "Exact best responses and
-NP-completeness", `stoc-sections/appD-hardness.tex:1799-1807`, proof lines 1809-1881). The lemma is
+NP-completeness", `stoc-sections/appD-hardness.tex:1796-1804`, proof lines 1806-1878). The lemma is
 about the bit model: for an instance `(f, m, β)` of `𝒞_cut` with the cut form `(D, cap, ω)` and a
 rational share `α ≥ 0`, (a) `x*(α)` is rational with short coordinates, (b) `x = x*(α)` is decided
 and (c) `x*(α)` is computed in polynomial time, by maximum flows. The encoding lengths, the test of
@@ -170,7 +170,7 @@ lemma exists_mem_blockD {x : E → ℝ} {e : E}
       rw [← hθj]
       exact theta_lt_theta (Nat.lt_succ_self j) hj.le
 
-/-- **`lem:exactbr`(a)** (`stoc-sections/appD-hardness.tex:1802`, proof lines 1814-1841), its
+/-- **`lem:exactbr`(a)** (`stoc-sections/appD-hardness.tex:1799`, proof lines 1811-1838), its
 mathematical part: let `(f, m, β)` be an instance of `𝒞_cut` and `α ≥ 0`, let `x := x*(α)` with
 the marginals `ρ = αm − βx`, the distinct positive values `ϱ_1 > ⋯ > ϱ_k` of `ρ` (`theta ρ 0`,
 indices from `0`), `A_0 := ∅`, `A_i := A_{ϱ_i}(α)` and `D_i := A_i ∖ A_{i−1}`. Then
@@ -282,7 +282,7 @@ section Network
 variable {E : Type*} [Fintype E] [DecidableEq E]
 
 /-- The network `G_y` of `lem:exactbr`(b) on the nodes `Option (Option E)`: the source
-`s = none`, the sink `s' = some none` and the nodes `some (some e)` of `E`, with the arcs of `D`
+`s = none`, the sink `s' = some none`, and the nodes `some (some e)` of `E`, with the arcs of `D`
 and their capacities, an arc `s → e` of capacity `max(−y_e, 0)` and an arc `e → s'` of capacity
 `max(y_e, 0)` for every `e ∈ E`; `netCap a b` is the capacity of the arc `a → b` (`0` if there is
 none). -/
@@ -312,7 +312,7 @@ omit [Fintype E] in
     some (some e) ∈ srcSide S ↔ e ∈ S := by
   simp [srcSide]
 
-/-- **`lem:exactbr`(b)**, the capacity of a cut (`stoc-sections/appD-hardness.tex:1845-1850`): the
+/-- **`lem:exactbr`(b)**, the capacity of a cut (`stoc-sections/appD-hardness.tex:1842-1847`): the
 arcs of `G_y` that leave `{s} ∪ S` have total capacity
 `cut_D(S) + ∑_{e∈S} max(y_e, 0) + ∑_{e∈E∖S} max(−y_e, 0) = cut_D(S) + y(S) + ∑_e max(−y_e, 0)`, as
 `max(y_e, 0) − max(−y_e, 0) = y_e`. -/
@@ -360,7 +360,7 @@ theorem eq_srcSide {U : Finset (Option (Option E))} (hs : none ∈ U) (hs' : som
   ext a
   rcases a with _ | _ | e <;> simp [hs, hs']
 
-/-- **`lem:exactbr`(b)**, the minimizers (`stoc-sections/appD-hardness.tex:1851`): `S` minimizes
+/-- **`lem:exactbr`(b)**, the minimizers (`stoc-sections/appD-hardness.tex:1848`): `S` minimizes
 `cut_D + y` if and only if `{s} ∪ S` is the source side of a minimum `s`-`s'` cut of `G_y`. -/
 theorem isMinimiser_iff (F : CutForm E) (y : E → ℝ) (S : Finset E) :
     (∀ S', F.cut S + ∑ e ∈ S, y e ≤ F.cut S' + ∑ e ∈ S', y e) ↔
@@ -377,7 +377,7 @@ theorem isMinimiser_iff (F : CutForm E) (y : E → ℝ) (S : Finset E) :
 
 variable {f : Finset E → ℝ} {m β : E → ℝ} {α : ℝ}
 
-/-- **`lem:exactbr`(b)** (`stoc-sections/appD-hardness.tex:1856-1860`), its mathematical part: for
+/-- **`lem:exactbr`(b)** (`stoc-sections/appD-hardness.tex:1853-1857`), its mathematical part: for
 `α ≥ 0` and `x ∈ ℝ^E`, by `prop:optchar`, `x = x*(α)` if and only if `x ≥ 0`, `ρ(x) ≥ 0`,
 `x(S) ≤ f(S)` for every `S ⊆ E`, and the at most `|E|` sets `A_θ(x)`, for the positive values `θ`
 of `ρ(x)`, are tight for `x`; and the third condition says that `cut_D + (ω − x)`, which vanishes
@@ -438,9 +438,9 @@ section Search
 
 variable {E : Type*} [Fintype E] [DecidableEq E] {f : Finset E → ℝ} {m β : E → ℝ} {α : ℝ}
 
-/-- **`lem:exactbr`(c)** (`stoc-sections/appD-hardness.tex:1862-1880`), its first two steps, which
+/-- **`lem:exactbr`(c)** (`stoc-sections/appD-hardness.tex:1859-1877`), its first two steps, which
 the paper states for every `θ`: for `(f, m, β) ∈ 𝒞_cut` with the cut form `(D, cap, ω)`, `α ≥ 0`,
-`x = x*(α)`, `ρ = ρ(α)`, `ϱ_1 > ⋯ > ϱ_k` and `A_0, …, A_k` as in (a) (`theta ρ 0`, `chainA`;
+`x = x*(α)`, `ρ = ρ(α)`, `ϱ_1 > ⋯ > ϱ_k`, and `A_0, …, A_k` as in (a) (`theta ρ 0`, `chainA`;
 `ϱ_{k+1} := 0`): (1) `A_θ(α) = A_i` for `ϱ_{i+1} < θ ≤ ϱ_i` (`i = 1, …, k`), and
 `A_θ(α) = A_0 = ∅` for `θ > ϱ_1`; (2) by `thm:levelsets`, `A_θ(α)` is the largest minimizer of
 `F_{α,θ} = f − αt + θβ⁻¹ = cut_D + (ω − αt + θβ⁻¹)`, so `{s} ∪ A_θ(α)` is the source side of a

@@ -1,18 +1,18 @@
--- stamp r8 2026-11-02
+-- stamp r9 2026-11-03
 import ContractDesignPolymatroids.OptimalShare.Witness
 
 /-!
-# Networks of the type of Allman, Lo and McCormick
+# Networks of the type of Allman, Lo, and McCormick
 
 The networks of Theorem `thm:alm` and Theorem `thm:polybits` (ii) of the STOC version
 (`stoc-sections/06-optimal-share.tex:58-78`), with the parts of the proofs that concern them:
 
-* `cutCap`: the capacity of the cut `{s} ∪ S` in a network with a source `s`, a sink `s'` and the
+* `cutCap`: the capacity of the cut `{s} ∪ S` in a network with a source `s`, a sink `s'`, and the
   nodes `E`, source arcs `s → j` of capacity `a_j λ + b_j μ` and constant capacities `u_ij` on the
   arcs `i → j` and `u'_i` on the arcs `i → s'`; `IsUniqueMinCut`: `{s} ∪ S` is the unique minimum
   cut.
 * `ALMNetwork`: what the proof of `thm:alm` (`stoc-sections/appB-quadratic.tex:518-534`) takes from
-  Allman, Lo and McCormick (their Theorem 1.1 with the network of their Section 2).
+  Allman, Lo, and McCormick (their Theorem 1.1 with the network of their Section 2).
 * The first bounds of the sizes in the proof of `thm:polybits`, (5) in the numbering of
   `Stoc.PolyBit.polybits` ("Finally, for part (i), we show that all numbers have `O(n log n)` bits
   and that `f` can be evaluated in polynomial time.", `stoc-sections/appC-bits.tex:310-316`):
@@ -41,7 +41,7 @@ section Cuts
 variable {E : Type*} [Fintype E] [DecidableEq E]
 
 /-- The capacity of the cut `{s} ∪ S`, the total capacity of the arcs that leave `{s} ∪ S`, in a
-network with a source `s`, a sink `s'` and the nodes `E`, with the arcs `s → j` of capacity
+network with a source `s`, a sink `s'`, and the nodes `E`, with the arcs `s → j` of capacity
 `a_j λ + b_j μ`, `i → j` of capacity `u_ij` and `i → s'` of capacity `u'_i`. -/
 def cutCap (a b : E → ℝ) (u : E → E → ℝ) (u' : E → ℝ) (l μ : ℝ) (S : Finset E) : ℝ :=
   ∑ j ∈ univ \ S, (a j * l + b j * μ) + ∑ i ∈ S, u' i + ∑ i ∈ S, ∑ j ∈ univ \ S, u i j
@@ -52,8 +52,8 @@ def IsUniqueMinCut (a b : E → ℝ) (u : E → E → ℝ) (u' : E → ℝ) (l �
   ∀ T, T ≠ S → cutCap a b u u' l μ S < cutCap a b u u' l μ T
 
 variable (E) in
-/-- What the proof of `thm:alm` takes from Allman, Lo and McCormick (`appB-quadratic.tex:519-525`,
-their Theorem 1.1 with the network of their Section 2): a network with a source `s`, a sink `s'`
+/-- What the proof of `thm:alm` takes from Allman, Lo, and McCormick (`appB-quadratic.tex:519-525`,
+their Theorem 1.1 with the network of their Section 2): a network with a source `s`, a sink `s'`,
 and the nodes `E`, arcs `s → j` of capacity `a_j λ + b_j θ` with `a_j, b_j > 0` and constant
 nonnegative capacities on all other arcs, in which every `S ⊆ E` gives the unique minimum cut
 `{s} ∪ S` at some point `(λ_S, θ_S) ∈ (0, 1)²`. -/
@@ -344,12 +344,13 @@ lemma wit_eq (S : Finset (Fin n)) :
   exact ⟨rfl, rfl⟩
 
 /-- **`thm:polybits` (ii)**, with its proof (`stoc-sections/appC-bits.tex:335-362`, "It remains to
-prove part (ii), for networks."): there is a network of type [ALM22] with a source, a sink, `n`
-further nodes and integral capacities at most `bound n` (so of `O(n log n)` bits, `size_bound_le`;
-nonnegative, as the capacities of a network are), except that the arc from the source to node `j`
-has capacity `a_j λ + b_j μ` for two parameters `(λ, μ)` and positive integers `a_j, b_j` at most
-`bound n`, in which every cut `{s} ∪ S` is the unique minimum cut at some point of `(0, 1)²` whose
-coordinates are quotients `p/r`, `q/r` of integers at most `bound n`.
+prove part (ii), for networks."): there is a network of type [ALM22] with a source `s`, a sink, and
+`n` further nodes. The arc from `s` to node `j` has capacity `a_j λ + b_j μ` for parameters
+`(λ, μ)` and positive integers `a_j, b_j`. Each coefficient and each fixed arc capacity is an
+integer representable in `O(n log n)` bits (at most `bound n`, `size_bound_le`; the fixed
+capacities are nonnegative, as the capacities of a network are). Every cut `{s} ∪ S` is the unique
+minimum cut at some point of `(0, 1)²` whose coordinates each have `O(n log n)` bits (quotients
+`p/r`, `q/r` of integers at most `bound n`).
 
 The paper's steps: (1) the network with `Ξ = 1 + ∑_k θ_k`, arcs `k → i` of capacity
 `d_i^{(k)}` for `i < k`, arcs `k → s'` of capacity `K_k − D_k + Ξ + t_k = t_k (λ̄_k + 1) + Ξ + 1`
@@ -371,7 +372,7 @@ theorem polybits_ii (hn : 1 ≤ n) :
   have hτ := tau_pos n
   have h3n : (1 : ℤ) ≤ 3 ^ n := one_le_pow₀ (by norm_num)
   have hθsum := theta_sum_nonneg (n := n)
-  -- (1) "Let `Ξ := 1 + ∑_{k∈E} θ_k`, and consider the network with a source `s`, a sink `s'` and
+  -- (1) "Let `Ξ := 1 + ∑_{k∈E} θ_k`, and consider the network with a source `s`, a sink `s'`, and
   -- the nodes `E`, with an arc `k → i` of capacity `d_i^{(k)}` for all `i < k`, an arc `k → s'` of
   -- capacity `K_k − D_k + Ξ + t_k = t_k (λ̄_k + 1) + Ξ + 1` for all `k ∈ E`, and an arc `s → j`
   -- of capacity `t_j λ + μ` for all `j ∈ E`. All constant capacities are nonnegative integers."
@@ -499,7 +500,7 @@ theorem polybits_ii (hn : 1 ≤ n) :
 
 end PartII
 
-/-- **Allman, Lo and McCormick, Theorem 1.1** with the network of their Section 2, in the form the
+/-- **Allman, Lo, and McCormick, Theorem 1.1** with the network of their Section 2, in the form the
 proof of `thm:alm` uses it (`ALMNetwork`) (not in the paper: the paper cites [ALM22, Theorem 1.1];
 proved here from the network of the proof of `thm:polybits` (ii), `polybits_ii`). The hypothesis
 `n ≥ 1` is that of `thm:alm`. -/

@@ -1,14 +1,14 @@
--- stamp r5 2026-11-02
+-- stamp r6 2026-11-03
 import ContractDesignPolymatroids.Hardness.Sizes
 import ContractDesignPolymatroids.Hardness.Gadget
 
 /-!
 # The sizes of the comb gadget: the last part of the proof of `thm:gadget`
 
-The STOC version's `thm:gadget` (Appendix C.3, `stoc-sections/appD-hardness.tex:193-199`) ends with
-"All numbers computed have `O(k + log μ^in_k + log N)` bits." (line 198), and the last paragraph of
-its proof (Appendix C.7, lines 1750-1783) shows it: "Finally, we show that the output lies in
-`𝒞_cut`, that its numbers have polynomial size and that it is computed in polynomial time."
+The STOC version's `thm:gadget` (Appendix C.3, `stoc-sections/appD-hardness.tex:191-197`) ends with
+"All numbers computed have `O(k + log μ^in_k + log N)` bits." (line 196), and the last paragraph of
+its proof (Appendix C.7, lines 1748-1780) shows it: "Finally, we show that the output lies in
+`𝒞_cut`, that its numbers have polynomial size, and that it is computed in polynomial time."
 `ContractDesignPolymatroids/Hardness/Gadget.lean` proves the first part of that paragraph (the output lies in `𝒞_cut`,
 with a cut form that exists); this file proves the rest, in the paper's order:
 
@@ -18,8 +18,8 @@ with a cut form that exists); this file proves the rest, in the paper's order:
 * the magnitudes: `|Θ| ≤ M_{k−1} + 4 max_S |g(S)|`, `Λ ≤ 12ϖ_{k−1}|Θ| + 2 max_S |g(S)|` and
   `Λ' ≤ δN` (`gΘ_le`, `gΛ_le`, `gΛ'_le`), so `N_min` has `O(k + log μ^in_k)` bits
   (`gNmin_le`);
-* the denominators: `ζ_1 = 1/3`, the rewards are integers, `β_e ∈ (1/(9·8^k))ℤ`, so
-  `Θ ∈ (1/(9·8^k𝔇_{k−1}))ℤ` (`gΘ_inZ`), `2t_e ∈ ℤ`, `1/β_e ∈ (1/4)ℤ`, `Λ' ∈ (δ/3)ℤ` and
+* the denominators: `ζ_1 = 1/3`, the rewards are integers, and `β_e ∈ (1/(9·8^k))ℤ`, so
+  `Θ ∈ (1/(9·8^k𝔇_{k−1}))ℤ` (`gΘ_inZ`), `2t_e ∈ ℤ`, `1/β_e ∈ (1/4)ℤ`, `Λ' ∈ (δ/3)ℤ`, and
   `κ ∈ (1/10)ℤ` (`gadget_items`);
 * "The numbers of the output are …. Apart from `β_{e_g}`, each of them is a sum of `O(|E|)`
   products of at most three of the numbers …. So their denominators divide a common integer
@@ -27,7 +27,7 @@ with a cut form that exists); this file proves the rest, in the paper's order:
   output, `β_{e_g}` included, has `O(k + log μ^in_k + log N)` bits": `GadgetNumber` lists the
   numbers, `𝔇g` is the common integer, and `gadget_sizes` is the conclusion, with the explicit
   bound `2^B`, `B = 300(k + ⌊log₂ μ^in_k⌋ + ⌊log₂ N⌋ + 1)` (`Bits`);
-* "The values `g(E)`, `g(E ∖ {e})` and `g({e})` needed for `Θ` and `Λ` are `2|E| + 1` evaluations
+* "The values `g(E)`, `g(E ∖ {e})`, and `g({e})` needed for `Θ` and `Λ` are `2|E| + 1` evaluations
   of `g`": `gadget_evals` (`Θ` and `Λ` depend on `g` only through these values).
 
 Not formalised: "So the algorithm runs in polynomial time", a statement about Turing machines,
@@ -583,9 +583,9 @@ lemma κT_spec {k : ℕ} (hF : InF μin k) : 0 < κT μin ∧ κT μin ≤ 1 ∧
   · exact ⟨μin 0, by push_cast; ring⟩
 
 /-- The denominators of part (4) of the proof of `thm:gadget`: "For the denominators, `ζ_1 = 1/3`,
-all rewards are integers and `β_e ∈ (1/(9·8^k))ℤ`, so `Θ ∈ (1/(9·8^k𝔇_{k−1}))ℤ` with `𝔇_{k−1}`
+all rewards are integers, and `β_e ∈ (1/(9·8^k))ℤ`, so `Θ ∈ (1/(9·8^k𝔇_{k−1}))ℤ` with `𝔇_{k−1}`
 from the proof of `lem:sizes`. Moreover, `2t_e ∈ ℤ` …, `1/β_e ∈ (1/4)ℤ`,
-`Λ' = δN − 1/3 ∈ (δ/3)ℤ` and `κ ∈ (1/10)ℤ`" (`x ∈ (δ/3)ℤ` is `InZ (3/δ) x`, `3/δ = 3·(1/δ)`). -/
+`Λ' = δN − 1/3 ∈ (δ/3)ℤ`, and `κ ∈ (1/10)ℤ`" (`x ∈ (δ/3)ℤ` is `InZ (3/δ) x`, `3/δ = 3·(1/δ)`). -/
 lemma gadget_items {k : ℕ} (hF : InF μin k) (N : ℕ) :
     ζ₁ = 1 / 3 ∧ (∀ e, InZ 1 (mT μin (k - 1) e)) ∧
     (∀ e, InZ (9 * 8 ^ k) (βT μin (k - 1) e)) ∧
@@ -854,7 +854,7 @@ lemma 𝔇g_le {k : ℕ} (hF : InF μin k) :
 /-- The denominators of the numbers of the output: all of them lie in `(1/𝔇g)ℤ`, by the
 denominators of part (4) of the proof of `thm:gadget` (`gadget_items`) and of the proof of
 `lem:sizes`, as each "is a sum of `O(|E|)` products of at most three of the numbers `Θ`, `Λ'`, `κ`,
-`α_Γ = δN`, values of `g`, numbers of the parameter rule, rewards, `1/β_e` and `t_e`" (apart from
+`α_Γ = δN`, values of `g`, numbers of the parameter rule, rewards, `1/β_e`, and `t_e`" (apart from
 `β_{e_g}` and from `Λ`, which are quotients; the last conjunct is the numerator of `Λ`). -/
 lemma gadget_den {k : ℕ} (hF : InF μin k) (N : ℕ) :
     InZ (𝔇g μin k) (gΘ μin k) ∧ InZ (𝔇g μin k) (gΛ' μin N) ∧ InZ (𝔇g μin k) (gαΓ μin N) ∧
@@ -1303,7 +1303,7 @@ variable (μin) in
 /-- The numbers computed for the output `I(μ^in, N)` (`thm:gadget`, "All numbers computed"; part
 (4) of its proof: "The numbers of the output are the rewards and curvatures (among them
 `β_{e_g} = 1/(q + κ)` of `e_g`), the values of `f_c`, the capacities and weights of its cut form,
-`C_g`, `p`, `q`, `δ` and `κ`"), with `N_min`, `Θ`, `Λ`, `Λ' = δN − ζ_1` and `α_Γ = δN`, which the
+`C_g`, `p`, `q`, `δ`, and `κ`"), with `N_min`, `Θ`, `Λ`, `Λ' = δN − ζ_1` and `α_Γ = δN`, which the
 algorithm computes on the way, and the values of the output's rank function. The numbers of the
 parameter rule and the values of `g` are those of `lem:sizes` (`sizes`). -/
 def GadgetNumber (k N : ℕ) (x : ℝ) : Prop :=
@@ -1314,15 +1314,15 @@ def GadgetNumber (k N : ℕ) (x : ℝ) : Prop :=
     (∃ a ∈ (gadgetForm μin k N).D, x = (gadgetForm μin k N).cap a) ∨
     ∃ e, x = (gadgetForm μin k N).ω e
 
-/-- **The sizes in `thm:gadget`** (`stoc-sections/appD-hardness.tex:198`, "All numbers computed have
-`O(k + log μ^in_k + log N)` bits", and part (4) of the proof, lines 1750-1783): for `μ^in ∈ 𝔉` of
+/-- **The sizes in `thm:gadget`** (`stoc-sections/appD-hardness.tex:196`, "All numbers computed have
+`O(k + log μ^in_k + log N)` bits", and part (4) of the proof, lines 1748-1780): for `μ^in ∈ 𝔉` of
 length `k` and an integer `N ≥ N_min`, every number of the output `I(μ^in, N)` and of its cut form
 (`GadgetNumber`, with `N_min`, `Θ`, `Λ`, `Λ'` and `α_Γ`) is a rational whose magnitude and
 denominator are at most `2^B` with `B = 300(k + ⌊log₂ μ^in_k⌋ + ⌊log₂ N⌋ + 1)` (`Bits`), as
 `lem:sizes` (`sizes`) says for the numbers of the parameter rule and the values of `g`.
 
 The proof's steps: (1) the output has a cut form, computed along the construction (`formT`,
-`gadgetForm`, `gadgetForm_fn`); (2) "For the sizes, `lem:sizes` applies to `g`, `m` and `β`"
+`gadgetForm`, `gadgetForm_fn`); (2) "For the sizes, `lem:sizes` applies to `g`, `m`, and `β`"
 (`level_bounds`, `level_pow`); (3) "`|Θ| ≤ M_{k−1} + 4 max_{S⊆E} |g(S)|` … and
 `Λ ≤ 12ϖ_{k−1}|Θ| + 2 max_{S⊆E} |g(S)|` …. Also `Λ' ≤ δN`. So `N_min` has `O(k + log μ^in_k)`
 bits" (`gΘ_le`, `gΛ_le`, `gΛ'_le`, `gNmin_le`); (4) the denominators of `ζ_1`, the rewards, `β_e`,
@@ -1339,7 +1339,7 @@ theorem gadget_sizes {k : ℕ} (hF : InF μin k) {N : ℕ} (hN : gNmin μin k �
   -- (1) "By `prop:base` and `lem:cutforms`(c), the output has a cut form, computed along the
   -- construction." (`gadgetForm`, `gadgetForm_fn`; its capacities and weights are numbers of
   -- `GadgetNumber`)
-  -- (2) "For the sizes, `lem:sizes` applies to `g`, `m` and `β`." (`level_bounds`, `level_pow`,
+  -- (2) "For the sizes, `lem:sizes` applies to `g`, `m`, and `β`." (`level_bounds`, `level_pow`,
   -- in the lemmas below)
   -- (3) "Moreover, `|Θ| ≤ M_{k−1} + 4 max_{S⊆E} |g(S)|`, since `ζ_1 < 1` and `β_e ≤ 4`, and
   -- `Λ ≤ 12ϖ_{k−1}|Θ| + 2 max_{S⊆E} |g(S)|`, since `1/β_e ≤ 12ϖ_{k−1}` and `t_e ≥ 1`. Also
@@ -1350,15 +1350,15 @@ theorem gadget_sizes {k : ℕ} (hF : InF μin k) {N : ℕ} (hN : gNmin μin k �
   have hB : 300 * (k + Nat.log 2 (μin (k - 1)) + Nat.log 2 N + 1) = 3 * B := by
     rw [hBdef]; ring
   rw [hB]
-  -- (4) "For the denominators, `ζ_1 = 1/3`, all rewards are integers and `β_e ∈ (1/(9·8^k))ℤ`, so
+  -- (4) "For the denominators, `ζ_1 = 1/3`, all rewards are integers, and `β_e ∈ (1/(9·8^k))ℤ`, so
   -- `Θ ∈ (1/(9·8^k𝔇_{k−1}))ℤ` with `𝔇_{k−1}` from the proof of `lem:sizes`. Moreover, `2t_e ∈ ℤ`
   -- (the dummies `τ_{1,1}` and `τ_{2,1}` have `t_e = 9/2`), `1/β_e ∈ (1/4)ℤ`,
-  -- `Λ' = δN − 1/3 ∈ (δ/3)ℤ` and `κ ∈ (1/10)ℤ`." (`gadget_items`, in `gadget_den`)
+  -- `Λ' = δN − 1/3 ∈ (δ/3)ℤ`, and `κ ∈ (1/10)ℤ`." (`gadget_items`, in `gadget_den`)
   -- (5) "The numbers of the output are the rewards and curvatures (among them
   -- `β_{e_g} = 1/(q + κ)` of `e_g`), the values of `f_c`, the capacities and weights of its cut
-  -- form, `C_g`, `p`, `q`, `δ` and `κ`. Apart from `β_{e_g}`, each of them is a sum of `O(|E|)`
+  -- form, `C_g`, `p`, `q`, `δ`, and `κ`. Apart from `β_{e_g}`, each of them is a sum of `O(|E|)`
   -- products of at most three of the numbers `Θ`, `Λ'`, `κ`, `α_Γ = δN`, values of `g`, numbers
-  -- of the parameter rule, rewards, `1/β_e` and `t_e`. So their denominators divide a common
+  -- of the parameter rule, rewards, `1/β_e`, and `t_e`. So their denominators divide a common
   -- integer with `O(k + log μ^in_k + log N)` bits, and so do their magnitudes." (`GadgetNumber`;
   -- the common integer `𝔇g` in `gadget_den`, the magnitudes in `gadget_mag`, and `gadget_bits`)
   obtain ⟨dΘ, dΛ', dαΓ, dC, dp, dq, dδ', dκ, dN, dM, dβ, dt, dfc, dF, dcap, dω, dnum⟩ :=
@@ -1399,11 +1399,11 @@ theorem gadget_sizes {k : ℕ} (hF : InF μin k) {N : ℕ} (hN : gNmin μin k �
   · exact prim3 (dcap a ha) (mcap a ha)
   · exact prim3 (dω e) (mω e)
 
-/-- The sets at which the algorithm evaluates `g` for `Θ` and `Λ`: `E`, `E ∖ {e}` and `{e}`. -/
+/-- The sets at which the algorithm evaluates `g` for `Θ` and `Λ`: `E`, `E ∖ {e}`, and `{e}`. -/
 def gQueries (k : ℕ) : Finset (Finset (Gr (k - 1))) :=
   insert univ ((univ.image fun e => univ.erase e) ∪ univ.image fun e => {e})
 
-/-- The proof of `thm:gadget` (part (4)): "The values `g(E)`, `g(E ∖ {e})` and `g({e})` needed for
+/-- The proof of `thm:gadget` (part (4)): "The values `g(E)`, `g(E ∖ {e})`, and `g({e})` needed for
 `Θ` and `Λ` are `2|E| + 1` evaluations of `g`": there are at most `2|E| + 1` such sets
 (`gQueries`), and `Θ` and `Λ` are the same for every function that agrees with `g` on them. -/
 theorem gadget_evals (k : ℕ) :

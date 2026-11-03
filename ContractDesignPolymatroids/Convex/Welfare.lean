@@ -1,10 +1,10 @@
--- stamp r7 2026-11-02
+-- stamp r8 2026-11-03
 import ContractDesignPolymatroids.Convex.Model
 
 /-!
 # Convex costs: a share bound from the welfare
 
-The STOC version's `lem:welfare` (`stoc-sections/appF-convex.tex`:36-56, in `app:convex`):
+The STOC version's `lem:welfare` (`stoc-sections/appF-convex.tex`:32-52, in `app:convex`):
 `OPT ≤ W ≤ r̄`, and if `W > 0`, then `OPT ≥ W/(2 ln(2r̄/W))` (`welfare_lemma`), in the setting of
 `prop:convexscheme` (`Setting`).
 
@@ -97,7 +97,7 @@ lemma tendsto_riemannSum {φ : ℝ → ℝ} {a : ℝ} (ha : 0 ≤ a) (hφ : Cont
 
 variable {E : Type*} [Fintype E] {P : Set (E → ℝ)} {m : E → ℝ} {c : (E → ℝ) → ℝ} {rb : ℝ}
 
-/-- **`eq:F-incr`** (appF-convex.tex:45-48): for `0 ≤ α < α' ≤ 1`, "the best response `x*(α')` is
+/-- **`eq:F-incr`** (appF-convex.tex:41-44): for `0 ≤ α < α' ≤ 1`, "the best response `x*(α')` is
 feasible at `α`, and `x*(α)` at `α'`, so `V(α) ≥ V(α') − (α' − α) r(x*(α'))` and
 `V(α') ≥ V(α) + (α' − α) r(x*(α))`, that is,
 `(α' − α) r(x*(α)) ≤ V(α') − V(α) ≤ (α' − α) r(x*(α'))`". (The bounds on `α`, `α'` are not
@@ -123,7 +123,7 @@ theorem incr (h : Setting P m c rb) {α α' : ℝ} (_hα : 0 ≤ α) (_hαα' : 
   rw [hy'S] at h1
   constructor <;> linarith
 
-/-- **`lem:welfare`** (Lemma D.6, appF-convex.tex:38-40, proof 42-54): `OPT ≤ W ≤ r̄`, and if
+/-- **`lem:welfare`** (Lemma D.6, appF-convex.tex:34-36, proof 38-50): `OPT ≤ W ≤ r̄`, and if
 `W > 0`, then `OPT ≥ W/(2 ln(2r̄/W))`.
 
 The proof. "We first prove the upper bounds": (U1) `W ≥ r(y) − c(y) = U_P(α) + V(α) ≥ U_P(α)` for

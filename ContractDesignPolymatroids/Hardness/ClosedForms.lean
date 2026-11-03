@@ -1,11 +1,11 @@
--- stamp r9 2026-11-02
+-- stamp r10 2026-11-03
 import ContractDesignPolymatroids.Hardness.Inputs
 
 /-!
 # The two windows of a step: bands and closed forms
 
 The STOC version's notation of `sec:D-onelevel`, "The two windows"
-(`stoc-sections/appD-hardness.tex:720-749`), and `lem:closedforms` (lines 751-789), for the step
+(`stoc-sections/appD-hardness.tex:718-747`), and `lem:closedforms` (lines 749-788), for the step
 `k → k + 1` of the levels of `def:tower` built by the parameter rule (`def:ruleP`):
 
 * `ρT`, `ρf`, `ρh`, `θb`: the marginals `ρ^{(k)}` of level `k`, `ρ^f` of `f = f_{k+1}`, `ρ^h` of
@@ -138,7 +138,7 @@ lemma μT_pos {K : ℕ} (hF : InF μin K) {j : ℕ} (hj : j < K) : 0 < μT μin 
 /-- `μ^in_1 > 0` for an input in `𝔉`. -/
 lemma μin0_pos {K : ℕ} (hF : InF μin K) : 0 < μin 0 := hF.2.1 0 (by have := hF.1; omega)
 
-/-- The paragraph before `lem:closedforms` (`stoc-sections/appD-hardness.tex:724-734`): by
+/-- The paragraph before `lem:closedforms` (`stoc-sections/appD-hardness.tex:722-732`): by
 `lem:fullplane`(f) and `lem:translation`(c) with the translation vector `(μ, m_*μ)`, every
 `e ∈ E_k` satisfies (`eq:D-bands`) `ρ^f_e(α) = ρ^{(k)}_e(α)` and
 `ρ^h_e(α) = ρ^{(k)}_e(α − μ) + m_*μ`, and the dummies have `ρ^f_{τ_1}(α) = αm_δ − β_δF_{τ_1}`,
@@ -164,7 +164,7 @@ theorem D_bands (k : ℕ) (α : ℝ) :
   · show rho _ _ _ α none = rho _ _ _ α none + _
     rw [StepData.rho_h_τ₂ H, StepData.rho_f_τ₂ H, stepD_w]
 
-/-- The paragraph before `lem:closedforms` (`stoc-sections/appD-hardness.tex:731-732`):
+/-- The paragraph before `lem:closedforms` (`stoc-sections/appD-hardness.tex:729-730`):
 `ρ^f_{τ_2} = ρ^f_{τ_1} + φw` with `φ = β_δΔF/w`, as `F_{τ_1} = F_{τ_2} + ΔF` (P6). -/
 theorem ρf_τ₂_eq {k : ℕ} (hμ : 0 < μT μin (k + 1)) (α : ℝ) :
     ρf μin k α none = ρf μin k α (some none) + φ μin k * (lvl μin k).w (μT μin (k + 1)) := by
@@ -175,7 +175,7 @@ theorem ρf_τ₂_eq {k : ℕ} (hμ : 0 < μT μin (k + 1)) (α : ℝ) :
   field_simp
   ring
 
-/-- The sentence before `lem:closedforms` (`stoc-sections/appD-hardness.tex:737-747`): `θ_1` is
+/-- The sentence before `lem:closedforms` (`stoc-sections/appD-hardness.tex:735-745`): `θ_1` is
 the number `θ_{U,W} = (α t(D) − X_{U,W})/β⁻¹(D)` of `lem:windows` for `(U, W) = (E ∖ {τ_1}, E)`,
 with `D = (W ∖ U) ∪ {b} = {b, τ_1}` and `X_{U,W} = K − d(E) + F_{τ_1}`. -/
 theorem θ1_θUW (k : ℕ) (α : ℝ) : θ1 μin k α = θUW μin k α (univ.erase (some none)) univ := by
@@ -204,7 +204,7 @@ theorem θ2_θUW (k : ℕ) (α : ℝ) : θ2 μin k α = θUW μin k α ∅ {none
   rw [StepData.insertNone_τ₂, hX, sum_pair hne, sum_pair hne, stepD_w]
   rfl
 
-/-- The first step of the proof of `lem:closedforms`(b) (`stoc-sections/appD-hardness.tex:767-769`):
+/-- The first step of the proof of `lem:closedforms`(b) (`stoc-sections/appD-hardness.tex:765-767`):
 as `1/β_b + 1/β_δ = 13/β_δ` and `t_b + t_{τ_1} = (12m_b + m_δ)/β_δ`,
 `θ_1(α) = αm̄ − β_δ(K − d(E) + F_{τ_1})/13`. -/
 lemma θ1_eq (k : ℕ) (α : ℝ) :
@@ -229,7 +229,7 @@ lemma θ1_eq (k : ℕ) (α : ℝ) :
   ring
 
 /-- As `θ1_eq`, the step of the proof of `lem:closedforms`(b) "in the same way" for `θ_2`
-(`stoc-sections/appD-hardness.tex:772-773`): as `t_b + t_{τ_2} = (12m_b + m_δ)/β_δ`,
+(`stoc-sections/appD-hardness.tex:770-771`): as `t_b + t_{τ_2} = (12m_b + m_δ)/β_δ`,
 `θ_2(α) = αm̄ − β_δ(K + F_{τ_2} − w/β_δ)/13`. -/
 lemma θ2_eq (k : ℕ) (α : ℝ) :
     θ2 μin k α = α * (lvl μin k).mbar - (lvl μin k).βδ * ((lvl μin k).K (μT μin (k + 1))
@@ -267,8 +267,8 @@ lemma u2_slope (k : ℕ) (α α' : ℝ) : u2 μin k α' - u2 μin k α = (lvl μ
 /-! ### `lem:closedforms` -/
 
 /-- `lem:closedforms`(a) under the weaker hypothesis `μ = μ_{k+1} > 0` instead of `μ^in ∈ 𝔉` of
-length at least `k + 2`, which is what the proofs below use (`stoc-sections/appD-hardness.tex:754`,
-proof lines 764-765): at the step `k → k + 1`, `d(E) = (2 + d̄)w/β_δ` and `φ = 1 + d̄ − a_0/(sw)`.
+length at least `k + 2`, which is what the proofs below use (`stoc-sections/appD-hardness.tex:752`,
+proof lines 762-763): at the step `k → k + 1`, `d(E) = (2 + d̄)w/β_δ` and `φ = 1 + d̄ − a_0/(sw)`.
 
 The proof's steps: (a1) by (P3), `d(E) = d(E_k) + 2w/β_δ = (2 + d̄)w/β_δ`; (a2) (P5) with the
 definition of `a_0` in (P6) gives `φ = β_δΔF/w = 1 + d̄ − a_0/(sw)`. -/
@@ -292,7 +292,7 @@ theorem closedforms_a_aux (k : ℕ) (hμ : 0 < μT μin (k + 1)) :
 
 /-- `lem:closedforms`(b) under the weaker hypothesis `μ = μ_{k+1} > 0` instead of `μ^in ∈ 𝔉` of
 length at least `k + 2`, which is what the proofs below use
-(`stoc-sections/appD-hardness.tex:755-757`, proof lines 767-781): at the step `k → k + 1`,
+(`stoc-sections/appD-hardness.tex:753-755`, proof lines 765-780): at the step `k → k + 1`,
 `u_1(α) = s(α − (R_0 + R_1)/2) + w/2` and `u_2(α) = u_1(α) − (1 + d̄)w + a_0/Δ_b` for every
 `α ∈ ℝ`; in particular `u_2(R_0 + μ) = u^0`, and `u_1` and `u_2` increase with slope `s > 0`.
 
@@ -301,10 +301,10 @@ The proof's steps: (b1) as `1/β_b + 1/β_δ = 13/β_δ` and
 (`θ1_eq`); (b2) as `ρ^f_{τ_1}(α) = αm_δ − β_δF_{τ_1}` and `m̄ − m_δ = s`,
 `u_1(α) = sα − β_δ(K − d(E) − 12F_{τ_1})/13`, and (P7) gives the formula for `u_1`; (b3) in the same
 way `u_2(α) = sα − β_δ(K − 12F_{τ_2} − w/β_δ)/13` (`θ2_eq`), so
-`u_2 − u_1 = β_δ(w/β_δ − d(E) − 12ΔF)/13`; (b4) inserting (a), (P5) and the definition of `a_0` in
-(P6) gives `u_2 − u_1 = −w − β_δd(E_k) + (12/13)a_0/s = −(1 + d̄)w + a_0/Δ_b`, as `β_δd(E_k) = d̄w`
-and `s = (12/13)Δ_b`; (b5) at `R_0 + μ`, `u_1(R_0 + μ) = s(μ − |𝓡|/2) + w/2 = a_2Δ_b + w/2`, which
-gives `u_2(R_0 + μ) = u^0`. -/
+`u_2 − u_1 = β_δ(w/β_δ − d(E) − 12ΔF)/13`; (b4) inserting (a), (P5), and the definition of `a_0`
+in (P6) gives `u_2 − u_1 = −w − β_δd(E_k) + (12/13)·(a_0/s) = −(1 + d̄)w + a_0/Δ_b`, as
+`β_δd(E_k) = d̄w` and `s = (12/13)Δ_b`; (b5) at `R_0 + μ`,
+`u_1(R_0 + μ) = s(μ − |𝓡|/2) + w/2 = a_2Δ_b + w/2`, which gives `u_2(R_0 + μ) = u^0`. -/
 theorem closedforms_b_aux (k : ℕ) (hμ : 0 < μT μin (k + 1)) :
     (∀ α, u1 μin k α = (lvl μin k).s * (α - (R0 + R1T μin k) / 2) +
       (lvl μin k).w (μT μin (k + 1)) / 2) ∧
@@ -356,8 +356,8 @@ theorem closedforms_b_aux (k : ℕ) (hμ : 0 < μT μin (k + 1)) :
         12 * (lvl μin k).ΔF (μT μin (k + 1))) / 13 := fun α => by
     rw [hu2', hu1', Level.Fτ₁]
     ring
-  -- (b4) "Inserting (a), (P5) and the definition of `a_0` in (P6) gives
-  -- `u_2 − u_1 = −w − β_δd(E_k) + (12/13)a_0/s`"
+  -- (b4) "Inserting (a), (P5), and the definition of `a_0` in (P6) gives
+  -- `u_2 − u_1 = −w − β_δd(E_k) + (12/13)·(a_0/s)`"
   have ha := (closedforms_a_aux k hμ).1
   have hd2 : ∀ α, u2 μin k α - u1 μin k α = -(lvl μin k).w (μT μin (k + 1)) -
       (lvl μin k).βδ * (lvl μin k).dEk (μT μin (k + 1)) +
@@ -405,13 +405,13 @@ theorem closedforms_b_aux (k : ℕ) (hμ : 0 < μT μin (k + 1)) :
     ring
 
 /-- `lem:closedforms`(c) without a hypothesis on the input, which is what the proofs below use
-(`stoc-sections/appD-hardness.tex:758-759`, proof lines 783-788): at the step `k → k + 1`,
+(`stoc-sections/appD-hardness.tex:756-757`, proof lines 782-787): at the step `k → k + 1`,
 `ρ^f_{τ_2}(α) = (α − R_0)m_δ + ρ̄_k + w − u^0 + sι` for every `α ∈ ℝ`; in particular
 `ρ̄_{k+1} = ρ^f_{τ_2}(R_0) = ρ̄_k + w − u^0 + sι`.
 
 The proof's steps: (c1) `ρ^f_{τ_2}(R_0) = R_0m_δ − β_δF_{τ_2} = R_0m_δ − β_δ(F_{τ_1} − ΔF)`, which
 is `ρ̄_k + w − u^0 + sι` by (P6), and `ρ^f_{τ_2}` has slope `m_δ`; (c2) the last claim is the
-definition of `ρ̄_{k+1}` in (P6), as `m_δ^{(k+1)} = m_δ`, `β_δ^{(k+1)} = β_δ` and
+definition of `ρ̄_{k+1}` in (P6), as `m_δ^{(k+1)} = m_δ`, `β_δ^{(k+1)} = β_δ`, and
 `F_{τ_2}^{(k+1)} = F_{τ_2}`. -/
 theorem closedforms_c_aux (k : ℕ) :
     (∀ α, ρf μin k α none = (α - R0) * (lvl μin k).mδ + (lvl μin k).ρbar +
@@ -445,12 +445,12 @@ theorem closedforms_c_aux (k : ℕ) :
     rw [hτ₂]
     linarith
   · -- (c2) "The last claim is the definition of `ρ̄_{k+1}` in (P6), as `m_δ^{(k+1)} = m_δ`,
-    -- `β_δ^{(k+1)} = β_δ` and `F_{τ_2}^{(k+1)} = F_{τ_2}`."
+    -- `β_δ^{(k+1)} = β_δ`, and `F_{τ_2}^{(k+1)} = F_{τ_2}`."
     rw [hτ₂]
     rfl
 
-/-- **`lem:closedforms`(a)** (Lemma C.13, `stoc-sections/appD-hardness.tex:754`, proof lines
-764-765): let `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`). At the step `k → k + 1`,
+/-- **`lem:closedforms`(a)** (Lemma C.13, `stoc-sections/appD-hardness.tex:752`, proof lines
+762-763): let `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`). At the step `k → k + 1`,
 `d(E) = (2 + d̄)w/β_δ` and `φ = 1 + d̄ − a_0/(sw)`. The proof (steps (a1), (a2)) is that of
 `closedforms_a_aux`, with `μ = μ_{k+1} > 0` as `μ^in ∈ 𝔉`. -/
 theorem closedforms_a {K : ℕ} (k : ℕ) (hF : InF μin K) (hK : k + 2 ≤ K) :
@@ -461,7 +461,7 @@ theorem closedforms_a {K : ℕ} (k : ℕ) (hF : InF μin K) (hK : k + 2 ≤ K) :
         (lvl μin k).a0 (μT μin (k + 1)) / ((lvl μin k).s * (lvl μin k).w (μT μin (k + 1))) :=
   closedforms_a_aux k (μT_pos hF (by omega))
 
-/-- **`lem:closedforms`(b)** (`stoc-sections/appD-hardness.tex:755-757`, proof lines 767-781): let
+/-- **`lem:closedforms`(b)** (`stoc-sections/appD-hardness.tex:753-755`, proof lines 765-780): let
 `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`). At the step `k → k + 1`,
 `u_1(α) = s(α − (R_0 + R_1)/2) + w/2` and `u_2(α) = u_1(α) − (1 + d̄)w + a_0/Δ_b` for every
 `α ∈ ℝ`; in particular `u_2(R_0 + μ) = u^0`, and `u_1` and `u_2` increase with slope `s > 0`. The
@@ -478,7 +478,7 @@ theorem closedforms_b {K : ℕ} (k : ℕ) (hF : InF μin K) (hK : k + 2 ≤ K) :
     (∀ α α', u2 μin k α' - u2 μin k α = (lvl μin k).s * (α' - α)) :=
   closedforms_b_aux k (μT_pos hF (by omega))
 
-/-- **`lem:closedforms`(c)** (`stoc-sections/appD-hardness.tex:758-759`, proof lines 783-788): let
+/-- **`lem:closedforms`(c)** (`stoc-sections/appD-hardness.tex:756-757`, proof lines 782-787): let
 `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`). At the step `k → k + 1`,
 `ρ^f_{τ_2}(α) = (α − R_0)m_δ + ρ̄_k + w − u^0 + sι` for every `α ∈ ℝ`; in particular
 `ρ̄_{k+1} = ρ^f_{τ_2}(R_0) = ρ̄_k + w − u^0 + sι`. The proof (steps (c1), (c2)) is that of
@@ -492,7 +492,7 @@ theorem closedforms_c {K : ℕ} (k : ℕ) (_hF : InF μin K) (_hK : k + 2 ≤ K)
       (lvl μin k).u0 (μT μin (k + 1)) (R1T μin k) + (lvl μin k).s * ι :=
   closedforms_c_aux k
 
-/-- **`lem:closedforms`** (Lemma C.13, `stoc-sections/appD-hardness.tex:751-761`): let
+/-- **`lem:closedforms`** (Lemma C.13, `stoc-sections/appD-hardness.tex:749-759`): let
 `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`). At the step `k → k + 1`, the following hold.
 (a) `d(E) = (2 + d̄)w/β_δ` and `φ = 1 + d̄ − a_0/(sw)`. (b) `u_1(α) = s(α − (R_0 + R_1)/2) + w/2`
 and `u_2(α) = u_1(α) − (1 + d̄)w + a_0/Δ_b` for every `α ∈ ℝ`. In particular, `u_2(R_0 + μ) = u^0`,

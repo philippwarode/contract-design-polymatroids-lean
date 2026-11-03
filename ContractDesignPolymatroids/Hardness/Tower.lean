@@ -1,4 +1,4 @@
--- stamp r9 2026-11-02
+-- stamp r10 2026-11-03
 import ContractDesignPolymatroids.Hardness.Base
 import ContractDesignPolymatroids.Hardness.Step
 
@@ -6,9 +6,9 @@ import ContractDesignPolymatroids.Hardness.Step
 # The levels and the parameter rule
 
 The STOC version's `def:tower` ("the levels") and `def:ruleP` ("the parameter rule") (Appendix C.5,
-`sec:D-base`, "The steps and the parameter rule", `stoc-sections/appD-hardness.tex:551-715`), and
-parts (a)–(c) of `lem:weights` (Appendix C.7, `stoc-sections/appD-hardness.tex:1228-1236`, proof
-lines 1249-1269), which concern the levels alone and which the paragraph after `def:ruleP` uses:
+`sec:D-base`, "The steps and the parameter rule", `stoc-sections/appD-hardness.tex:549-713`), and
+parts (a)–(c) of `lem:weights` (Appendix C.7, `stoc-sections/appD-hardness.tex:1226-1234`, proof
+lines 1247-1267), which concern the levels alone and which the paragraph after `def:ruleP` uses:
 the rewards are integers, `M_k` is the largest reward of `E_k`, so `d ≥ 0` and every step is an
 extension in the setting of `thm:splice` (`stepD_hyp`, `fpHyp_gT`).
 
@@ -67,7 +67,7 @@ instance instDecEqGr : (k : ℕ) → DecidableEq (Gr k)
 
 /-- The constant `ι = 1/100` that (P6) of the parameter rule uses, the length of a short stretch
 `[R_0 − ι, R_0]` to the left of the windows (the text before `def:ruleP`,
-`stoc-sections/appD-hardness.tex:607-612`). -/
+`stoc-sections/appD-hardness.tex:605-610`). -/
 def ι : ℝ := 1 / 100
 
 section Inputs
@@ -126,7 +126,7 @@ end Inputs
 /-! ### `def:ruleP` -/
 
 /-- The data of level `k` that the parameter rule uses (`def:ruleP`, Definition C.12,
-`stoc-sections/appD-hardness.tex:614-650`): the level `k`, the rewards `m` and the curvatures `β`
+`stoc-sections/appD-hardness.tex:612-648`): the level `k`, the rewards `m` and the curvatures `β`
 of the elements of `E_k` (the type `C`), `M_k`, the line `L_k(α) = p_k + q_k α`, and `ρ̄_k`. -/
 structure Level (C : Type*) where
   /-- the level `k` -/
@@ -302,7 +302,7 @@ lemma s_eq_step : (L.step μ R1).s = L.s := by
   simp only [StepData.s, mbar_eq_step, mbar, step_mδ]
   ring
 
-/-- `ψ_{k+1} = SSq({b, τ_1})` of the step: `(12/13)Δ_b²/β_δ = 12(m_b − m_δ)²/(13 β_δ)`. -/
+/-- `ψ_{k+1} = S_2({b, τ_1})` of the step: `(12/13)Δ_b²/β_δ = 12(m_b − m_δ)²/(13 β_δ)`. -/
 lemma ψ_eq_step : (L.step μ R1).ψ = L.ψ := by
   simp only [StepData.ψ, step_mb, step_mδ, step_βδ, ψ, mb]
   have := L.βδ_pos.ne'
@@ -342,7 +342,7 @@ def mT (k : ℕ) : Gr k → ℝ := (lvl μin k).m
 /-- The curvatures of level `k`. -/
 def βT (k : ℕ) : Gr k → ℝ := (lvl μin k).β
 
-/-- `g_k` (`def:tower`, Definition C.11, `stoc-sections/appD-hardness.tex:553-591`): `g_0 = f_0`,
+/-- `g_k` (`def:tower`, Definition C.11, `stoc-sections/appD-hardness.tex:551-589`): `g_0 = f_0`,
 and `g_{k+1}` is the extension of `f_{k+1} = g_k ⊕ π_{F_{τ_1}} ⊕ π_{F_{τ_2}}` by `b_{k+1}` with
 `d_{k+1}` and `K_{k+1}`. -/
 def gT : (k : ℕ) → Finset (Gr k) → ℝ
@@ -392,8 +392,8 @@ lemma sum_three {α : Type*} [Fintype α] (y : Option (Option (Option α)) → �
 
 /-! ### `lem:weights`(a)–(c) -/
 
-/-- **`lem:weights`(a)** (Lemma C.20, `stoc-sections/appD-hardness.tex:1230-1233`, proof lines
-1249-1254): `β⁻¹(E_k) = 2ϖ_{k+1}` for every `k ≥ 0`; hence `β⁻¹({τ_{1,k+1}, τ_{2,k+1}}) = β⁻¹(E_k)`
+/-- **`lem:weights`(a)** (Lemma C.20, `stoc-sections/appD-hardness.tex:1228-1231`, proof lines
+1247-1252): `β⁻¹(E_k) = 2ϖ_{k+1}` for every `k ≥ 0`; hence `β⁻¹({τ_{1,k+1}, τ_{2,k+1}}) = β⁻¹(E_k)`
 and `β⁻¹(E_k ∪ {τ_{1,k+1}, τ_{2,k+1}, b_{k+1}}) = 16ϖ_{k+1}` for `k ≥ 0`, and
 `β⁻¹(E_k ∖ {b_k}) = 4ϖ_k` for `k ≥ 1` (here at level `k + 1`, whose elements other than
 `b_{k+1} = none` are the `some e`).
@@ -452,7 +452,7 @@ theorem weights_a :
     rw [ϖ_succ]
     linarith
 
-/-- **`lem:weights`(b)** (`stoc-sections/appD-hardness.tex:1234-1235`, proof lines 1256-1259):
+/-- **`lem:weights`(b)** (`stoc-sections/appD-hardness.tex:1232-1233`, proof lines 1254-1257):
 for every `k ≥ 0`, all rewards of `E_k` are integers in `(0, M_k]`, and `M_k = 12 · 208^k` is the
 reward of `C_1` if `k = 0` and of `b_k` if `k ≥ 1`.
 
@@ -535,10 +535,10 @@ lemma q_pos (k : ℕ) : 0 < (lvl μin k).q := by
     have : 0 ≤ (lvl μin k).ψ := by unfold Level.ψ; positivity
     linarith
 
-/-- **`lem:weights`(c)** (`stoc-sections/appD-hardness.tex:1236`, proof lines 1261-1269):
+/-- **`lem:weights`(c)** (`stoc-sections/appD-hardness.tex:1234`, proof lines 1259-1267):
 `q_0 = 7`, and `(9/10)ϖ_k M_k² < q_k ≤ ϖ_k M_k²` for `k ≥ 1` (here for `k + 1`).
 
-The proof's steps: (1) by (P2), (P4) and (P8), `q_{k+1} = q_k + ψ_{k+1}` with
+The proof's steps: (1) by (P2), (P4), and (P8), `q_{k+1} = q_k + ψ_{k+1}` with
 `ψ_{k+1} = (12/13)ϖ_{k+1}Δ_b² = (12/13)(415/416)²ϖ_{k+1}M_{k+1}²`, and
 `9/10 < (12/13)(415/416)² < 12/13`; (2) as `q_0 = 7 > 0`, `q_k ≥ ψ_k > (9/10)ϖ_k M_k²` for
 `k ≥ 1`; (3) `q_1 = 7 + ψ_1 < ϖ_1 M_1²`, as `(1/13)ϖ_1 M_1² > 7`; (4) for `k ≥ 2`, by induction,
@@ -548,7 +548,7 @@ theorem weights_c :
     ∀ k, 9 / 10 * ϖ μin (k + 1) * (lvl μin (k + 1)).M ^ 2 < (lvl μin (k + 1)).q ∧
       (lvl μin (k + 1)).q ≤ ϖ μin (k + 1) * (lvl μin (k + 1)).M ^ 2 := by
   have hM := (weights_b (μin := μin)).2.1
-  -- (1) "By (P2), (P4) and (P8), `q_{k+1} = q_k + ψ_{k+1}` with
+  -- (1) "By (P2), (P4), and (P8), `q_{k+1} = q_k + ψ_{k+1}` with
   -- `ψ_{k+1} = (12/13)ϖ_{k+1}Δ_b² = (12/13)(415/416)²ϖ_{k+1}M_{k+1}²`, and
   -- `9/10 < (12/13)(415/416)² < 12/13`." (The inequality is checked by `nlinarith` and
   -- `norm_num` in (2) to (4).)
@@ -594,7 +594,7 @@ theorem weights_c :
 
 /-! ### The setting of every step (the paragraph after `def:ruleP`) -/
 
-/-- The paragraph after `def:ruleP` (`stoc-sections/appD-hardness.tex:691-695`), for one step: as
+/-- The paragraph after `def:ruleP` (`stoc-sections/appD-hardness.tex:689-693`), for one step: as
 `M_k` is the largest reward of `E_k` (`lem:weights`(b)), `m_* = m_δ + 64M ≥ M ≥ m_e` for every
 `e ∈ E`, hence `d ≥ 0`; so, if `g_k` is submodular with `g_k(∅) = 0`, then `g_{k+1}` is an
 extension of `f_{k+1}` as in the setting of `thm:splice` (`StepData.Hyp`). -/

@@ -1,6 +1,8 @@
--- stamp r8 2026-11-02
+-- stamp r10 2026-11-03
 import Mathlib
 import ContractDesignPolymatroids.BestResponse.LevelSets
+import ContractDesignPolymatroids.Preliminaries.Counted
+import ContractDesignPolymatroids.Preliminaries.CountedTime
 
 /-!
 # The water-filling algorithm for a fixed share
@@ -27,25 +29,33 @@ The construction (`appB-quadratic.tex:36-83`), in namespace `Stoc.WaterFilling`:
 
 The results:
 * `lem:ray`: `ray`, for the discrete Newton method `d0`, `tilde`, `dnext`, `dIter`, `rayRounds`,
-  `rayStep`, `rayArg`, with the counts `rayCalls` and `rayEvals`;
+  `rayStep`, `rayArg`, with the counts `rayCalls` and `rayEvals` and the counted ray computation
+  `rayC` (`rayC_spec`);
 * `alg:waterfilling`: `waterFill`, with `alg_step` for its lines 3-4;
 * `lem:wfstructure`: `wfstructure`, with the induction `Inv`, `inv_init`, `Inv.active_waiting`,
   `inv_step`, `inv_run` and the count `steps_le`, `iters_spec`;
 * `thm:waterfilling`: `waterfilling`, with `waterFill_levelSet_tight` for the steps (1)-(4) of the
-  part of the proof that shows that water-filling ends at the best response, and the counts
-  `oracleCalls` and `fEvals`.
+  part of the proof that shows that water-filling ends at the best response, the counts
+  `oracleCalls` and `fEvals`, and the counted water-filling `waterFillC` (`waterFillC_spec`).
 
-Not formalised: the arithmetic operations, `𝒪(n|S|)` in `lem:ray` and `𝒪(n³)` (with the `𝒪(n)`
-work per step) in `thm:waterfilling`, and the running time of `thm:waterfilling`, which its proof
-derives from the count of minimizations with the running time of the algorithm of Iwata and Orlin
-[IO09].
+The operation counts (not in the paper: the paper counts in prose). `rayCalls = K + 1` is the
+number of calls of the ray computation, and `rayEvals = |S| + K + 1` and `fEvals`, its sum over the
+steps, are the paper's accounting of the evaluations of `f` (one after each call and the `|S|`
+singleton evaluations of the initialization, step (5) of the proof of `lem:ray`). The counted ray
+computation `rayC` and the counted water-filling `waterFillC` perform the steps of `lem:ray` and
+of `alg:waterfilling` in the cost model of `Stoc.Counted`, which counts minimizations, evaluations
+of `f` and arithmetic operations (comparisons included). They return what `rayStep`, `rayArg` and
+`waterFill` define, with exactly `rayCalls` and `oracleCalls` minimizations and `rayEvals` and
+`fEvals` evaluations of `f`, and at most `4|S| + (|S| + 1)(3|Ê| + 5)` and `6n³ + 56n² + 29n + 2`
+further arithmetic operations: the `𝒪(n|S|)` of `lem:ray` and the `𝒪(n³)` (with the `𝒪(n)` work
+per step) of `thm:waterfilling`.
 
-What the counts of evaluations of `f` prove: `rayEvals = |S| + K + 1`, with `K + 1` the number of
-calls of the ray computation (`rayCalls`), and `fEvals`, its sum over the steps, encode the paper's
-accounting (one evaluation of `f` after each call and the `|S|` singleton evaluations of the
-initialization, step (5) of the proof of `lem:ray`) by definition. Their bounds are therefore the
-bound `K ≤ |S|` on the rounds, the same content as the bounds on the minimizations
-(`rayCalls = K + 1`, `oracleCalls`), and not a model of evaluations of `f`.
+The running time of `thm:waterfilling` (`waterFillC_time`): its proof derives it from the counts
+with the time of one minimization by the algorithm of Iwata and Orlin [IO09], which is cited; the
+Lean takes that time bound as a hypothesis (`Counted.sfmTime`, in
+`ContractDesignPolymatroids/Preliminaries/CountedTime.lean`) and proves the time
+`(6 + 4C₁) n⁷ lg n · FO + (93 + 4C₁(C₂ + 1)) n⁸ lg n` of `waterFillC`, `lg n = ⌈log₂ n⌉ + 1`, from
+its counts (`oracleCalls_fEvals_le`).
 
 Added steps (not in the paper, each marked in its docstring): `sfmArg_min` (the minimizers are
 closed under union, so the maximal minimizer is one), `dmax_spec` (the formula of `eq:A-dmax`),
@@ -60,7 +70,9 @@ Taken over on 2026-10-20 from `Paper/FixedShare/WaterFilling.lean` (the paper at
 for the STOC version (`stoc.tex`); reworked on 2026-10-25 to follow the STOC version's construction
 and proofs step by step. Adapted on 2026-11-02 to Max Klimm's final STOC version (repository
 429ca68), whose `thm:waterfilling` states a running time: `waterfilling` keeps the counts of its
-proof, and the paragraph on computational conventions of Section 2 is gone (`sfmArg`).
+proof, and the paragraph on computational conventions of Section 2 is gone (`sfmArg`). Extended on
+2026-11-03 with the counted programs `rayC` and `waterFillC`, which prove the arithmetic operations
+of `lem:ray` and `thm:waterfilling` and leave their proofs as they were.
 -/
 
 namespace Stoc
@@ -410,11 +422,10 @@ noncomputable def rayArg : Finset E := tilde f m β α x S (rayStep f m β α x 
 /-- The number of submodular minimizations: one in each of the rounds `0, …, K`. -/
 noncomputable def rayCalls : ℕ := rayRounds f m β α x S + 1
 
-/-- The number of further evaluations of `f`, counted by definition as the proof of `lem:ray`
-accounts for them (step (5)): one after each of the `K + 1` calls (at `S̃`, for the test and the
-update) and the `|S|` singletons of the initialization. This encodes the paper's accounting, not a
-model of evaluations of `f`: a bound on `rayEvals` is the bound `K ≤ |S|` on the rounds, the same
-content as the bound on `rayCalls`. -/
+/-- The number of further evaluations of `f`, defined as the proof of `lem:ray` counts them
+(step (5)): one after each of the `K + 1` calls (at `S̃`, for the test and the update) and the
+`|S|` singletons of the initialization. The counted ray computation `rayC` makes exactly this many
+(`rayC_spec`). -/
 noncomputable def rayEvals : ℕ := S.card + rayCalls f m β α x S
 
 variable {f m β α x S}
@@ -632,15 +643,173 @@ lemma exists_stop (H : Hyp f m β α) (hx : x ∈ indepPoly f) (hxE : ∀ e ∉ 
   have := hne.card_pos
   omega
 
+/-! #### The ray computation with its operation counts
+
+Step (5) of the proof of `lem:ray` counts the work: "Each call is followed by one evaluation of `f`,
+at `S̃`, for the test and the update, and by `O(n)` arithmetic operations." The counted ray
+computation `rayC` performs the method's steps in the cost model of `Stoc.Counted`: the start `d0C`
+(step (1)), and in each round `roundC` the minimization, the evaluation of `f` at `S̃`, the sums
+`x(S̃)` and `v(S̃)`, `g_d(S̃)` and the update `d'` (step (2)), with the test `g_d(S̃) = 0` in
+`loopC`. `rayC_spec` shows that it returns `rayStep` and `rayArg`, makes `rayCalls` minimizations
+and `rayEvals` further evaluations of `f`, and at most `4|S| + (|S| + 1)(3|Ê| + 5)` further
+arithmetic operations. (Not in the paper: the paper counts in prose.) -/
+
+open Counted
+
+variable (f m β α x S)
+
+/-- `v_e`: one operation, `β_e⁻¹` for `e ∈ S` and `0` otherwise. The test `e ∈ S` is counted with
+the inversion, a modelling choice: counted on its own, it would add at most `|S̃|` operations to
+each round of `roundC`, which changes no order. -/
+noncomputable def vC (e : E) : Counted ℝ := ops 1 (vS β S e)
+
+/-- Step (1) of `lem:ray`, counted: the start `d = min_{e ∈ S} (f({e}) − x_e)/v_e`, with one
+evaluation of `f` and three operations for each `e ∈ S`, and the minimum. -/
+noncomputable def d0C : Counted ℝ :=
+  if h : S.Nonempty then
+    Counted.inf' S h fun e =>
+      evalF (f {e}) >>=ᶜ fun fe => vC β S e >>=ᶜ fun ve => ops 2 ((fe - x e) / ve)
+  else ret 0
+
+/-- One round of step (2) of `lem:ray` at `d`, counted: the minimization returns `S̃`; then one
+evaluation of `f` at `S̃`, the sums `x(S̃)` and `v(S̃)`, `g_d(S̃) = (f(S̃) − x(S̃)) − d v(S̃)`, and
+the update `d' = (f(S̃) − x(S̃))/v(S̃)`. It returns `S̃`, `g_d(S̃)` and `d'`. -/
+noncomputable def roundC (d : ℝ) : Counted (Finset E × ℝ × ℝ) :=
+  minimize (tilde f m β α x S d) >>=ᶜ fun T =>
+  evalF (f T) >>=ᶜ fun fT =>
+  Counted.sum T (fun e => ret (x e)) >>=ᶜ fun xT =>
+  Counted.sum T (vC β S) >>=ᶜ fun vT =>
+  ops 1 (fT - xT) >>=ᶜ fun num =>
+  ops 2 (num - d * vT) >>=ᶜ fun g =>
+  ops 1 (num / vT) >>=ᶜ fun d' =>
+  ret (T, g, d')
+
+open Classical in
+/-- The rounds of step (2) from `d`, at most `k` of them, counted: each round tests `g_d(S̃) = 0`
+(one comparison) and returns `d` and `S̃`, or continues at `d'`. -/
+noncomputable def loopC : ℕ → ℝ → Counted (ℝ × Finset E)
+  | 0, d => ret (d, ∅)
+  | k + 1, d =>
+      roundC f m β α x S d >>=ᶜ fun r =>
+      ops 1 () >>=ᶜ fun _ =>
+      if r.2.1 = 0 then ret (d, r.1) else loopC k r.2.2
+
+/-- The ray computation of `lem:ray`, counted: the start and at most `|S| + 1` rounds. -/
+noncomputable def rayC : Counted (ℝ × Finset E) :=
+  d0C f β x S >>=ᶜ fun d => loopC f m β α x S (S.card + 1) d
+
+variable {f m β α x S}
+
+omit [Fintype E] in
+lemma d0C_val : (d0C f β x S).val = d0 f β x S := by
+  unfold d0C d0
+  split_ifs with h
+  · simp [vC]
+  · rfl
+
+omit [Fintype E] in
+lemma d0C_cost (hS : S.Nonempty) : (d0C f β x S).cost = (4 * S.card, 0, S.card) := by
+  simp only [d0C, hS, ↓reduceDIte]
+  simp [vC, Prod.ext_iff]
+  ring
+
+lemma roundC_val (d : ℝ) :
+    (roundC f m β α x S d).val =
+      (tilde f m β α x S d, gd f β x S d (tilde f m β α x S d), dnext f m β α x S d) := by
+  simp [roundC, vC, gd, dnext]
+
+lemma roundC_cost (d : ℝ) :
+    (roundC f m β α x S d).cost = (3 * (tilde f m β α x S d).card + 4, 1, 1) := by
+  simp [roundC, vC, Prod.ext_iff]
+  ring
+
+/-- The rounds return the method's result: if round `K` is the first with `g_d(S̃) = 0`, then from
+round `j ≤ K`, with more than `K − j` rounds left, `loopC` returns `(d_K, S̃_K)` after the rounds
+`j, …, K`, each with its test. -/
+lemma loopC_spec {K : ℕ} (hK : gIter f m β α x S K = 0)
+    (hneg : ∀ i < K, gIter f m β α x S i ≠ 0) :
+    ∀ k j, j ≤ K → K < j + k →
+      (loopC f m β α x S k (dIter f m β α x S j)).val =
+          (dIter f m β α x S K, tilde f m β α x S (dIter f m β α x S K)) ∧
+      (loopC f m β α x S k (dIter f m β α x S j)).cost =
+          ∑ i ∈ Finset.Ico j (K + 1),
+            ((roundC f m β α x S (dIter f m β α x S i)).cost + (1, 0, 0)) := by
+  intro k
+  induction k with
+  | zero => intro j hj hjk; omega
+  | succ k ih =>
+    intro j hj hjk
+    have hr := roundC_val (f := f) (m := m) (β := β) (α := α) (x := x) (S := S)
+      (dIter f m β α x S j)
+    rcases hj.lt_or_eq with hlt | rfl
+    · have hg : gd f β x S (dIter f m β α x S j) (tilde f m β α x S (dIter f m β α x S j)) ≠ 0 :=
+        hneg j hlt
+      have hd : dnext f m β α x S (dIter f m β α x S j) = dIter f m β α x S (j + 1) := rfl
+      obtain ⟨h1, h2⟩ := ih (j + 1) hlt (by omega)
+      simp only [loopC, val_bind, cost_bind, hr, cost_ops, hg, ite_false, hd, h1, h2, true_and]
+      rw [Finset.sum_eq_sum_Ico_succ_bot (by omega : j < K + 1), add_assoc]
+    · have hg : gd f β x S (dIter f m β α x S j) (tilde f m β α x S (dIter f m β α x S j)) = 0 :=
+        hK
+      simp only [loopC, val_bind, cost_bind, hr, cost_ops, hg, ite_true, Nat.Ico_succ_singleton,
+        Finset.sum_singleton]
+      simp
+
+/-- The counted ray computation (step (5) of `lem:ray`; not in the paper: the paper counts in
+prose): `rayC` returns the step `rayStep` and the set `rayArg` of the method, with exactly
+`rayCalls` minimizations and `rayEvals` further evaluations of `f`, and at most
+`4|S| + (|S| + 1)(3|Ê| + 5)` further arithmetic operations (comparisons included). -/
+lemma rayC_spec (H : Hyp f m β α) (hx : x ∈ indepPoly f) (hxE : ∀ e ∉ hatE m α, x e = 0)
+    (hS : S.Nonempty) (hSE : S ⊆ hatE m α) :
+    (rayC f m β α x S).val = (rayStep f m β α x S, rayArg f m β α x S) ∧
+      (rayC f m β α x S).cost.2.1 = rayCalls f m β α x S ∧
+      (rayC f m β α x S).cost.2.2 = rayEvals f m β α x S ∧
+      (rayC f m β α x S).cost.1 ≤ 4 * S.card + (S.card + 1) * (3 * (hatE m α).card + 5) := by
+  obtain ⟨k, hk, hk0⟩ := exists_stop H hx hxE hS hSE
+  have hex : ∃ k, gIter f m β α x S k = 0 := ⟨k, hk0⟩
+  have hR : rayRounds f m β α x S = Nat.find hex := by rw [rayRounds, dite_eq_left hex]
+  have hK : gIter f m β α x S (rayRounds f m β α x S) = 0 := hR ▸ Nat.find_spec hex
+  have hneg : ∀ i < rayRounds f m β α x S, gIter f m β α x S i ≠ 0 := fun i hi =>
+    Nat.find_min hex (hR ▸ hi)
+  have hKS : rayRounds f m β α x S ≤ S.card := (hR ▸ Nat.find_min' hex hk0).trans hk
+  obtain ⟨h1, h2⟩ := loopC_spec hK hneg (S.card + 1) 0 (Nat.zero_le _) (by omega)
+  have hd0 : (d0C f β x S).val = dIter f m β α x S 0 := d0C_val
+  have hcost : (rayC f m β α x S).cost = (4 * S.card, 0, S.card) +
+      ∑ i ∈ Finset.Ico 0 (rayRounds f m β α x S + 1),
+        ((3 * (tilde f m β α x S (dIter f m β α x S i)).card + 4, 1, 1) + (1, 0, 0)) := by
+    simp only [rayC, cost_bind, hd0, h2, d0C_cost hS, roundC_cost]
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · simp only [rayC, val_bind, hd0, h1]
+    rfl
+  · rw [hcost]
+    simp [Prod.snd_sum, rayCalls]
+  · rw [hcost]
+    simp [Prod.snd_sum, rayEvals, rayCalls]
+  · rw [hcost]
+    simp only [Prod.fst_add, Prod.fst_sum]
+    have hle : ∀ i ∈ Finset.Ico 0 (rayRounds f m β α x S + 1),
+        3 * (tilde f m β α x S (dIter f m β α x S i)).card + 4 + 1 ≤ 3 * (hatE m α).card + 5 :=
+      fun i _ => by
+        have := card_le_card (tilde_subset (f := f) (m := m) (β := β) (α := α) (x := x) (S := S)
+          (dIter f m β α x S i))
+        omega
+    have := Finset.sum_le_sum hle
+    simp only [Finset.sum_const, Nat.card_Ico, smul_eq_mul] at this
+    have hmul : (rayRounds f m β α x S + 1 - 0) * (3 * (hatE m α).card + 5) ≤
+        (S.card + 1) * (3 * (hatE m α).card + 5) :=
+      Nat.mul_le_mul_right _ (by omega)
+    omega
+
 /-- **`lem:ray`** (Lemma B.3, statement `appB-quadratic.tex:122-128`, proof
 `:130-158`). For `x ∈ P₊(f)` with `x_e = 0` for `e ∉ Ê` and `∅ ≠ S ⊆ Ê`, the discrete Newton method
 stops: in round `K = rayRounds` the minimum `g_d(S̃)` is zero and in every earlier round it is
 negative. It returns the step size `d(x, S)` and the maximal tight set `T(x + d(x, S) v^S)` at its
-endpoint, with at most `|S| + 1` submodular minimizations (`rayCalls = K + 1`). The `𝒪(|S|)` further
-evaluations of `f` appear as `rayEvals ≤ 2|S| + 1`, where `rayEvals = |S| + K + 1` encodes the
-paper's accounting of step (5) by definition, so this bound is the bound `K ≤ |S|` on the rounds,
-the same content as the bound on `rayCalls`, and not a model of evaluations of `f`. The `𝒪(n|S|)`
-further arithmetic operations are not formalised.
+endpoint, with at most `|S| + 1` submodular minimizations (`rayCalls = K + 1`), at most
+`2|S| + 1` further evaluations of `f` (`rayEvals = |S| + K + 1`, the paper's accounting of step
+(5)), and `𝒪(n|S|)` further arithmetic operations: the counted ray computation `rayC`, which
+performs the method's steps in the cost model of `Stoc.Counted`, returns `d(x, S)` and
+`T(x + d(x, S) v^S)` with exactly `rayCalls` minimizations and `rayEvals` evaluations of `f`, and
+at most `4|S| + (|S| + 1)(3|Ê| + 5)` further arithmetic operations, comparisons included
+(`rayC_spec`; not in the paper: the paper counts in prose).
 
 The paper's steps: (1) start at `d = min_{e ∈ S} (f({e}) − x_e)/v_e` (`d0`); (2) find the maximal
 minimizer `S̃` of `g_d` on `2^Ê` (`tilde`); return `d, S̃` if `g_d(S̃) = 0` (`rayRounds`, `rayStep`,
@@ -648,15 +817,19 @@ minimizer `S̃` of `g_d` on `2^Ê` (`tilde`); return `d, S̃` if `g_d(S̃) = 0` 
 a negative minimum `v(S̃) > 0` and `d(x, S) ≤ d' < d` (`round_of_neg`), and at minimum zero the step
 is `d(x, S)` and `S̃` the maximal tight set (`stop_spec`); (4) consecutive negative minima shrink
 `S̃ ∩ S` strictly (`tilde_inter_ssubset`), so at most `|S|` negative calls and one final call
-(`exists_stop`); (5) one evaluation of `f` after each call and `|S|` for the initialization, at
-most `2|S| + 1` (`rayEvals`). -/
+(`exists_stop`); (5) one evaluation of `f` and `𝒪(n)` arithmetic operations after each call, and
+`|S|` evaluations for the initialization, at most `2|S| + 1` (`rayEvals`; counted by `rayC`). -/
 theorem ray (H : Hyp f m β α) (hx : x ∈ indepPoly f) (hxE : ∀ e ∉ hatE m α, x e = 0)
     (hS : S.Nonempty) (hSE : S ⊆ hatE m α) :
     gIter f m β α x S (rayRounds f m β α x S) = 0 ∧
       (∀ j < rayRounds f m β α x S, gIter f m β α x S j < 0) ∧
       rayStep f m β α x S = dmax f β x S ∧
       rayArg f m β α x S = maxTight f m α (x + dmax f β x S • vS β S) ∧
-      rayCalls f m β α x S ≤ S.card + 1 ∧ rayEvals f m β α x S ≤ 2 * S.card + 1 := by
+      rayCalls f m β α x S ≤ S.card + 1 ∧ rayEvals f m β α x S ≤ 2 * S.card + 1 ∧
+      ((rayC f m β α x S).val = (rayStep f m β α x S, rayArg f m β α x S) ∧
+        (rayC f m β α x S).cost.2.1 = rayCalls f m β α x S ∧
+        (rayC f m β α x S).cost.2.2 = rayEvals f m β α x S ∧
+        (rayC f m β α x S).cost.1 ≤ 4 * S.card + (S.card + 1) * (3 * (hatE m α).card + 5)) := by
   -- (1) "Write `v = v^S` and start at `d = min_{e∈S}(f({e}) − x_e)/v_e`."
   -- (2) "For each `d`, find the maximal minimizer `S̃` of the submodular function
   -- `g_d(S') := f(S') − x(S') − d v(S')` on `2^Ê`. If `g_d(S̃) = 0`, return `d` and `S̃`.
@@ -688,7 +861,7 @@ theorem ray (H : Hyp f m β α) (hx : x ∈ indepPoly f) (hxE : ∀ e ∉ hatE m
     rw [hK]
     exact Nat.find_spec hex
   obtain ⟨hd, hT⟩ := hret _ hneg h0
-  refine ⟨h0, hneg, hd, ?_, ?_, ?_⟩
+  refine ⟨h0, hneg, hd, ?_, ?_, ?_, ?_⟩
   · show tilde f m β α x S (rayStep f m β α x S) = _
     rw [rayStep, hT, hd]
   · -- one call in each of the rounds `0, …, K`, and `K ≤ |S|`
@@ -697,11 +870,14 @@ theorem ray (H : Hyp f m β α) (hx : x ∈ indepPoly f) (hxE : ∀ e ∉ hatE m
   · -- (5) "Each call is followed by one evaluation of `f`, at `S̃`, for the test and the update,
     -- and by `O(n)` arithmetic operations. With the `|S|` singleton evaluations of the
     -- initialization, this makes at most `2|S| + 1` further evaluations of `f`."
-    -- `rayEvals = |S| + (K + 1)` encodes this accounting by definition, so its bound is the bound
-    -- `K ≤ |S|` on the rounds again, not a count of evaluations of `f`; the arithmetic
-    -- operations are not formalised.
+    -- `rayEvals = |S| + (K + 1)` is this accounting, so its bound is the bound `K ≤ |S|` on the
+    -- rounds; the counted ray computation makes exactly `rayEvals` evaluations (below).
     unfold rayEvals rayCalls
     omega
+  · -- (5), the count: the counted ray computation `rayC` returns the method's step and set, with
+    -- `rayCalls` minimizations, `rayEvals` evaluations of `f` and `𝒪(n|S|)` further arithmetic
+    -- operations (`rayC_spec`; not in the paper: the paper counts in prose).
+    exact rayC_spec H hx hxE hS hSE
 
 end Ray
 
@@ -1595,24 +1771,329 @@ noncomputable def oracleCalls : ℕ :=
 
 variable (f m β α) in
 /-- The number of further evaluations of `f` of water-filling: those of the ray computation in
-each step, counted by `rayEvals`. Like `rayEvals`, this encodes the paper's accounting by
-definition (`|S*|` singleton evaluations and one for each update in each ray computation), so a
-bound on it is the bound on the rounds of the ray computations, not a model of evaluations of
-`f`. -/
+each step, counted by `rayEvals` (`|S*|` singleton evaluations and one for each update in each ray
+computation). The counted water-filling `waterFillC` makes exactly this many (`waterFillC_spec`).
+-/
 noncomputable def fEvals : ℕ :=
   ∑ k ∈ range (iters f m β α), rayEvals f m β α (run f m β α k).x (active m β α (run f m β α k))
 
+/-! #### Water-filling with its operation counts
+
+Step (6) of the proof of `thm:waterfilling`: "Each uses one ray computation and `O(n)` additional
+work to determine the active set, the admission level, and the updates." The counted water-filling
+`waterFillC` performs `alg:waterfilling` in the cost model of `Stoc.Counted`: `Ê`, and then, while
+`λ > 0`, the level (`levelC`) and a step (`stepC`: the active set, the admission level, the counted
+ray computation `rayC`, the step, the update and the test for a capacity event), in `runC`.
+`waterFillC_spec` shows that it returns `waterFill`, makes `oracleCalls` minimizations and `fEvals`
+further evaluations of `f`, and at most `6n³ + 56n² + 29n + 2` further arithmetic operations.
+(Not in the paper: the paper counts in prose.) -/
+
+open Counted
+
+variable (f m β α)
+
+/-- `x + Δ v^A`, coordinatewise on `A`: `β_e⁻¹`, one multiplication and one addition for each
+`e ∈ A`. -/
+noncomputable def updC (x : E → ℝ) (A : Finset E) (Δ : ℝ) : Counted (E → ℝ) :=
+  ops (3 * A.card) (x + Δ • vS β A)
+
+/-- The level `λ` of a state (`eq:A-level`): the set `Ê \ Y`, the margins
+`ρ_e(x) = α m_e − β_e x_e` (three operations each), and their maximum with `0`. -/
+noncomputable def levelC (s : State E) : Counted ℝ :=
+  Counted.sdiff (hatE m α) s.Y >>=ᶜ fun U => max0 U fun e => ops 3 (marg m β α s.x e)
+
+/-- One step (`eq:A-step`) from a state with level `lam`: the active set `S*`, the admission level
+`λ'`, the ray computation of `lem:ray`, the step `Δ = min{d(x, S*), λ − λ'}`, the update of `x`,
+and the test for a capacity event. -/
+noncomputable def stepC (s : State E) (lam : ℝ) : Counted (State E) :=
+  Counted.sdiff (hatE m α) s.Y >>=ᶜ fun U =>
+  filterEq U (fun e => ops 3 (marg m β α s.x e)) lam >>=ᶜ fun A =>
+  Counted.sdiff U A >>=ᶜ fun U' =>
+  max0 U' (fun e => ops 1 (α * m e)) >>=ᶜ fun lam' =>
+  rayC f m β α s.x A >>=ᶜ fun r =>
+  ops 2 (min r.1 (lam - lam')) >>=ᶜ fun Δ =>
+  updC β s.x A Δ >>=ᶜ fun x' =>
+  ops 1 () >>=ᶜ fun _ =>
+  ret ⟨x', if Δ = r.1 then r.2 else s.Y⟩
+
+/-- The while loop of `alg:waterfilling`, at most `k` passes: each pass computes the level and
+tests `λ > 0` (one comparison), and then takes a step. -/
+noncomputable def runC : ℕ → State E → Counted (State E)
+  | 0, s => ret s
+  | k + 1, s =>
+      levelC m β α s >>=ᶜ fun lam =>
+      ops 1 () >>=ᶜ fun _ =>
+      if 0 < lam then stepC f m β α s lam >>=ᶜ fun s' => runC k s' else ret s
+
+/-- `alg:waterfilling` with its operation counts: `Ê` (one multiplication and one comparison for
+each element), then at most `2|E| + 1` passes of the while loop. -/
+noncomputable def waterFillC : Counted (E → ℝ) :=
+  ops (2 * Fintype.card E) () >>=ᶜ fun _ =>
+  runC f m β α (2 * Fintype.card E + 1) init >>=ᶜ fun s => ret s.x
+
+variable {f m β α}
+
+lemma levelC_val (s : State E) : (levelC m β α s).val = level m β α s := rfl
+
+lemma stepC_val (H : Hyp f m β α) {k : ℕ} (hk : k < iters f m β α) :
+    (stepC f m β α (run f m β α k) (level m β α (run f m β α k))).val =
+      run f m β α (k + 1) := by
+  obtain ⟨hmem, -, -, -, -, -, ⟨-, hpos, -⟩, -⟩ := wfstructure H
+  have hray := (rayC_spec H (hmem k) (fun e he => run_x_eq_zero he k)
+    (active_nonempty (hpos k hk)) ((active_subset _).trans sdiff_subset)).1
+  obtain ⟨h1, h2, h3⟩ := alg_step H hk
+  have hA : (filterEq ((hatE m α : Finset E) \ (run f m β α k).Y)
+      (fun e => ops 3 (marg m β α (run f m β α k).x e)) (level m β α (run f m β α k))).val =
+      active m β α (run f m β α k) := rfl
+  have hU : ((hatE m α : Finset E) \ (run f m β α k).Y) \ active m β α (run f m β α k) =
+      (hatE m α : Finset E) \ ((run f m β α k).Y ∪ active m β α (run f m β α k)) := by
+    rw [sdiff_sdiff_left, sup_eq_union]
+  have hL : (max0 (((hatE m α : Finset E) \ (run f m β α k).Y) \ active m β α (run f m β α k))
+      (fun e => ops 1 (α * m e))).val = admLevel m β α (run f m β α k) := by
+    simp only [val_max0, val_ops, hU, admLevel]
+  rw [h3]
+  simp only [stepC, val_bind, val_sdiff]
+  rw [hA, hL, hray]
+  simp only [val_ops, updC, val_ret, h1, h2, step, stepSize]
+  split_ifs with h <;> simp [h]
+
+/-- The while loop returns the terminal state. From step `j ≤ N` (`N = iters`), with more than
+`N − j` passes left, the loop returns `run N` after the passes `j, …, N − 1`, each with its level,
+test and step, and the last level and test. -/
+lemma runC_spec (H : Hyp f m β α) :
+    ∀ k j, j ≤ iters f m β α → iters f m β α < j + k →
+      (runC f m β α k (run f m β α j)).val = run f m β α (iters f m β α) ∧
+      (runC f m β α k (run f m β α j)).cost =
+        ∑ i ∈ Finset.Ico j (iters f m β α),
+          ((levelC m β α (run f m β α i)).cost + ((1, 0, 0) +
+            (stepC f m β α (run f m β α i) (level m β α (run f m β α i))).cost)) +
+        ((levelC m β α (run f m β α (iters f m β α))).cost + (1, 0, 0)) := by
+  obtain ⟨-, hpos, hlev0⟩ := iters_spec H
+  intro k
+  induction k with
+  | zero => intro j hj h; omega
+  | succ k ih =>
+    intro j hj hjk
+    rcases hj.lt_or_eq with hlt | rfl
+    · obtain ⟨h1, h2⟩ := ih (j + 1) hlt (by omega)
+      have hs := stepC_val H hlt
+      simp only [runC, val_bind, cost_bind, levelC_val, hpos j hlt, ite_true, cost_ops, hs, h1, h2,
+        true_and]
+      rw [Finset.sum_eq_sum_Ico_succ_bot hlt]
+      simp only [add_assoc]
+    · simp only [runC, val_bind, cost_bind, levelC_val, hlev0, lt_irrefl, ite_false, val_ret,
+        cost_ret, cost_ops, Finset.Ico_self, Finset.sum_empty, zero_add, add_zero, true_and]
+
+lemma levelC_cost (s : State E) :
+    (levelC m β α s).cost = ((hatE m α).card + 4 * (hatE m α \ s.Y).card + 1, 0, 0) := by
+  simp [levelC, Prod.ext_iff]
+  ring
+
+lemma stepC_cost (k : ℕ) :
+    (stepC f m β α (run f m β α k) (level m β α (run f m β α k))).cost =
+      ((hatE m α).card + 5 * ((hatE m α : Finset E) \ (run f m β α k).Y).card +
+        2 * (((hatE m α : Finset E) \ (run f m β α k).Y) \ active m β α (run f m β α k)).card +
+        3 * (active m β α (run f m β α k)).card + 4, 0, 0) +
+      (rayC f m β α (run f m β α k).x (active m β α (run f m β α k))).cost := by
+  have hA : (filterEq ((hatE m α : Finset E) \ (run f m β α k).Y)
+      (fun e => ops 3 (marg m β α (run f m β α k).x e)) (level m β α (run f m β α k))).val =
+      active m β α (run f m β α k) := rfl
+  simp only [stepC, cost_bind, val_sdiff, cost_sdiff, cost_filterEq, cost_ops]
+  rw [hA]
+  simp only [cost_max0, cost_ops, val_ops, updC, cost_ret, sum_const, smul_eq_mul, Prod.ext_iff,
+    Prod.fst_add, Prod.snd_add, Prod.smul_mk]
+  refine ⟨?_, ?_, ?_⟩ <;> simp
+  ring
+
+/-- The counted water-filling (steps (6) and (7) of `thm:waterfilling`; not in the paper: the
+paper counts in prose): `waterFillC` returns the terminal point `waterFill`, with exactly
+`oracleCalls` minimizations and `fEvals` further evaluations of `f`, and at most
+`6n³ + 56n² + 29n + 2` further arithmetic operations (comparisons included), `n = |E|`. -/
+lemma waterFillC_spec (H : Hyp f m β α) :
+    (waterFillC f m β α).val = waterFill f m β α ∧
+      (waterFillC f m β α).cost.2.1 = oracleCalls f m β α ∧
+      (waterFillC f m β α).cost.2.2 = fEvals f m β α ∧
+      (waterFillC f m β α).cost.1 ≤
+        6 * Fintype.card E ^ 3 + 56 * Fintype.card E ^ 2 + 29 * Fintype.card E + 2 := by
+  obtain ⟨hmem, -, -, -, -, -, ⟨hiters, hpos, -⟩, -⟩ := wfstructure H
+  set n := Fintype.card E
+  set N := iters f m β α
+  have hE : (hatE m α).card ≤ n := card_le_univ _
+  obtain ⟨hv, hc⟩ := runC_spec H (2 * n + 1) 0 (Nat.zero_le _) (by omega)
+  have hray : ∀ i < N, (rayC f m β α (run f m β α i).x (active m β α (run f m β α i))).cost.2.1 =
+        rayCalls f m β α (run f m β α i).x (active m β α (run f m β α i)) ∧
+      (rayC f m β α (run f m β α i).x (active m β α (run f m β α i))).cost.2.2 =
+        rayEvals f m β α (run f m β α i).x (active m β α (run f m β α i)) ∧
+      (rayC f m β α (run f m β α i).x (active m β α (run f m β α i))).cost.1 ≤
+        4 * (active m β α (run f m β α i)).card +
+          ((active m β α (run f m β α i)).card + 1) * (3 * (hatE m α).card + 5) := fun i hi =>
+    (rayC_spec H (hmem i) (fun e he => run_x_eq_zero he i) (active_nonempty (hpos i hi))
+      ((active_subset _).trans sdiff_subset)).2
+  have hcost : (waterFillC f m β α).cost = (2 * n, 0, 0) +
+      (∑ i ∈ Finset.Ico 0 N, ((levelC m β α (run f m β α i)).cost + ((1, 0, 0) +
+          (stepC f m β α (run f m β α i) (level m β α (run f m β α i))).cost)) +
+        ((levelC m β α (run f m β α N)).cost + (1, 0, 0))) := by
+    simp only [waterFillC, cost_bind, cost_ops, cost_ret, add_zero]
+    rw [show (init : State E) = run f m β α 0 from rfl, hc]
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · simp only [waterFillC, val_bind, val_ret]
+    rw [show (init : State E) = run f m β α 0 from rfl, hv]
+    rfl
+  · rw [hcost, oracleCalls]
+    simp only [Prod.snd_add, Prod.snd_sum, Prod.fst_sum, levelC_cost, stepC_cost,
+      Prod.mk_zero_zero, zero_add, add_zero, Nat.Ico_zero_eq_range]
+    exact Finset.sum_congr rfl fun i hi => (hray i (Finset.mem_range.1 hi)).1
+  · rw [hcost, fEvals]
+    simp only [Prod.snd_add, Prod.snd_sum, levelC_cost, stepC_cost, Prod.mk_zero_zero, zero_add,
+      add_zero, Nat.Ico_zero_eq_range]
+    exact Finset.sum_congr rfl fun i hi => (hray i (Finset.mem_range.1 hi)).2.1
+  · rw [hcost]
+    simp only [Prod.fst_add, Prod.fst_sum, levelC_cost, stepC_cost]
+    set e := (hatE m α).card
+    have hpass : ∀ i ∈ Finset.Ico 0 N,
+        e + 4 * ((hatE m α : Finset E) \ (run f m β α i).Y).card + 1 + (1 +
+          (e + 5 * ((hatE m α : Finset E) \ (run f m β α i).Y).card +
+            2 * (((hatE m α : Finset E) \ (run f m β α i).Y) \
+              active m β α (run f m β α i)).card +
+            3 * (active m β α (run f m β α i)).card + 4 +
+            (rayC f m β α (run f m β α i).x (active m β α (run f m β α i))).cost.1)) ≤
+        20 * e + 6 + (e + 1) * (3 * e + 5) := fun i hi => by
+      have hU : ((hatE m α : Finset E) \ (run f m β α i).Y).card ≤ e := card_le_card sdiff_subset
+      have hU' : (((hatE m α : Finset E) \ (run f m β α i).Y) \
+          active m β α (run f m β α i)).card ≤ e :=
+        (card_le_card sdiff_subset).trans hU
+      have hA : (active m β α (run f m β α i)).card ≤ e :=
+        (card_le_card (active_subset _)).trans hU
+      have hr := (hray i (Finset.mem_Ico.1 hi).2).2.2
+      have hmul : ((active m β α (run f m β α i)).card + 1) * (3 * e + 5) ≤ (e + 1) * (3 * e + 5) :=
+        Nat.mul_le_mul_right _ (by omega)
+      omega
+    have hsum := Finset.sum_le_sum hpass
+    simp only [Finset.sum_const, Nat.card_Ico, smul_eq_mul, Nat.sub_zero] at hsum
+    have hfin : e + 4 * ((hatE m α : Finset E) \ (run f m β α N).Y).card + 1 + 1 ≤ 5 * e + 2 := by
+      have : ((hatE m α : Finset E) \ (run f m β α N).Y).card ≤ e := card_le_card sdiff_subset
+      omega
+    have hN : N ≤ 2 * n := hiters.trans (by omega)
+    have hP : 20 * e + 6 + (e + 1) * (3 * e + 5) ≤ 20 * n + 6 + (n + 1) * (3 * n + 5) := by
+      have : (e + 1) * (3 * e + 5) ≤ (n + 1) * (3 * n + 5) := Nat.mul_le_mul (by omega) (by omega)
+      omega
+    have hNP : N * (20 * e + 6 + (e + 1) * (3 * e + 5)) ≤
+        (2 * n) * (20 * n + 6 + (n + 1) * (3 * n + 5)) := Nat.mul_le_mul hN hP
+    have hpoly : 2 * n * (20 * n + 6 + (n + 1) * (3 * n + 5)) =
+        6 * n ^ 3 + 56 * n ^ 2 + 22 * n := by ring
+    omega
+
+/-- The counts of steps (6) and (7) of the proof of `thm:waterfilling`, as a lemma of their own for
+`waterFillC_time` (not in the paper; the argument of `waterfilling`): at most `2n(n + 1)`
+submodular minimizations and `2n(2n + 1)` further evaluations of `f`, `n = |E|`. -/
+lemma oracleCalls_fEvals_le (H : Hyp f m β α) :
+    oracleCalls f m β α ≤ 2 * Fintype.card E * (Fintype.card E + 1) ∧
+      fEvals f m β α ≤ 2 * Fintype.card E * (2 * Fintype.card E + 1) := by
+  obtain ⟨hmem, -, -, -, -, -, ⟨hiters, hpos, -⟩, -⟩ := wfstructure H
+  -- (6) at most `2|Ê| ≤ 2n` steps
+  have hsteps : iters f m β α ≤ 2 * Fintype.card E := by
+    have := card_le_univ (hatE m α)
+    omega
+  -- (7) by `lem:ray`, as `|S*| ≤ n`, at most `n + 1` minimizations and `2n + 1` evaluations in
+  -- each step
+  have hcount : ∀ k ∈ range (iters f m β α),
+      rayCalls f m β α (run f m β α k).x (active m β α (run f m β α k)) ≤ Fintype.card E + 1 ∧
+        rayEvals f m β α (run f m β α k).x (active m β α (run f m β α k)) ≤
+          2 * Fintype.card E + 1 := by
+    intro k hk
+    obtain ⟨-, -, -, -, hcalls, hevals, -⟩ := ray H (hmem k) (fun e he => run_x_eq_zero he k)
+      (active_nonempty (hpos k (mem_range.1 hk))) ((active_subset _).trans sdiff_subset)
+    have := card_le_univ (active m β α (run f m β α k))
+    omega
+  constructor
+  · calc oracleCalls f m β α ≤ ∑ _k ∈ range (iters f m β α), (Fintype.card E + 1) :=
+          sum_le_sum fun k hk => (hcount k hk).1
+      _ = iters f m β α * (Fintype.card E + 1) := by rw [sum_const, card_range, smul_eq_mul]
+      _ ≤ 2 * Fintype.card E * (Fintype.card E + 1) := Nat.mul_le_mul_right _ hsteps
+  · calc fEvals f m β α ≤ ∑ _k ∈ range (iters f m β α), (2 * Fintype.card E + 1) :=
+          sum_le_sum fun k hk => (hcount k hk).2
+      _ = iters f m β α * (2 * Fintype.card E + 1) := by rw [sum_const, card_range, smul_eq_mul]
+      _ ≤ 2 * Fintype.card E * (2 * Fintype.card E + 1) := Nat.mul_le_mul_right _ hsteps
+
+/-- The running time of the counted water-filling, step (8) of the proof of `thm:waterfilling`
+(`stoc-sections/appB-quadratic.tex:181`; not in the paper: the paper counts in prose), for
+`n = |E| ≥ 1`: "The strongly polynomial algorithm of Iwata and Orlin [IO09] finds it in time
+`O(n⁵ log n)·EO + O(n⁶ log n)` … so `EO = FO + O(n)`. Multiplying by the `O(n²)` minimizations
+gives the stated bound." If an evaluation of `f` takes time `FO ≥ 0` and a submodular minimization
+time `TS ≤ sfmTime C₁ C₂ n FO`, the cited bound of Iwata and Orlin with constants `C₁, C₂ ≥ 0`
+(cited, [IO09]), then `waterFillC` takes time at most
+`(6 + 4C₁) n⁷ lg n · FO + (93 + 4C₁(C₂ + 1)) n⁸ lg n`, the `O(n⁷ log n)·FO + O(n⁸ log n)` of the
+theorem (`lg n = ⌈log₂ n⌉ + 1`): at most `6n³ + 56n² + 29n + 2` arithmetic operations, `2n(2n + 1)`
+evaluations of `f` and `2n(n + 1)` minimizations (`waterFillC_spec`, `oracleCalls_fEvals_le`). -/
+lemma waterFillC_time (H : Hyp f m β α) (hn : 0 < Fintype.card E) {FO TS C₁ C₂ : ℝ}
+    (hFO : 0 ≤ FO) (hC₁ : 0 ≤ C₁) (hC₂ : 0 ≤ C₂)
+    (hTS : TS ≤ sfmTime C₁ C₂ (Fintype.card E) FO) :
+    time FO TS (waterFillC f m β α).cost ≤
+      (6 + 4 * C₁) * (Fintype.card E : ℝ) ^ 7 * lg (Fintype.card E) * FO +
+        (93 + 4 * C₁ * (C₂ + 1)) * (Fintype.card E : ℝ) ^ 8 * lg (Fintype.card E) := by
+  obtain ⟨-, h1, h2, h3⟩ := waterFillC_spec H
+  obtain ⟨hc, he⟩ := oracleCalls_fEvals_le H
+  have key := time_le hFO (sfmTime_nonneg (Fintype.card E) hC₁ hC₂ hFO) hTS h3 (h2 ▸ he)
+    (h1 ▸ hc)
+  refine key.trans ?_
+  have hx : (1 : ℝ) ≤ Fintype.card E := by exact_mod_cast hn
+  have hL : (1 : ℝ) ≤ (lg (Fintype.card E) : ℝ) := by exact_mod_cast one_le_lg _
+  unfold sfmTime
+  push_cast
+  set x : ℝ := (Fintype.card E : ℝ)
+  set L : ℝ := (lg (Fintype.card E) : ℝ)
+  have hx0 : (0 : ℝ) ≤ x := by linarith
+  have hL0 : (0 : ℝ) ≤ L := by linarith
+  have e1 : x ≤ x ^ 7 := by simpa using pow_le_pow_right₀ hx (show 1 ≤ 7 by norm_num)
+  have e2 : x ^ 2 ≤ x ^ 7 := pow_le_pow_right₀ hx (by norm_num)
+  have e6 : x ^ 6 ≤ x ^ 7 := pow_le_pow_right₀ hx (by norm_num)
+  have e7 : x ^ 7 ≤ x ^ 8 := pow_le_pow_right₀ hx (by norm_num)
+  have e3 : x ^ 3 ≤ x ^ 8 := pow_le_pow_right₀ hx (by norm_num)
+  have e28 : x ^ 2 ≤ x ^ 8 := pow_le_pow_right₀ hx (by norm_num)
+  have e18 : x ≤ x ^ 8 := by simpa using pow_le_pow_right₀ hx (show 1 ≤ 8 by norm_num)
+  have e08 : 1 ≤ x ^ 8 := one_le_pow₀ hx
+  have hx8 : 0 ≤ x ^ 8 := by positivity
+  have hx7 : 0 ≤ x ^ 7 := by positivity
+  -- (i) the arithmetic operations: `6x³ + 56x² + 29x + 2 ≤ 93x⁸ ≤ 93x⁸L`
+  have i1 : 6 * x ^ 3 + 56 * x ^ 2 + 29 * x + 2 ≤ 93 * x ^ 8 * L := by
+    have : x ^ 8 ≤ x ^ 8 * L := le_mul_of_one_le_right hx8 hL
+    linarith
+  -- (ii) the evaluations of `f`: `2x(2x + 1) ≤ 6x⁷ ≤ 6x⁷L`
+  have i2 : FO * (2 * x * (2 * x + 1)) ≤ 6 * x ^ 7 * L * FO := by
+    have h7 : x ^ 7 ≤ x ^ 7 * L := le_mul_of_one_le_right hx7 hL
+    have : 2 * x * (2 * x + 1) ≤ 6 * x ^ 7 * L := by nlinarith
+    nlinarith [mul_le_mul_of_nonneg_left this hFO]
+  -- (iii) the minimizations: `C₁L(x⁵FO + C₂x⁶ + x⁶)(2x² + 2x) ≤ C₁L(4x⁷FO + 4C₂x⁸ + 4x⁸)`
+  have i3 : C₁ * (x ^ 5 * L * (FO + C₂ * x) + x ^ 6 * L) * (2 * x * (x + 1)) ≤
+      4 * C₁ * x ^ 7 * L * FO + 4 * C₁ * (C₂ + 1) * x ^ 8 * L := by
+    have a1 : x ^ 6 * FO ≤ x ^ 7 * FO := mul_le_mul_of_nonneg_right e6 hFO
+    have a2 : C₂ * x ^ 7 ≤ C₂ * x ^ 8 := mul_le_mul_of_nonneg_left e7 hC₂
+    have hCL : 0 ≤ C₁ * L := mul_nonneg hC₁ hL0
+    have hin : 2 * x ^ 7 * FO + 2 * x ^ 6 * FO + 2 * C₂ * x ^ 8 + 2 * C₂ * x ^ 7 + 2 * x ^ 8 +
+        2 * x ^ 7 ≤ 4 * x ^ 7 * FO + 4 * C₂ * x ^ 8 + 4 * x ^ 8 := by linarith
+    have := mul_le_mul_of_nonneg_left hin hCL
+    calc C₁ * (x ^ 5 * L * (FO + C₂ * x) + x ^ 6 * L) * (2 * x * (x + 1))
+        = C₁ * L * (2 * x ^ 7 * FO + 2 * x ^ 6 * FO + 2 * C₂ * x ^ 8 + 2 * C₂ * x ^ 7 +
+            2 * x ^ 8 + 2 * x ^ 7) := by ring
+      _ ≤ C₁ * L * (4 * x ^ 7 * FO + 4 * C₂ * x ^ 8 + 4 * x ^ 8) := this
+      _ = 4 * C₁ * x ^ 7 * L * FO + 4 * C₁ * (C₂ + 1) * x ^ 8 * L := by ring
+  nlinarith [i1, i2, i3]
+
 /-- **`thm:waterfilling`** (Theorem 3.2, statement `05-best-response.tex:26-28`, proof
 `appB-quadratic.tex:161-182`): the best response `x*(α)` can be computed in time
-`𝒪(n⁷ log n)·FO + 𝒪(n⁸ log n)`. The running time is not formalised; the Lean has what the proof
-derives it from: water-filling computes the best response, the output `x̄` of `alg:waterfilling` is
-`x*(α)`, with at most `2n(n + 1)` submodular minimizations (`oracleCalls`), `n = |E|`. The `𝒪(n²)`
-further evaluations of `f` appear as `fEvals ≤ 2n(2n + 1)`, where `fEvals` sums
-`rayEvals = |S*| + K + 1` over the steps and so encodes the paper's accounting by definition: this
-bound is the bound on the rounds of the ray computations, the same content as the bound on
-`oracleCalls`, and not a model of evaluations of `f`. The `𝒪(n³)` further arithmetic operations,
-the `𝒪(n)` work per step for the active set, the admission level and the updates, and the time of a
-minimization (step (8)) are not formalised.
+`𝒪(n⁷ log n)·FO + 𝒪(n⁸ log n)`. The Lean has the running time from what the proof derives it
+from, with the time of a minimization cited: water-filling computes the best response, the output
+`x̄` of `alg:waterfilling` is `x*(α)`, with at most `2n(n + 1)` submodular minimizations
+(`oracleCalls`), `n = |E|`. The `𝒪(n²)` further evaluations of `f` appear as
+`fEvals ≤ 2n(2n + 1)`, where `fEvals` sums `rayEvals = |S*| + K + 1` over the steps. The counted
+water-filling `waterFillC`, which performs `alg:waterfilling` in the cost model of
+`Stoc.Counted`, with the `𝒪(n)` work per step (for the
+active set, the admission level, and the updates) and the counted ray computations, returns `x̄`
+with exactly `oracleCalls` minimizations and `fEvals` evaluations of `f`, and at most
+`6n³ + 56n² + 29n + 2` further arithmetic operations, comparisons included: the `𝒪(n³)` of the
+proof (`waterFillC_spec`; not in the paper: the paper counts in prose). The time of a minimization
+(step (8)) is cited: the Lean takes the bound of Iwata and Orlin as a hypothesis and proves the
+running time from the counts (`waterFillC_time`, below).
 
 The paper's steps. "We first show that water-filling ends at the best response": (1)
 `C_θ := {e : λ̄_e ≥ θ}` is the set saturated after the last step with `λ − Δ ≥ θ`, or empty, as
@@ -1629,11 +2110,26 @@ one ray computation, which returns the step's `d(x, S*)` and `T(x + d(x, S*) v^{
 most `2n(n + 1)` and `2n(2n + 1)` in all; (8) a minimization returns the unique maximal minimizer
 (`sfmArg`, `sfmArg_min`), which the algorithm of Iwata and Orlin [IO09] finds in time
 `𝒪(n⁵ log n)·EO + 𝒪(n⁶ log n)` with `EO = FO + 𝒪(n)`, and multiplying by the `𝒪(n²)`
-minimizations gives the stated bound (not formalised). -/
+minimizations gives the stated bound: for `n ≥ 1`, if an evaluation of `f` takes time `FO ≥ 0` and a
+minimization time at most `sfmTime C₁ C₂ n FO = C₁(n⁵ lg n (FO + C₂ n) + n⁶ lg n)`, the bound of
+Iwata and Orlin (cited, a hypothesis), then `waterFillC` takes time at most
+`(6 + 4C₁) n⁷ lg n · FO + (93 + 4C₁(C₂ + 1)) n⁸ lg n`, `lg n = ⌈log₂ n⌉ + 1` (`waterFillC_time`;
+not in the paper: the paper counts in prose). -/
 theorem waterfilling (H : Hyp f m β α) :
     waterFill f m β α = bestResponse f m β α ∧
       oracleCalls f m β α ≤ 2 * Fintype.card E * (Fintype.card E + 1) ∧
-      fEvals f m β α ≤ 2 * Fintype.card E * (2 * Fintype.card E + 1) := by
+      fEvals f m β α ≤ 2 * Fintype.card E * (2 * Fintype.card E + 1) ∧
+      ((waterFillC f m β α).val = waterFill f m β α ∧
+        (waterFillC f m β α).cost.2.1 = oracleCalls f m β α ∧
+        (waterFillC f m β α).cost.2.2 = fEvals f m β α ∧
+        (waterFillC f m β α).cost.1 ≤
+          6 * Fintype.card E ^ 3 + 56 * Fintype.card E ^ 2 + 29 * Fintype.card E + 2) ∧
+      (0 < Fintype.card E → ∀ FO TS C₁ C₂ : ℝ, 0 ≤ FO → 0 ≤ C₁ → 0 ≤ C₂ →
+        TS ≤ Counted.sfmTime C₁ C₂ (Fintype.card E) FO →
+        Counted.time FO TS (waterFillC f m β α).cost ≤
+          (6 + 4 * C₁) * (Fintype.card E : ℝ) ^ 7 * Counted.lg (Fintype.card E) * FO +
+            (93 + 4 * C₁ * (C₂ + 1)) * (Fintype.card E : ℝ) ^ 8 *
+              Counted.lg (Fintype.card E)) := by
   obtain ⟨hmem, -, -, -, -, -, ⟨hiters, hpos, -⟩, hterm⟩ := wfstructure H
   refine ⟨?_, ?_⟩
   · -- "We first show that water-filling ends at the best response." (1)-(4)
@@ -1654,11 +2150,12 @@ theorem waterfilling (H : Hyp f m β α) :
   have hsteps : iters f m β α ≤ 2 * Fintype.card E := by
     have := card_le_univ (hatE m α)
     omega
-  -- Each uses one ray computation": step `k` is the update (`eq:A-step`), and the ray computation
-  -- of `lem:ray` at `(x, S*)` returns its `d(x, S*)` and `T(x + d(x, S*) v^{S*})` (`alg_step`,
-  -- lines 3-4 of `alg:waterfilling`), next to its count from `lem:ray`: at most `|S*| + 1`
-  -- minimizations and `2|S*| + 1` evaluations. `oracleCalls` and `fEvals` add up these counts, one
-  -- ray computation per step. (The `𝒪(n)` additional work per step is not formalised.)
+  -- Each uses one ray computation and `O(n)` additional work to determine the active set, the
+  -- admission level, and the updates": step `k` is the update (`eq:A-step`), and the ray
+  -- computation of `lem:ray` at `(x, S*)` returns its `d(x, S*)` and `T(x + d(x, S*) v^{S*})`
+  -- (`alg_step`, lines 3-4 of `alg:waterfilling`), next to its count from `lem:ray`: at most
+  -- `|S*| + 1` minimizations and `2|S*| + 1` evaluations. `oracleCalls` and `fEvals` add up these
+  -- counts, one ray computation per step; the additional work is counted in `waterFillC` (below).
   have hray : ∀ k ∈ range (iters f m β α),
       (rayStep f m β α (run f m β α k).x (active m β α (run f m β α k)) =
           dmax f β (run f m β α k).x (active m β α (run f m β α k)) ∧
@@ -1671,14 +2168,12 @@ theorem waterfilling (H : Hyp f m β α) :
         rayEvals f m β α (run f m β α k).x (active m β α (run f m β α k)) ≤
           2 * (active m β α (run f m β α k)).card + 1 := by
     intro k hk
-    obtain ⟨-, -, -, -, hcalls, hevals⟩ := ray H (hmem k) (fun e he => run_x_eq_zero he k)
+    obtain ⟨-, -, -, -, hcalls, hevals, -⟩ := ray H (hmem k) (fun e he => run_x_eq_zero he k)
       (active_nonempty (hpos k (mem_range.1 hk))) ((active_subset _).trans sdiff_subset)
     exact ⟨alg_step H (mem_range.1 hk), hcalls, hevals⟩
   -- (7) "By `lem:ray`, this gives at most `2n(n + 1)` submodular minimizations, `𝒪(n²)` further
-  -- evaluations of `f`": as `|S*| ≤ n`, at most `n + 1` minimizations and `2n + 1` evaluations in
-  -- each step (the latter is the paper's accounting, `rayEvals = |S*| + K + 1`, by definition, so
-  -- its bound is the bound on the rounds again, not a count of evaluations of `f`), and at most
-  -- `2n` steps.
+  -- evaluations of `f`, and `𝒪(n³)` further arithmetic operations": as `|S*| ≤ n`, at most
+  -- `n + 1` minimizations and `2n + 1` evaluations in each step, and at most `2n` steps.
   have hcount : ∀ k ∈ range (iters f m β α),
       rayCalls f m β α (run f m β α k).x (active m β α (run f m β α k)) ≤ Fintype.card E + 1 ∧
         rayEvals f m β α (run f m β α k).x (active m β α (run f m β α k)) ≤
@@ -1687,7 +2182,7 @@ theorem waterfilling (H : Hyp f m β α) :
     have := (hray k hk).2
     have := card_le_univ (active m β α (run f m β α k))
     omega
-  refine ⟨?_, ?_⟩
+  refine ⟨?_, ?_, ?_, ?_⟩
   · calc oracleCalls f m β α ≤ ∑ _k ∈ range (iters f m β α), (Fintype.card E + 1) :=
           sum_le_sum fun k hk => (hcount k hk).1
       _ = iters f m β α * (Fintype.card E + 1) := by rw [sum_const, card_range, smul_eq_mul]
@@ -1696,12 +2191,18 @@ theorem waterfilling (H : Hyp f m β α) :
           sum_le_sum fun k hk => (hcount k hk).2
       _ = iters f m β α * (2 * Fintype.card E + 1) := by rw [sum_const, card_range, smul_eq_mul]
       _ ≤ 2 * Fintype.card E * (2 * Fintype.card E + 1) := Nat.mul_le_mul_right _ hsteps
-  -- (8) "Throughout our operation counts, a submodular minimization returns the unique maximal
-  -- minimizer" (`sfmArg`, `sfmArg_min`). "The strongly polynomial algorithm of Iwata and Orlin
-  -- [IO09] finds it in time `𝒪(n⁵ log n)·EO + 𝒪(n⁶ log n)`, where `EO` is the cost of evaluating
-  -- the function being minimized. Here each such function is `f` minus a modular function, so
-  -- `EO = FO + 𝒪(n)`. Multiplying by the `𝒪(n²)` minimizations gives the stated bound." Not
-  -- formalised.
+  · -- the `𝒪(n³)` further arithmetic operations: the counted water-filling `waterFillC` returns
+    -- `x̄` with these minimizations and evaluations, and the `𝒪(n²)` operations of `lem:ray` and
+    -- the `𝒪(n)` additional work in each of the at most `2n` steps make at most
+    -- `6n³ + 56n² + 29n + 2` (`waterFillC_spec`)
+    exact waterFillC_spec H
+  · -- (8) "Throughout our operation counts, a submodular minimization returns the unique maximal
+    -- minimizer" (`sfmArg`, `sfmArg_min`). "The strongly polynomial algorithm of Iwata and Orlin
+    -- [IO09] finds it in time `𝒪(n⁵ log n)·EO + 𝒪(n⁶ log n)`, where `EO` is the cost of evaluating
+    -- the function being minimized. Here each such function is `f` minus a modular function, so
+    -- `EO = FO + 𝒪(n)`. Multiplying by the `𝒪(n²)` minimizations gives the stated bound."
+    -- (`waterFillC_time`, with the time of a minimization by [IO09] as a hypothesis, cited)
+    exact fun hn _ _ _ _ hFO hC₁ hC₂ hTS => waterFillC_time H hn hFO hC₁ hC₂ hTS
 
 end Loop
 

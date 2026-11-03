@@ -1,12 +1,12 @@
--- stamp r10 2026-11-02
+-- stamp r11 2026-11-03
 import ContractDesignPolymatroids.Hardness.AllLevels
 
 /-!
 # The comb gadget: `thm:gadget`
 
 The STOC version's `thm:gadget` (Appendix C.3, `sec:D-correct`, "The gadget",
-`stoc-sections/appD-hardness.tex:193-199`; proof in Appendix C.7, `sec:D-alllevels`, "Every level
-works", lines 1662-1783), for `μ^in ∈ 𝔉` of length `k` (`InF μin k`) and the last
+`stoc-sections/appD-hardness.tex:191-197`; proof in Appendix C.7, `sec:D-alllevels`, "Every level
+works", lines 1660-1780), for `μ^in ∈ 𝔉` of length `k` (`InF μin k`) and the last
 level `g := g_{k−1}` on `E := E_{k−1}` (`def:tower`, `thm:alllevels`).
 
 The proof has four parts, which open with sentences instead of labels; we number them (1)-(4):
@@ -19,8 +19,8 @@ The proof has four parts, which open with sentences instead of labels; we number
   of level `k − 1`, shifted by `Λ'`, to the right of `α_Γ`": `gadget_embed`;
 * (3) "Then we show that the output is a comb. The summand `e_g` takes care of the gap to the left
   of the contacts.": `gadget_knob`;
-* (4) "Finally, we show that the output lies in `𝒞_cut`, that its numbers have polynomial size and
-  that it is computed in polynomial time": in `gadget`, `thm:gadget` itself;
+* (4) "Finally, we show that the output lies in `𝒞_cut`, that its numbers have polynomial size,
+  and that it is computed in polynomial time": in `gadget`, `thm:gadget` itself;
 * the D3 lemmas (not in the paper): `card_Gr` (`|E_j| = 3(j + 1)`), `gT_baseEmb` (`g = f_0` on
   `2^{E_0}`), `hasCutForm_gT` (`g_j` has a cut form, by induction on `j`), `q_ge_q₀`
   (`q_j ≥ q_0`, by induction on `j`) and `gαΓ_gC_pos` (`α_Γ, C_g > 0`, which part (3) needs for
@@ -232,7 +232,7 @@ lemma gαΓ_mem (N : ℕ) : gαΓ μin N ∈ gΓ μin k N ∧ ∀ γ ∈ gΓ μi
   nlinarith
 
 /-- **Part (2) of the proof of `thm:gadget`** (our numbering of its four parts, see `gadget`;
-`stoc-sections/appD-hardness.tex:1682-1727`; `Λ' = δN − ζ_1 ≥ Λ` is from part (1), line 1675):
+`stoc-sections/appD-hardness.tex:1680-1725`; `Λ' = δN − ζ_1 ≥ Λ` is from part (1), line 1673):
 "Next we show that `f_c` is a polymatroid rank function and that `(f_c, m, β)` keeps the gap of
 level `k − 1`, shifted by `Λ'`, to the right of `α_Γ`." That is, for `N ≥ N_min`, `f_c` is a
 polymatroid rank function, the reward of `(f_c, m, β)` under its best response is
@@ -241,7 +241,7 @@ polymatroid rank function, the reward of `(f_c, m, β)` under its best response 
 
 The part's sentences: (2a) by `prop:base` and `lem:cutforms`(c), `g` has a cut form, so it is
 submodular by `lem:cutforms`(a), and `g(∅) = f_0(∅) = 0`; (2b) `lem:embed` with `f̃ := g`,
-`a := t`, `b := β⁻¹` and the parameters `(Λ', Θ)`: its function is `f_c`, and its instance is
+`a := t`, `b := β⁻¹`, and the parameters `(Λ', Θ)`: its function is `f_c`, and its instance is
 `(f_c, m, β)`; (2c) its hypotheses hold: `t, β⁻¹ > 0`; `Θ > 0`, as `g = f_0` on `2^{E_0}`, so
 `Θ ≥ β_{C_1}g({C_1}) − ζ_1m_{C_1} = 2/3`; for `e ∈ E` and `S ⊆ E ∖ {e}`, submodularity gives
 `g(S) − g(S ∪ {e}) ≤ g(E ∖ {e}) − g(E)`, with equality for `S = E ∖ {e}`, so the lower bound that
@@ -288,7 +288,7 @@ theorem gadget_embed (hF : InF μin k) {N : ℕ} (hN : gNmin μin k ≤ N) :
     rw [image_empty] at this
     rw [this]
     exact Base.base.1.empty
-  -- (2b) "We apply `lem:embed` with `f̃ := g`, `a := t`, `b := β⁻¹` and the parameters `(Λ', Θ)`.
+  -- (2b) "We apply `lem:embed` with `f̃ := g`, `a := t`, `b := β⁻¹`, and the parameters `(Λ', Θ)`.
   -- Then its function `f` is `f_c`, and its instance is `(f_c, m, β)`, as `a_e/b_e = m_e` and
   -- `1/b_e = β_e`."
   have hfeq : gfc μin k N = Exp.embedF (gT μin (k - 1))
@@ -474,10 +474,10 @@ lemma gαΓ_gC_pos (hF : InF μin k) {N : ℕ} (hN : gNmin μin k ≤ N) :
   unfold q₀ at hq
   exact ⟨hαΓ, mul_pos (by linarith) hαΓ⟩
 
-/-- **Part (3) of the proof of `thm:gadget`** (`stoc-sections/appD-hardness.tex:1729-1748`): "Then
+/-- **Part (3) of the proof of `thm:gadget`** (`stoc-sections/appD-hardness.tex:1727-1746`): "Then
 we show that the output is a comb. The summand `e_g` takes care of the gap to the left of the
 contacts." That is, for `N ≥ N_min`, the output `I(μ^in, N)` is a comb with contact set `Γ`, line
-`p + qα`, dip `κ` and width `δ`, and `q = q_{k−1} ≥ q_0 = 7 > 0` by (P8).
+`p + qα`, dip `κ`, and width `δ`, and `q = q_{k−1} ≥ q_0 = 7 > 0` by (P8).
 
 The part's sentences: (3a) by `lem:ops`(c), the reward of the output under its best response is
 `r(x*_c(α)) + C_g min(α/α_Γ, 1)`, and `L := L_c + C_g` is the line `p + qα` (`lem:ops`(c) asks for
@@ -487,7 +487,7 @@ bound of (2) it is at least `κ min(dist(α, Γ), δ)` (and `0` on `Γ`, by the 
 `[0, α_Γ)`, `r(x*_c(·))` is nondecreasing (`lem:monreward`), so
 `r(x*_c(α)) ≤ r(x*_c(α_Γ)) = L_c(α_Γ) = L_c(α) + q(α_Γ − α)`, and the gap of the output is at least
 `−q(α_Γ − α) + C_g(1 − α/α_Γ) = κ(α_Γ − α) = κ dist(α, Γ)`; (3d) so the output is a comb with the
-stated contact set, line, dip and width (`def:comb`), and `q = q_{k−1} ≥ q_0 = 7 > 0` by (P8)
+stated contact set, line, dip, and width (`def:comb`), and `q = q_{k−1} ≥ q_0 = 7 > 0` by (P8)
 (`q_ge_q₀`). -/
 theorem gadget_knob (hF : InF μin k) {N : ℕ} (hN : gNmin μin k ≤ N) :
     IsComb (gadgetF μin k N) (gadgetM μin k) (gadgetB μin k N) (gΓ μin k N) (gp μin k N)
@@ -565,7 +565,7 @@ theorem gadget_knob (hF : InF μin k) {N : ℕ} (hN : gNmin μin k ≤ N) :
       ring
     rw [e2, e]
     nlinarith
-  -- (3d) "So the output is a comb with the stated contact set, line, dip and width (`def:comb`),
+  -- (3d) "So the output is a comb with the stated contact set, line, dip, and width (`def:comb`),
   -- and `q = q_{k−1} ≥ q_0 = 7 > 0` by (P8)." (`q_ge_q₀`)
   have hq : 0 < gq μin k := by
     have := q_ge_q₀ (μin := μin) (k - 1)
@@ -577,12 +577,12 @@ theorem gadget_knob (hF : InF μin k) {N : ℕ} (hN : gNmin μin k ≤ N) :
   · exact h3b α h
   · exact h3c α hα h
 
-/-- **`thm:gadget`** (Theorem C.6, `stoc-sections/appD-hardness.tex:193-199`, proof lines
-1662-1783), its mathematical part: for `μ^in ∈ 𝔉` of length `k`, `N_min(μ^in) ≥ 1` is an integer,
+/-- **`thm:gadget`** (Theorem C.6, `stoc-sections/appD-hardness.tex:191-197`, proof lines
+1660-1780), its mathematical part: for `μ^in ∈ 𝔉` of length `k`, `N_min(μ^in) ≥ 1` is an integer,
 and for every integer `N ≥ N_min(μ^in)` the instance `I(μ^in, N)` lies in `𝒞_cut` (a polymatroid
 rank function given by a cut form, positive rewards and curvatures), has `3k + 1` elements, and with
 `p` and `q > 0` it is a comb with contact set `Γ = {δ(N + χ^⊤μ^in) : χ ∈ {0, 1}^k}`, line `p + qα`,
-dip `κ = min(1, 1/(30δ))` and width `δ = 1/(3μ^in_1)`. The bit lengths `O(k + log μ^in_k + log N)`
+dip `κ = min(1, 1/(30δ))`, and width `δ = 1/(3μ^in_1)`. The bit lengths `O(k + log μ^in_k + log N)`
 of all numbers computed, their rationality and the computed cut form are `gadget_sizes` and
 `gadgetForm` (`ContractDesignPolymatroids/Hardness/GadgetSizes.lean`); here the cut form exists. Not formalised: the
 running time of the algorithm.
@@ -593,8 +593,8 @@ The proof has four parts, which open with sentences instead of labels; we number
 polymatroid rank function and that `(f_c, m, β)` keeps the gap of level `k − 1`, shifted by `Λ'`,
 to the right of `α_Γ`" (`gadget_embed`); (3) "Then we show that the output is a comb"
 (`gadget_knob`); (4) "Finally, we show that the output lies in `𝒞_cut`, that its numbers have
-polynomial size and that it is computed in polynomial time", here: (4a) `f_c` is obtained from
-`f_0` by one-element extensions, direct sums with modular singletons and the addition of a modular
+polynomial size, and that it is computed in polynomial time", here: (4a) `f_c` is obtained from
+`f_0` by one-element extensions, direct sums with modular singletons, and the addition of a modular
 function, and adding `e_g` is a direct sum with a modular singleton, so by `prop:base` and
 `lem:cutforms`(c) the output has a cut form; (4b) its rank function is a polymatroid rank
 function, as `f_c` is one and `C_g > 0` (`gαΓ_gC_pos`); (4c) it has `3k + 1` elements and positive
@@ -612,12 +612,12 @@ theorem gadget (hF : InF μin k) :
   obtain ⟨hcomb, hq⟩ := gadget_knob hF hN
   have hβ : ∀ e, 0 < βT μin (k - 1) e := (fpHyp_gT (μin := μin) (k - 1)).pos
   obtain ⟨hαΓ, hC⟩ := gαΓ_gC_pos hF hN
-  -- (4) "Finally, we show that the output lies in `𝒞_cut`, that its numbers have polynomial size
+  -- (4) "Finally, we show that the output lies in `𝒞_cut`, that its numbers have polynomial size,
   -- and that it is computed in polynomial time."
   -- The Lean: here the output lies in `𝒞_cut`; the sizes are `gadget_sizes`, the running time is
   -- not formalised.
   -- (4a) "The function `f_c` is obtained from `f_0` by one-element extensions, direct sums with
-  -- modular singletons and the addition of a modular function, and adding `e_g` is a direct sum
+  -- modular singletons, and the addition of a modular function, and adding `e_g` is a direct sum
   -- with a modular singleton. By `prop:base` and `lem:cutforms`(c), the output has a cut form,
   -- computed along the construction."
   -- The Lean: here the cut form exists; the form computed along the construction is `gadgetForm`

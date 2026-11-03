@@ -1,4 +1,4 @@
--- stamp r8 2026-11-02
+-- stamp r9 2026-11-03
 import Mathlib
 import ContractDesignPolymatroids.OptimalShare.Tracing
 
@@ -7,8 +7,8 @@ import ContractDesignPolymatroids.OptimalShare.Tracing
 
 The STOC version, Section 3 (`stoc-sections/06-optimal-share.tex:37-39`),
 Theorem `thm:bitlength`, with its proof in Appendix B.3 (`sec:C-bitlength`,
-`stoc-sections/appB-bitlength.tex:1-112`): if every `m_e`, every `β_e` and every value of `f` is a
-quotient of two integers of absolute value less than `2^ν` (`IsSmall`), and `n ≤ ν`, then every
+`stoc-sections/appB-bitlength.tex:1-112`): if every `m_e`, every `β_e`, and every value of `f` is
+a quotient of two integers of absolute value less than `2^ν` (`IsSmall`), and `n ≤ ν`, then every
 breakpoint of `x*` is a quotient of two integers of absolute value at most
 `Q = (2n + 1)^{n+1} 4^{(2n+1)ν}` (`bigQ`), and some optimal contract a quotient of two integers of
 absolute value at most `2nQ2^{nν}` (`bigQ'`); both have `O(nν)` bits (`logb_bigQ`,
@@ -17,9 +17,13 @@ theorem is `Stoc.BitLength.bitlength`. Its proof follows the paper's, which has 
 opened by a sentence and without a label; here they are numbered (1) to (4), and their sub-steps
 (a) to (d):
 
-* (1) "We first write down the linear equations of a state." (a) Finitely many event points:
-  `events_finite`, from the intervals of `lem:pwaffine` (`Stoc.pwaffine`) and the argument of
-  `lem:eventcount` on each of them, at most `C(n, 2)` changes of the state (`events_in_affine`).
+* (1) "Recall from `sec:A-structure` that a state records the elements of zero marginal utility,
+  the elements of zero effort, and the blocks of elements with equal positive marginal utility. We
+  first write down its linear equations." The state is `Stoc.state` of
+  `ContractDesignPolymatroids/OptimalShare/Velocity.lean`: the free set, the zero set and the blocks of equal positive
+  marginal. (a) Finitely many event points: `events_finite`, from the intervals of `lem:pwaffine`
+  (`Stoc.pwaffine`) and the argument of `lem:eventcount` on each of them, at most `C(n, 2)`
+  changes of the state (`events_in_affine`).
   For an open interval `J ∋ α₁` with constant state, the free set `Φ` and the zero set `Z` are
   `freeSet` and `zeroSet` of `ContractDesignPolymatroids/OptimalShare/Velocity.lean`, the blocks are
   `D_j = {e | ρ_e(α₁) = θ_j}` for the distinct positive marginals `θ_0 > ⋯ > θ_{k−1}` at `α₁`
@@ -1767,9 +1771,9 @@ lemma xJ_eq_on_piece (H : Tracing.Hyp f m β) {a c lo hi α₁ : ℝ} (hp : Trac
   linarith
 
 /-- (4), the linear algebra: "We scale them as above, move the terms with `α` to the right-hand
-side and apply Cramer's rule." For a square system `G y = h − α g` whose rows become
+side, and apply Cramer's rule." For a square system `G y = h − α g` whose rows become
 integral, with entries of absolute value at most `X`, after multiplication with `s_i ≠ 0`, the
-solution is `y_c = (u_c + α v_c)/ζ` with integers `u_c`, `v_c` and `ζ ≠ 0` of absolute value at
+solution is `y_c = (u_c + α v_c)/ζ` with integers `u_c`, `v_c`, and `ζ ≠ 0` of absolute value at
 most `(√N X)^N` (Hadamard's inequality, `abs_det_le`). -/
 theorem affine_ratio_of_integral_rows {n : Type*} [Fintype n] [DecidableEq n] {G : Matrix n n ℝ}
     {h g : n → ℝ} (hdet : G.det ≠ 0) {s : n → ℝ} (hs : ∀ i, s i ≠ 0) {X : ℝ} (hX : 0 ≤ X)
@@ -1836,8 +1840,8 @@ theorem affine_ratio_of_integral_rows {n : Type*} [Fintype n] [DecidableEq n] {G
 /-- **(4)** (`appB-bitlength.tex:94-98`), for an open interval `J = (lo, hi) ∋ α₁` with constant
 state: "As the equations of `J` determine `x` and `ρ` for fixed `α`, some `n + k` of them have a
 nonsingular matrix in the columns of `(x, ρ)`. We scale them as above, move the terms with `α` to
-the right-hand side and apply Cramer's rule. This gives `x*_e(α) = (u_e + α v_e)/ζ` on the piece,
-with integers `u_e`, `v_e` and `ζ ≠ 0` of absolute value at most `Q`", here for the affine
+the right-hand side, and apply Cramer's rule. This gives `x*_e(α) = (u_e + α v_e)/ζ` on the piece,
+with integers `u_e`, `v_e`, and `ζ ≠ 0` of absolute value at most `Q`", here for the affine
 extension `x^J` of `x*` from `J`. -/
 theorem step4_cramer (H : Tracing.Hyp f m β) {ν : ℕ} (hν : 1 ≤ ν) (hm : ∀ e, IsSmall ν (m e))
     (hβs : ∀ e, IsSmall ν (β e)) (hfs : ∀ S, IsSmall ν (f S)) {lo hi α₁ : ℝ} (hlo : 0 ≤ lo)
@@ -1919,7 +1923,7 @@ lemma abs_prod_erase_le {ν : ℕ} {q : E → ℤ} (hq : ∀ e, |(q e : ℝ)| < 
 `|a_e|, ā_e < 2^ν`, the reward on `I` is `r⁰_I + r¹_I α`, in the notation after `lem:pwaffine`,
 where `r⁰_I = P/(ζ ∏_{e∈E} ā_e)` and `r¹_I = P'/(ζ ∏_{e∈E} ā_e)` with
 `P := ∑_{e∈E} a_e u_e ∏_{e'≠e} ā_{e'}` and `P' := ∑_{e∈E} a_e v_e ∏_{e'≠e} ā_{e'}`, and the
-integers `P`, `P'` and `ζ ∏_{e∈E} ā_e` have absolute value at most `nQ2^{nν}`." Here for
+integers `P`, `P'`, and `ζ ∏_{e∈E} ā_e` have absolute value at most `nQ2^{nν}`." Here for
 `x(α)_e = (u_e + α v_e)/ζ` with `|u_e|, |v_e|, |ζ| ≤ Q` (the affine form `x^J` of `x*` on `I`, by
 `step4_cramer`): `|ζ ∏_e ā_e| ≤ |ζ| (2^ν)^n ≤ nQ2^{nν}`, and `P`, `P'` are bounded termwise. -/
 lemma reward_ratio {ν : ℕ} (hm : ∀ e, IsSmall ν (m e)) (hn : 0 < Fintype.card E) {Q : ℕ}
@@ -1970,7 +1974,7 @@ lemma reward_ratio {ν : ℕ} (hm : ∀ e, IsSmall ν (m e)) (hn : 0 < Fintype.c
     have hRe : (R e : ℝ) = ∏ x ∈ Finset.univ.erase e, (ab x : ℝ) := by simp [R]
     rw [hRe]
     field_simp
-  · -- "and the integers `P`, `P'` and `ζ ∏_{e∈E} ā_e` have absolute value at most `nQ2^{nν}`":
+  · -- "and the integers `P`, `P'`, and `ζ ∏_{e∈E} ā_e` have absolute value at most `nQ2^{nν}`":
     -- `|ζ ∏_e ā_e| ≤ |ζ| (2^ν)^n ≤ Q 2^{nν} ≤ nQ2^{nν}`
     have hreal : |(ζ : ℝ) * ∏ g, (ab g : ℝ)| ≤ n * Q * 2 ^ (n * ν) := by
       have hζ' : |(ζ : ℝ)| ≤ Q := by exact_mod_cast hζQ
@@ -2111,7 +2115,7 @@ variable {E : Type*} [Fintype E] [DecidableEq E] {f : Finset E → ℝ} {m β : 
 
 /-- **`thm:bitlength`** (Theorem 3.6, statement `stoc-sections/06-optimal-share.tex:37-39`, proof
 `stoc-sections/appB-bitlength.tex:14-112`, with `Q` at :3-11), under the standing assumptions of
-Section 3 (`Tracing.Hyp`). Suppose that every `m_e`, every `β_e` and every value `f(S)` is a
+Section 3 (`Tracing.Hyp`). Suppose that every `m_e`, every `β_e`, and every value `f(S)` is a
 quotient of two integers of absolute value less than `2^ν` (`IsSmall ν`), and `n ≤ ν`. Then every
 breakpoint of `x*` and some optimal contract are rationals whose numerators and denominators have
 bit length `O(nν)`: every breakpoint is a quotient of two integers of absolute value at most
@@ -2125,7 +2129,9 @@ second and the third part assume `n ≥ 1`, as Section 2 does ("a finite nonempt
 
 The paper's proof has four parts, each opened by a sentence and without a label; the docstrings
 and comments number them (1) to (4):
-(1) "We first write down the linear equations of a state": (a) finitely many event points
+(1) "Recall from `sec:A-structure` that a state records the elements of zero marginal utility, the
+elements of zero effort, and the blocks of elements with equal positive marginal utility. We first
+write down its linear equations." (`Stoc.state`): (a) finitely many event points
 (`events_finite`, by `lem:pwaffine` and the argument of `lem:eventcount`, at most `C(n, 2)`
 changes of the state on each interval of `lem:pwaffine`, `events_in_affine`); (b) on an open
 interval `J` with constant state, the blocks keep their order and `S_j = D_0 ∪ ⋯ ∪ D_j` is a tight
@@ -2150,7 +2156,7 @@ of the piece `I` of an optimal contract (`exists_J_in_piece`), `x^J` is the affi
 `x*_e = (u_e + α v_e)/ζ` with `|u_e|, |v_e|, |ζ| ≤ Q` (`step4_cramer`), the reward on `I` is
 `r⁰_I + r¹_I α` with `r⁰_I = P/(ζ ∏_e ā_e)`, `r¹_I = P'/(ζ ∏_e ā_e)` and
 `|P|, |P'|, |ζ ∏_e ā_e| ≤ nQ2^{nν}` (`reward_ratio`), and the maximum of `U_P` over `I` is attained
-at an end, `0`, `1` or a breakpoint, or, if `r¹_I > 0` and it lies in `I`, at the vertex
+at an end, `0`, `1`, or a breakpoint, or, if `r¹_I > 0` and it lies in `I`, at the vertex
 `(r¹_I − r⁰_I)/(2r¹_I) = (P' − P)/(2P')` of the parabola `(1 − α)(r⁰_I + r¹_I α)`
 (`Stoc.Tracing.quad_max`, the remark after `lem:pwaffine`).
 
@@ -2183,15 +2189,16 @@ theorem bitlength (H : Tracing.Hyp f m β) {ν : ℕ} (hm : ∀ e, IsSmall ν (m
   have hxJ := xJ_eq_on_piece H hp hal hhc hlo hS hα₁
   -- "As the equations of `J` determine `x` and `ρ` for fixed `α`, some `n + k` of them have a
   -- nonsingular matrix in the columns of `(x, ρ)`. We scale them as above, move the terms with `α`
-  -- to the right-hand side and apply Cramer's rule. This gives `x*_e(α) = (u_e + α v_e)/ζ` on the
-  -- piece, with integers `u_e`, `v_e` and `ζ ≠ 0` of absolute value at most `Q`."
+  -- to the right-hand side, and apply Cramer's rule. This gives `x*_e(α) = (u_e + α v_e)/ζ` on the
+  -- piece, with integers `u_e`, `v_e`, and `ζ ≠ 0` of absolute value at most `Q`."
   obtain ⟨ζ, hζ, hζQ, huv⟩ := step4_cramer H (hn.trans_le hnν) hm hβs hfs hlo hS hα₁
   choose u v hu hv hxuv using huv
   -- "Writing `m_e = a_e/ā_e` with integers `a_e` and `ā_e > 0`, `|a_e|, ā_e < 2^ν`, the reward on
   -- `I` is `r⁰_I + r¹_I α`, in the notation after `lem:pwaffine`, where `r⁰_I = P/(ζ ∏_e ā_e)` and
   -- `r¹_I = P'/(ζ ∏_e ā_e)` with `P := ∑_e a_e u_e ∏_{e'≠e} ā_{e'}` and
-  -- `P' := ∑_e a_e v_e ∏_{e'≠e} ā_{e'}`, and the integers `P`, `P'` and `ζ ∏_e ā_e` have absolute
-  -- value at most `nQ2^{nν}`." (The numerators `a_e` are not needed below; `ab` are the `ā_e`.)
+  -- `P' := ∑_e a_e v_e ∏_{e'≠e} ā_{e'}`, and the integers `P`, `P'`, and `ζ ∏_e ā_e` have
+  -- absolute value at most `nQ2^{nν}`." (The numerators `a_e` are not needed below; `ab` are the
+  -- `ā_e`.)
   obtain ⟨_, ab, -, P, P', -, -, hden, hrew, -, hP, hP'⟩ :=
     reward_ratio (x := xJ f m β α₁) hm hn hζ hζQ hu hv fun α e => hxuv e α
   set r0 : ℝ := (P : ℝ) / ((ζ * ∏ e, ab e : ℤ) : ℝ) with hr0
@@ -2199,7 +2206,7 @@ theorem bitlength (H : Tracing.Hyp f m β) {ν : ℕ} (hm : ∀ e, IsSmall ν (m
   have hUP : ∀ α ∈ Set.Icc a c, profit (grossValue f m β) α = (1 - α) * (r0 + r1 * α) := by
     intro α hα
     rw [profit, grossValue, hxJ α hα, hrew α]
-  -- "The maximum of `U_P` over `I` is attained at an endpoint, which is `0`, `1` or a breakpoint,
+  -- "The maximum of `U_P` over `I` is attained at an endpoint, which is `0`, `1`, or a breakpoint,
   -- or, if `r¹_I > 0` and it lies in `I`, at the vertex `(r¹_I − r⁰_I)/(2r¹_I) = (P' − P)/(2P')`
   -- of the parabola `(1 − α)(r⁰_I + r¹_I α)`" (`quad_max`, the remark after `lem:pwaffine`).
   obtain ⟨α', hα', hcand, hmax⟩ := Tracing.quad_max hp.2.1.le r0 r1

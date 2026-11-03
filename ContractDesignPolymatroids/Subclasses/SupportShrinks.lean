@@ -1,4 +1,4 @@
--- stamp r8 2026-11-02
+-- stamp r9 2026-11-03
 import ContractDesignPolymatroids.OptimalShare.Velocity
 
 /-!
@@ -17,7 +17,7 @@ changes at no more than `n` shares.
 
 Steps the STOC version uses without proof, each in its own lemma (D3):
 `exists_levelSets_const_right` (step (4), "after shrinking `h`, the chain of positive level sets of
-`ρ`, the zero set `Z` and the free set `Φ` are constant on `J`") and `stateConstOn_of_levelSets`
+`ρ`, the zero set `Z`, and the free set `Φ` are constant on `J`") and `stateConstOn_of_levelSets`
 (step (4), "so the state of `sec:A-structure` is constant on `J`"), with the blocks constant by
 `blocks_const_of_levelSets` and its reason `rho_eq_iff_levelSets`. Also not in the paper:
 `brSupport_eq_of_noChange`, the support is the same at two shares with no change of the support
@@ -147,7 +147,7 @@ theorem blocks_const_of_levelSets (hf : IsRankFunction f) (hβ : ∀ e, 0 < β e
 
 /-- (Not in the paper: step (4) of `lem:supportmon` uses this without proof, "so the state of
 `sec:A-structure` is constant on `J`".) On a set `J ⊆ (0, ∞)` on which the chain of positive level
-sets, the zero set and the free set are constant, the state of `sec:A-structure` is constant: the
+sets, the zero set, and the free set are constant, the state of `sec:A-structure` is constant: the
 blocks are constant by `blocks_const_of_levelSets`. -/
 theorem stateConstOn_of_levelSets (hf : IsRankFunction f) (hβ : ∀ e, 0 < β e)
     (hm : ∀ e, 0 ≤ m e) {J : Set ℝ} (hJ : ∀ α ∈ J, 0 < α)
@@ -203,7 +203,7 @@ theorem exists_sign_const_right (c d α₁ : ℝ) :
 omit [DecidableEq E] in
 /-- (Not in the paper: step (4) of `lem:supportmon`, "After shrinking `h`, …", is used without
 proof.) If `x*` is affine on `[α₁, α₂]`, then on some interval `(α₁, u)`, `u ≤ α₂`, the chain of
-positive level sets of `ρ`, the zero set and the free set are constant: each of `x*_g`, `ρ_g` and
+positive level sets of `ρ`, the zero set, and the free set are constant: each of `x*_g`, `ρ_g` and
 `ρ_g − ρ_{g'}` is affine there and keeps its sign just right of `α₁`. -/
 theorem exists_levelSets_const_right {α₁ α₂ : ℝ} (h12 : α₁ < α₂) {p w : E → ℝ}
     (haff : ∀ γ ∈ Set.Icc α₁ α₂, bestResponse f m β γ = fun e => p e + γ * w e) :
@@ -393,7 +393,7 @@ theorem bestResponse_eq_zero_of_lt (hf : IsRankFunction f) (hβ : ∀ e, 0 < β 
     intro γ hγ
     simp only [rho, marg, haff γ hγ, haff α₁ ⟨le_rfl, h12.le⟩]
     ring
-  -- (4) "After shrinking `h`, the chain of positive level sets of `ρ`, the zero set `Z` and the
+  -- (4) "After shrinking `h`, the chain of positive level sets of `ρ`, the zero set `Z`, and the
   -- free set `Φ` are constant on `J` (so the state of `sec:A-structure` is constant on `J`), and
   -- `ρ_e > 0` on `J`."
   obtain ⟨u₁, hu₁, hu₁2, hlev, hZ, hΦ⟩ := exists_levelSets_const_right h12 haff
@@ -417,7 +417,7 @@ theorem bestResponse_eq_zero_of_lt (hf : IsRankFunction f) (hβ : ∀ e, 0 < β 
       (fun γ hγ γ' hγ' => hZ γ (hJ1 γ hγ) γ' (hJ1 γ' hγ'))
       (fun γ hγ γ' hγ' => hΦ γ (hJ1 γ hγ) γ' (hJ1 γ' hγ'))
   have hρJ : ∀ γ ∈ J, 0 < rho f m β γ e := fun γ hγ => hρu₂ γ (hJ2 γ hγ)
-  -- (5) "Moreover, `x*_e > 0` on `J`, because `x*_e` is affine on `J`, vanishes at `α_` and is
+  -- (5) "Moreover, `x*_e > 0` on `J`, because `x*_e` is affine on `J`, vanishes at `α_`, and is
   -- positive somewhere in `J`."
   have hxe : ∀ γ ∈ Set.Icc α₁ α₂, bestResponse f m β γ e = (γ - α₁) * w e := by
     intro γ hγ

@@ -1,4 +1,4 @@
--- stamp r9 2026-11-02
+-- stamp r10 2026-11-03
 import Mathlib
 import ContractDesignPolymatroids.OptimalShare.Tracing
 import ContractDesignPolymatroids.OptimalShare.Pencil
@@ -9,13 +9,13 @@ import ContractDesignPolymatroids.Hardness.Operations
 # Exponentially many breakpoints
 
 The STOC version, Section 3 (`stoc-sections/06-optimal-share.tex`, the exponentially many
-breakpoints), with the proofs in Appendix B.5 (`sec:A-expbp`): Theorem `thm:alm` of Allman, Lo and
-McCormick, Lemma `lem:embed`, which Section 3 refers to and Appendix B.5 states and proves after the
-proof of `thm:alm`, and Theorem `thm:expbp`; this file follows the appendix. (`thm:levelsets` is
-`Stoc.levelsets` in `ContractDesignPolymatroids/BestResponse/LevelSets.lean`, and `lem:ops` (b) is
+breakpoints), with the proofs in Appendix B.5 (`sec:A-expbp`): Theorem `thm:alm` of Allman, Lo,
+and McCormick, Lemma `lem:embed`, which Section 3 refers to and Appendix B.5 states and proves
+after the proof of `thm:alm`, and Theorem `thm:expbp`; this file follows the appendix.
+(`thm:levelsets` is `Stoc.levelsets` in `ContractDesignPolymatroids/BestResponse/LevelSets.lean`, and `lem:ops` (b) is
 `Stoc.Hardness.ops_b_aux` in `ContractDesignPolymatroids/Hardness/Operations.lean`.)
 
-* `thm:alm`: `Stoc.Exp.alm`, along the paper's proof from the network of Allman, Lo and McCormick.
+* `thm:alm`: `Stoc.Exp.alm`, along the paper's proof from the network of Allman, Lo, and McCormick.
   Their Theorem 1.1, which the paper cites, is `Stoc.Network.almNetwork` (not in the paper), proved
   from the network of the proof of `thm:polybits` (ii) (`Stoc.Network.polybits_ii`); `f̃` is the
   cut function `cutFun` of the graph with the sink, and that a cut function with nonnegative
@@ -46,7 +46,7 @@ open Finset Set
 
 variable {E : Type*} [Fintype E] [DecidableEq E]
 
-/-! ### The theorem of Allman, Lo and McCormick (`thm:alm`) -/
+/-! ### The theorem of Allman, Lo, and McCormick (`thm:alm`) -/
 
 /-- `S ↦ f̃(S) − λ a(S) − θ b(S)`. -/
 def tilt (ft : Finset E → ℝ) (a b : E → ℝ) (l θ : ℝ) (S : Finset E) : ℝ :=
@@ -108,13 +108,13 @@ theorem cutFun_nonneg_submodular {u : E → E → ℝ} {u' : E → ℝ} (hu : �
       by_cases h4 : j ∈ Y <;> simp [h1, h2, h3, h4] <;> linarith
   linarith
 
-/-- **`thm:alm`** (Theorem 3.8, Allman, Lo and McCormick; statement
+/-- **`thm:alm`** (Theorem 3.8, Allman, Lo, and McCormick; statement
 `stoc-sections/06-optimal-share.tex:58-60`, proof `stoc-sections/appB-quadratic.tex:518-534`). For
 every `n ≥ 1` and `E = [n]` (here `Fin n`), there are `a, b ∈ ℝ^E_{>0}` and a submodular
 `f̃ : 2^E → ℝ_{≥0}` with `f̃(∅) = 0` such that every `S ⊆ E` is the unique minimizer of
 `f̃ − λ_S a − θ_S b` for some `(λ_S, θ_S) ∈ (0, 1)²`.
 
-The paper's steps: (1) the network of Allman, Lo and McCormick, with the source arcs
+The paper's steps: (1) the network of Allman, Lo, and McCormick, with the source arcs
 `a_j λ + b_j θ`, `a_j, b_j > 0`, and constant nonnegative capacities `u_ij` on the other arcs, in
 which (2) every `S ⊆ E` is the unique minimum cut `{s} ∪ S` at some `(λ_S, θ_S) ∈ (0, 1)²`
 (cited from [ALM22, Theorem 1.1]: here `Stoc.Network.almNetwork`, proved from the network of the
@@ -129,10 +129,10 @@ theorem alm (n : ℕ) (hn : 1 ≤ n) :
       Submodular ft ∧ (∀ S, 0 ≤ ft S) ∧ ft ∅ = 0 ∧
       ∀ S : Finset (Fin n), ∃ l θ : ℝ, l ∈ Ioo (0 : ℝ) 1 ∧ θ ∈ Ioo (0 : ℝ) 1 ∧
         ∀ T, T ≠ S → tilt ft a b l θ S < tilt ft a b l θ T := by
-  -- (1) "The network of Allman, Lo and McCormick has a source `s`, a sink `s'` and the nodes `E`
-  -- (we avoid the letter `t`, which denotes the vector `m_e/β_e`). The arcs `s → j` have capacity
-  -- `a_j λ + b_j θ` with `a_j, b_j > 0`, and all other arcs have constant nonnegative capacities
-  -- `u_ij`." (2) "Every `S ⊆ E` is the unique minimum cut `{s} ∪ S` at some point
+  -- (1) "The network of Allman, Lo, and McCormick has a source `s`, a sink `s'`, and the nodes
+  -- `E` (we avoid the letter `t`, which denotes the vector `m_e/β_e`). The arcs `s → j` have
+  -- capacity `a_j λ + b_j θ` with `a_j, b_j > 0`, and all other arcs have constant nonnegative
+  -- capacities `u_ij`." (2) "Every `S ⊆ E` is the unique minimum cut `{s} ∪ S` at some point
   -- `(λ_S, θ_S) ∈ (0, 1)²` [ALM22, Theorem 1.1, with the network of Section 2]."
   obtain ⟨a, b, u, u', ha, hb, hu, hu', hcut⟩ := Network.almNetwork hn
   -- (3) "The capacity of the cut `{s} ∪ S` is `λ a(E∖S) + θ b(E∖S) + f̃(S)` with
@@ -192,10 +192,10 @@ lemma monotone_of_insert {g : Finset E → ℝ} (h : ∀ S e, e ∉ S → g S �
 
 /-- **`lem:embed`** (Lemma B.9, statement `stoc-sections/appB-quadratic.tex:536-540`, proof
 :541-556). Let `f̃ : 2^E → ℝ` be submodular with `f̃(∅) = 0`, let
-`a, b ∈ ℝ^E_{>0}`, `Θ > 0` and `Λ ≥ max{0, max_{S ⊆ E, e ∈ E∖S} (f̃(S) − f̃(S ∪ {e}) + Θ b_e)/a_e}`
+`a, b ∈ ℝ^E_{>0}`, `Θ > 0`, and `Λ ≥ max{0, max_{S ⊆ E, e ∈ E∖S} (f̃(S) − f̃(S ∪ {e}) + Θ b_e)/a_e}`
 (here the two hypotheses `0 ≤ Λ` and `(f̃(S) − f̃(S ∪ {e}) + Θ b_e)/a_e ≤ Λ` for all `S` and
 `e ∉ S`). Then `f(S) = f̃(S) + ∑_{e∈S} (Λ a_e − Θ b_e)` is a rank function, and in the instance
-with `f`, `m_e = a_e/b_e` and `β_e = 1/b_e`, the level set `A_{Θ−θ}(Λ + λ)` is the maximal
+with `f`, `m_e = a_e/b_e`, and `β_e = 1/b_e`, the level set `A_{Θ−θ}(Λ + λ)` is the maximal
 minimizer of `f̃ − λ a − θ b` for all `λ ≥ −Λ` and `θ < Θ`.
 
 The paper's steps: (1) `f` is submodular and `f(∅) = 0`; (2) by the choice of `Λ` every marginal
@@ -693,7 +693,7 @@ lemma sub_one_le_of_two_pow_le {n k : ℕ} (h : 2 ^ n ≤ (k + 1) * (1 + n * (n 
 which is `2^{n − O(log n)}` (the second part: at least `2^{n − 2 log₂ n − 2}` for `n ≥ 8`,
 `two_pow_div_sub_one_ge`).
 
-The paper's steps: (1) `a`, `b` and `f̃` from `thm:alm` (`alm`), and the instance of `lem:embed`
+The paper's steps: (1) `a`, `b`, and `f̃` from `thm:alm` (`alm`), and the instance of `lem:embed`
 (`embed`) with `Θ = 2` and `Λ = max{0, max_{S, e∉S} (f̃(S) − f̃(S ∪ {e}) + 2 b_e)/a_e}`; (2) for
 `S ⊆ E`, `α_S = Λ + λ_S ∈ (Λ, Λ + 1)` and `θ̄_S = Θ − θ_S ∈ (1, 2)`, and `lem:embed` gives
 `A_{θ̄_S}(α_S) = S` (the maximal minimizer of a function with the unique minimizer `S` is `S`:
@@ -714,7 +714,7 @@ theorem expbp (n : ℕ) (hn : 1 ≤ n) :
       (2 : ℝ) ^ n / (1 + n * (n + 1) / 2) - 1) := by
   refine ⟨?_, two_pow_div_sub_one_ge⟩
   classical
-  -- (1) "Take `a`, `b` and `f̃` from `thm:alm`, and the instance of `lem:embed` with `Θ := 2` and
+  -- (1) "Take `a`, `b`, and `f̃` from `thm:alm`, and the instance of `lem:embed` with `Θ := 2` and
   -- `Λ` as there."
   obtain ⟨a, b, ft, ha, hb, hsub, -, h0, hS⟩ := alm n hn
   set pairs : Finset (Finset (Fin n) × Fin n) := Finset.univ.filter fun q => q.2 ∉ q.1

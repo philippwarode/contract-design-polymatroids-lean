@@ -1,4 +1,4 @@
--- stamp r9 2026-11-02
+-- stamp r10 2026-11-03
 import ContractDesignPolymatroids.OptimalShare.Reward
 import ContractDesignPolymatroids.Hardness.FullPlane
 
@@ -6,14 +6,14 @@ import ContractDesignPolymatroids.Hardness.FullPlane
 # Three operations on instances
 
 The STOC version's `lem:ops` (Appendix B.2, `stoc-sections/appB-quadratic.tex`: the direct sum at
-line 293, the statement at lines 295-302, the proof at lines 304-337):
+line 291, the statement at lines 293-300, the proof at lines 302-335):
 
 * `ops_a`, part (a): if `f = f_1 ⊕ f_2` for rank functions `f_1, f_2`, then `x* = (x*_1, x*_2)`
   and `r(x*(α)) = r_1(x*_1(α)) + r_2(x*_2(α))`;
 * `ops_b`, part (b): for `σ > 0`, `(f, m/σ, β)` has the best response `α ↦ x*(α/σ)` and the
   reward `r(x*(α/σ))/σ` under it;
 * `ops_c`, part (c): for `C, α_∘ > 0`, adding an element `e` as a direct summand with
-  `f({e}) = C`, `m_e = 1` and `β_e = α_∘/C`, a capped linear summand, adds the capped linear
+  `f({e}) = C`, `m_e = 1`, and `β_e = α_∘/C`, a capped linear summand, adds the capped linear
   function `C min(α/α_∘, 1)` to the reward under the best response;
 * `ops`: the statement of the lemma, the conjunction of (a)–(c), each part with its own instance
   (that of (a) is the direct sum itself), proved by the three parts, in the order of the proof
@@ -327,9 +327,9 @@ theorem ops_c_aux {E : Type*} [Fintype E] [DecidableEq E] {f : Finset E → ℝ}
   simp
 
 /-- **`lem:ops`(c)** (`stoc-sections/appB-quadratic.tex:298`, proof lines 331-334): let `C, α_∘ > 0`
-(`αk`). Adding an element `e` as a direct summand with `f({e}) = C`, `m_e = 1` and `β_e = α_∘/C`, a
-capped linear summand (`knob f C`), adds the capped linear function `C min(α/α_∘, 1)` to the reward
-under the best response.
+(`αk`). Adding an element `e` as a direct summand with `f({e}) = C`, `m_e = 1`, and
+`β_e = α_∘/C`, a capped linear summand (`knob f C`), adds the capped linear function
+`C min(α/α_∘, 1)` to the reward under the best response.
 
 The proof's steps: (1) by (a), the new coordinate `y` maximizes `α y − α_∘ y²/(2C)` over `[0, C]`,
 so `y = min(α C/α_∘, C) = C min(α/α_∘, 1)` (`bestResponse_single`); (2) as `m_e = 1`, the new
@@ -347,7 +347,7 @@ theorem ops_c {E : Type*} [Fintype E] [DecidableEq E] {f : Finset E → ℝ}
 `f_1, f_2`, then `x* = (x*_1, x*_2)` and `r(x*(α)) = r_1(x*_1(α)) + r_2(x*_2(α))`, where `x*_i` and
 `r_i` belong to `(f_i, m|_{E_i}, β|_{E_i})`. (b) For `σ > 0`, the instance `(f, m/σ, β)` has the
 best response `α ↦ x*(α/σ)` and the reward `r(x*(α/σ))/σ` under it. (c) Let `C, α_∘ > 0` (`αk`).
-Adding an element `e` as a direct summand with `f({e}) := C`, `m_e := 1` and `β_e := α_∘/C`, a
+Adding an element `e` as a direct summand with `f({e}) := C`, `m_e := 1`, and `β_e := α_∘/C`, a
 capped linear summand (`knob f C`), adds the capped linear function `C min(α/α_∘, 1)` to the reward
 under the best response.
 

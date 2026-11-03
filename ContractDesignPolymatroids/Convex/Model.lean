@@ -1,4 +1,4 @@
--- stamp r8 2026-11-02
+-- stamp r9 2026-11-03
 import ContractDesignPolymatroids.Approximation.Scheme
 
 /-!
@@ -10,16 +10,16 @@ The STOC version's Section 5.2 (`sec:convex`, `stoc-sections/08c-convex.tex`) an
 responses, and `lem:shift`.
 
 * `Setting P m c rb`: the assumptions of `prop:approxresponses` and `prop:convexscheme`, "Under the
-  assumptions on `K`, `c`, `r` and the response oracle at the start of `app:convex`"
-  (appF-convex.tex:85). The final version states them only in a comment there (appF-convex.tex:5):
-  "let the action set be any compact `K ⊆ ℝ^E_{≥0}` containing zero, let `c : K → ℝ_{≥0}` be
-  continuous with `c(0) = 0`, and let `r(x) = mᵀx` with `m ≥ 0` and a known bound `0 ≤ r(x) ≤ r̄`
-  on `K`, where `r̄ > 0`. Neither `K` nor `c` needs to be convex."; the introduction states the
+  assumptions on `K`, `c`, `r`, and the response oracle at the start of `app:convex`"
+  (appF-convex.tex:82). The start of `app:convex` states them (appF-convex.tex:9): "For the oracle
+  analysis, let `K ⊆ ℝ^E_{≥0}` be compact with `0 ∈ K`, and let `c : K → ℝ_{≥0}` be continuous
+  with `c(0) = 0`. We use the reward bound `r̄` and the approximate best-response oracle of
+  `sec:convex`." Section 5.2 gives "`r̄ > 0` a known reward bound" (08c-convex.tex:5) of the reward
+  `r(x) = mᵀx` with `m ≥ 0` of the model (02-preliminaries.tex:12); the introduction states the
   setting of `prop:approxresponses` so: "The underlying scheme applies to any compact action set
-  containing zero, with continuous nonnegative costs vanishing at zero" (01-introduction.tex:29),
-  and Section 5.2 gives "`r̄ > 0` a known reward bound" (08c-convex.tex:5). The action set is called
-  `P` here, as `K` is the last round of the welfare loop in `ContractDesignPolymatroids/Convex/Scheme.lean`, and `r̄` is
-  `rb`.
+  containing zero, with continuous nonnegative costs vanishing at zero" (01-introduction.tex:26).
+  The action set is called `P` here, as `K` is the last round of the welfare loop in
+  `ContractDesignPolymatroids/Convex/Scheme.lean`, and `r̄` is `rb`.
 * `PolySetting f m c g G rb` (08c-convex.tex:13, 17), the setting of `thm:convexfptas` and of
   `lem:ellipsoid`: the action set `P₊(f)` of a polymatroid, rewards `m ≥ 0` with the model's reward
   of success `r̄ > 0`, `r ≤ r̄` on `P₊(f)` (02-preliminaries.tex:12), a cost of the model that is
@@ -28,12 +28,13 @@ responses, and `lem:shift`.
   `PolySetting.continuousOn`, not in the paper), so a `PolySetting` gives a `Setting` on `P₊(f)`
   (`PolySetting.toSetting`).
 * Best responses exist and `x*(α)`, a point of `X*(α)` with the largest reward, exists
-  (`Setting.exists_favourable`); `V(α) ≥ U_A(0 | α) = 0`, with equality at `α = 0`
-  (`Setting.V_nonneg`, `Setting.V_zero`), and `V(1) = W` (`V_one`).
+  (`Setting.exists_favourable`); "Then `V(0) = 0` and `V(1) = W`" (appF-convex.tex:9;
+  `Setting.V_zero`, `V_one`), and `V(α) ≥ U_A(0 | α) = 0`, which the proof of `lem:welfare` uses
+  (`Setting.V_nonneg`, not in the paper).
 * `V` (`max_{x ∈ K} U_A(x | α)`), `S` (`r(x*(α))`), `profit` (`U_P(α) = (1 − α) r(x*(α))`),
   `welfare` (`W = max_{x ∈ K} (r(x) − c(x))`, 08c-convex.tex:5); `OPT` is
   `Stoc.OPT (profit P m c)`.
-* appF-convex.tex:103, "`lem:monreward`, which holds for all maximizers": `r(x*(α))` is
+* appF-convex.tex:100, "`lem:monreward`, which holds for all maximizers": `r(x*(α))` is
   nondecreasing in the share (`Setting.monotoneOn_S`), so that the proof of `prop:convexscheme`
   can apply `thm:fptas` to the best responses `x*(α)` (in the form `Stoc.fptas_aux`).
 * `IsDeltaOpt`: `δ`-optimal responses (08c-convex.tex:3, and `app:convex`).
@@ -50,14 +51,16 @@ open Set Filter Topology
 
 variable {E : Type*} [Fintype E]
 
-/-- The setting of `prop:approxresponses` and `prop:convexscheme`, "the assumptions on `K`, `c`, `r`
-and the response oracle at the start of `app:convex`" (appF-convex.tex:85), which the final version
-states only in a comment (appF-convex.tex:5): "let the action set be any compact `K ⊆ ℝ^E_{≥0}`
-containing zero, let `c : K → ℝ_{≥0}` be continuous with `c(0) = 0`, and let `r(x) = mᵀx` with
-`m ≥ 0` and a known bound `0 ≤ r(x) ≤ r̄` on `K`, where `r̄ > 0`." (the introduction:
-"any compact action set containing zero, with continuous nonnegative costs vanishing at zero",
-01-introduction.tex:29). Here the action set is `P` and `r̄` is `rb`; `0 ≤ r` on `P` follows from
-`m ≥ 0` and `P ⊆ ℝ^E_{≥0}`. The response oracle is a hypothesis where a result uses it. -/
+/-- The setting of `prop:approxresponses` and `prop:convexscheme`, "the assumptions on `K`, `c`,
+`r`, and the response oracle at the start of `app:convex`" (appF-convex.tex:82): "For the oracle
+analysis, let `K ⊆ ℝ^E_{≥0}` be compact with `0 ∈ K`, and let `c : K → ℝ_{≥0}` be continuous with
+`c(0) = 0`. We use the reward bound `r̄` and the approximate best-response oracle of `sec:convex`."
+(appF-convex.tex:9). The reward bound is "`r̄ > 0` a known reward bound" (08c-convex.tex:5), so
+`r(x) ≤ r̄` on `K` for the reward `r(x) = mᵀx` with `m ≥ 0` of the model (02-preliminaries.tex:12)
+(the introduction: "any compact action set containing zero, with continuous nonnegative costs
+vanishing at zero", 01-introduction.tex:26). Here the action set is `P` and `r̄` is `rb`; `0 ≤ r` on
+`P` follows from `m ≥ 0` and `P ⊆ ℝ^E_{≥0}`. The response oracle is a hypothesis where a result uses
+it. -/
 structure Setting (P : Set (E → ℝ)) (m : E → ℝ) (c : (E → ℝ) → ℝ) (rb : ℝ) : Prop where
   compact : IsCompact P
   nonneg : ∀ x ∈ P, 0 ≤ x
@@ -93,20 +96,20 @@ section Defs
 
 variable (P : Set (E → ℝ)) (m : E → ℝ) (c : (E → ℝ) → ℝ)
 
-/-- The agent's value `V(α) = max_{x ∈ K} U_A(x | α)`, which the proofs of `lem:welfare` and
-`lem:ellipsoid` use (appF-convex.tex:43-53, 139) and the final version defines only in a comment
-(appF-convex.tex:5). -/
+/-- The agent's value: "Write `V(α) := max_{x ∈ K} U_A(x | α)`" (appF-convex.tex:9), which the
+proofs of `lem:welfare` and `lem:ellipsoid` use (appF-convex.tex:39-49, 136). -/
 noncomputable def V (α : ℝ) : ℝ :=
   sSup (util m c α '' P)
 
-/-- `r(x*(α))` for the best response `x*(α)`, chosen in `X*(α)` "with the largest reward"
-(appF-convex.tex:5, a comment of the final version; for `α < 1` this is the model's best response,
-which breaks ties in favor of the principal, 02-preliminaries.tex:17). -/
+/-- `r(x*(α))` for the best response `x*(α)` of the model, which breaks ties in favor of the
+principal (02-preliminaries.tex:17): a point of `X*(α)`, "the set of maximizers"
+(appF-convex.tex:9), with the largest reward. For `α < 1` this is the model's tie-breaking; at
+`α = 1`, where `U_P(x | 1) = 0` for every `x`, all of `X*(1)` ties, and `S` takes the largest
+reward. -/
 noncomputable def S (α : ℝ) : ℝ :=
   sSup (reward m '' bestResponses P m c α)
 
-/-- The principal's utility `U_P(α) = (1 − α) r(x*(α))` (02-preliminaries.tex:17, and
-appF-convex.tex:5, a comment of the final version). -/
+/-- The principal's utility `U_P(α) = (1 − α) r(x*(α))` (02-preliminaries.tex:17). -/
 noncomputable def profit (α : ℝ) : ℝ :=
   (1 - α) * S P m c α
 
@@ -116,7 +119,7 @@ noncomputable def welfare : ℝ :=
 
 /-- `x` is a *`δ`-optimal response* at the share `α` (08c-convex.tex:3): "an action `x̃ ∈ K` is a
 `δ`-optimal response if `U_A(x̃ | α) ≥ max_{x ∈ K} U_A(x | α) − δ`", that is,
-`U_A(x | α) ≥ V(α) − δ`; `app:convex` uses the term throughout (appF-convex.tex:15, 18, 60). -/
+`U_A(x | α) ≥ V(α) − δ`; `app:convex` uses the term throughout (appF-convex.tex:11, 14, 56). -/
 def IsDeltaOpt (α δ : ℝ) (x : E → ℝ) : Prop :=
   x ∈ P ∧ V P m c α - δ ≤ util m c α x
 
@@ -126,7 +129,7 @@ variable {m : E → ℝ} {c : (E → ℝ) → ℝ}
 
 /-- "`c(y) − c(x) ≥ g(x)ᵀ(y − x) ≥ −G ‖y − x‖₁` for all `x, y ∈ P₊(f)`, and exchanging `x` and `y`
 gives `|c(y) − c(x)| ≤ G ‖y − x‖₁`" (not in the paper: the final version has this argument only in a
-comment, appF-convex.tex:122; the proof of `thm:convexfptas` applies `prop:convexscheme`, which
+comment, appF-convex.tex:119; the proof of `thm:convexfptas` applies `prop:convexscheme`, which
 assumes a continuous cost, on `P₊(f)`). -/
 theorem abs_cost_sub_le {G : ℝ} {x y gx gy : E → ℝ}
     (hx : c x + ∑ e, gx e * (y e - x e) ≤ c y) (hy : c y + ∑ e, gy e * (x e - y e) ≤ c x)
@@ -154,7 +157,7 @@ variable [DecidableEq E] {f : Finset E → ℝ} {g : (E → ℝ) → E → ℝ} 
 include h
 
 /-- "These costs satisfy the continuity assumption above", on `P₊(f)`, by `abs_cost_sub_le` (not in
-the paper: a comment of the final version, appF-convex.tex:122). -/
+the paper: a comment of the final version, appF-convex.tex:119). -/
 theorem continuousOn : ContinuousOn c (indepPoly f) := by
   intro x hx
   rw [ContinuousWithinAt, tendsto_iff_norm_sub_tendsto_zero]
@@ -177,7 +180,7 @@ lemma c_nonneg {x : E → ℝ} (hx : x ∈ indepPoly f) : 0 ≤ c x :=
 /-- The setting of `thm:convexfptas` lies in that of `prop:convexscheme`, with `K = P₊(f)`: `P₊(f)`
 is compact, contains `0` and lies in `ℝ^E_{≥0}`, and the costs are continuous on it (`continuousOn`,
 not in the paper: the proof of `thm:convexfptas` runs `alg:convex` on `P₊(f)` and cites
-`prop:convexscheme` there, appF-convex.tex:147). -/
+`prop:convexscheme` there, appF-convex.tex:144). -/
 theorem toSetting : Setting (indepPoly f) m c rb where
   compact := isCompact_indepPoly f
   nonneg _ hx := hx.1
@@ -197,8 +200,8 @@ variable {P : Set (E → ℝ)} {rb : ℝ} (h : Setting P m c rb)
 include h
 
 /-- Best responses exist: "We assume that this maximum is attained … Both hold when `c` is
-continuous on the compact set" (02-preliminaries.tex:17; appF-convex.tex:5, a comment of the final
-version: "Compactness and continuity ensure these choices exist"). -/
+continuous on the compact set" (02-preliminaries.tex:17), and `K` is compact and `c` continuous on
+it (appF-convex.tex:9). -/
 lemma exists_isBR (α : ℝ) : ∃ x, IsBR P m c α x :=
   Stoc.Convex.exists_isBR h.compact ⟨0, h.zero_mem⟩ h.continuousOn α
 
@@ -214,11 +217,10 @@ lemma util_le_V {α : ℝ} {z : E → ℝ} (hz : z ∈ P) : util m c α z ≤ V 
   rw [hx.V_eq]
   exact hx.2 z hz
 
-/-- `x*(α)`, a point of `X*(α)` with the largest reward, exists ("choose `x*(α) ∈ X*(α)` with the
-largest reward. Compactness and continuity ensure these choices exist", appF-convex.tex:5, a comment
-of the final version; "when using this tie-breaking rule, … the reward attains its maximum over the
-set of best responses. Both hold when `c` is continuous on the compact set",
-02-preliminaries.tex:17). -/
+/-- `x*(α)`, a point of `X*(α)` with the largest reward, exists ("when using this tie-breaking rule,
+… the reward attains its maximum over the set of best responses. Both hold when `c` is continuous on
+the compact set", 02-preliminaries.tex:17; `K` is compact and `c` continuous on it,
+appF-convex.tex:9). -/
 lemma isGreatest_S (α : ℝ) :
     IsGreatest (reward m '' bestResponses P m c α) (S P m c α) := by
   obtain ⟨x₀, hx₀⟩ := h.exists_isBR α
@@ -243,15 +245,15 @@ lemma S_le_rbar (α : ℝ) : S P m c α ≤ rb := by
   rw [← hyS]
   exact h.reward_le y hy.1
 
-/-- "`V(α) ≥ U_A(0 | α) = 0`" (appF-convex.tex:5, a comment of the final version; the proof of
-`lem:welfare` uses it, "as `V(α) ≥ 0`", appF-convex.tex:43). -/
+/-- `V(α) ≥ U_A(0 | α) = 0`, as `0 ∈ K` and `c(0) = 0` (not in the paper: the proof of
+`lem:welfare` uses it without proof, "as `V(α) ≥ 0`", appF-convex.tex:39). -/
 lemma V_nonneg (α : ℝ) : 0 ≤ V P m c α := by
   have h0 := h.util_le_V (α := α) h.zero_mem
   have : util m c α 0 = 0 := by simp [util, reward, h.c_zero]
   linarith
 
-/-- "with equality at `α = 0`", as `c ≥ 0 = c(0)` (appF-convex.tex:5, a comment of the final
-version; the proof of `lem:welfare` uses it in `W = V(1) − V(0)`, appF-convex.tex:51). -/
+/-- "Then `V(0) = 0`" (appF-convex.tex:9), as `c ≥ 0 = c(0)`; the proof of `lem:welfare` uses it
+in `W = V(1) − V(0)` (appF-convex.tex:47). -/
 lemma V_zero : V P m c 0 = 0 := by
   refine le_antisymm (csSup_le ⟨_, mem_image_of_mem _ h.zero_mem⟩ ?_) (h.V_nonneg 0)
   rintro _ ⟨z, hz, rfl⟩
@@ -259,8 +261,8 @@ lemma V_zero : V P m c 0 = 0 := by
   exact h.c_nonneg z hz
 
 omit h in
-/-- "and `V(1) = W := max_{x ∈ K} (r(x) − c(x))`" (appF-convex.tex:5, a comment of the final
-version; the proof of `lem:welfare` uses it in `W = V(1) − V(0)`, appF-convex.tex:51). -/
+/-- "and `V(1) = W`" (appF-convex.tex:9) for the welfare `W := max_{x ∈ K} (r(x) − c(x))`
+(08c-convex.tex:5); the proof of `lem:welfare` uses it in `W = V(1) − V(0)` (appF-convex.tex:47). -/
 lemma _root_.Stoc.Convex.V_one : V P m c 1 = welfare P m c := by
   unfold V welfare
   congr 1
@@ -281,13 +283,13 @@ lemma profit_le_OPT {α : ℝ} (hα : α ∈ Icc (0 : ℝ) 1) : profit P m c α 
 
 /-- `OPT ≥ 0` (not in the paper: it uses this tacitly in the last paragraph of the proof of
 `prop:convexscheme`, "Finally, we show that some `Ũ_j` is large", whose last inequality needs
-`ε² OPT/8 ≥ 0` (appF-convex.tex:103-110), and in the proof of `thm:convexfptas`, where "`OPT = 0`
-by `lem:welfare`" needs `OPT ≥ 0` besides `OPT ≤ W` (appF-convex.tex:147)). -/
+`ε² OPT/8 ≥ 0` (appF-convex.tex:100-107), and in the proof of `thm:convexfptas`, where "`OPT = 0`
+by `lem:welfare`" needs `OPT ≥ 0` besides `OPT ≤ W` (appF-convex.tex:144)). -/
 lemma OPT_nonneg : 0 ≤ OPT (profit P m c) :=
   (mul_nonneg (by norm_num) (h.S_nonneg 0)).trans
     (h.profit_le_OPT (show (0 : ℝ) ∈ Icc (0 : ℝ) 1 from ⟨le_rfl, zero_le_one⟩))
 
-/-- appF-convex.tex:103, "`lem:monreward`, which holds for all maximizers": the reward
+/-- appF-convex.tex:100, "`lem:monreward`, which holds for all maximizers": the reward
 `r(x*(α))` of the best responses `x*(α)` of the largest reward is nondecreasing in the share, by
 `lem:monreward` on any action set (`monotoneOn_reward_of_isBR`), as every `x*(α)` is a maximizer.
 So `thm:fptas` applies to them in the form `fptas_aux` ("so the theorem applies to the best
@@ -303,7 +305,7 @@ end Setting
 
 /-! ### `lem:shift` -/
 
-/-- **`lem:shift`** (Lemma D.5, appF-convex.tex:17-22, proof 24-32): let `0 ≤ α'' < α < α'`, let
+/-- **`lem:shift`** (Lemma D.5, appF-convex.tex:13-18, proof 20-28): let `0 ≤ α'' < α < α'`, let
 `δ ≥ 0`, and let `x̃` be a `δ`-optimal response at `α`. Then every `y'' ∈ X*(α'')` and every
 `y' ∈ X*(α')` satisfy `r(y'') − δ/(α − α'') ≤ r(x̃) ≤ r(y') + δ/(α' − α)` (the left-hand inequality
 for every `y''`, and the right-hand one for every `y'`). In the setting of `prop:convexscheme`

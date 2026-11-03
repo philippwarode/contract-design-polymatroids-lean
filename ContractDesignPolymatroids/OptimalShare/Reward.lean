@@ -1,4 +1,4 @@
--- stamp r7 2026-11-02
+-- stamp r8 2026-11-03
 import ContractDesignPolymatroids.BestResponse.Quadratic
 
 /-!
@@ -10,7 +10,7 @@ best response, `U_P(α) = U_P(x*(α) | α) = (1 − α) r(x*(α))`, with `r(x*(�
 
 Section 3 (`stoc-sections/06-optimal-share.tex:29-31`), Lemma `lem:monreward`, with its proof in
 Appendix B.2 (`stoc-sections/appB-quadratic.tex:276-287`): for every cost function `c`, all shares
-`0 ≤ α < α'` and any maximizers `x` of `U_A(· | α) = α r − c` and `x'` of `U_A(· | α')` over
+`0 ≤ α < α'`, and any maximizers `x` of `U_A(· | α) = α r − c` and `x'` of `U_A(· | α')` over
 `P₊(f)`, `r(x) ≤ r(x')`. The exact statement is `Stoc.monreward`. Its proof is that of
 `Stoc.monreward_aux`, the same claim for any action set and any shares `α < α'` (the proof opens
 with "The argument uses only the optimality of `x` and `x'`, not the form of `c`",
@@ -71,9 +71,10 @@ theorem monreward_aux {C : Set (E → ℝ)} (m : E → ℝ) (c : (E → ℝ) →
 /-- **`lem:monreward`** (Lemma 3.5, statement `stoc-sections/06-optimal-share.tex:29-31`, proof
 `stoc-sections/appB-quadratic.tex:276-287`), under the standing assumptions of the model
 (`stoc-sections/02-preliminaries.tex:4, 12`: `f` is a rank function, `m ≥ 0`, and the cost function
-`c : ℝ^E_{≥0} → ℝ_{≥0}` has `c(0) = 0`): for all shares `0 ≤ α < α'` and any maximizers `x` of
-`U_A(· | α) = α r − c` and `x'` of `U_A(· | α')` over `P₊(f)`, `r(x) ≤ r(x')`. The proof, with the
-paper's steps (1)-(3), is `monreward_aux`, which uses only the optimality of `x` and `x'`. -/
+`c : ℝ^E_{≥0} → ℝ_{≥0}` has `c(0) = 0`): for every cost function `c`, all shares `0 ≤ α < α'`, and
+any maximizers `x` of `U_A(· | α) = α r − c` and `x'` of `U_A(· | α')` over `P₊(f)`,
+`r(x) ≤ r(x')`. The proof, with the paper's steps (1)-(3), is `monreward_aux`, which uses only the
+optimality of `x` and `x'`. -/
 theorem monreward [DecidableEq E] {f : Finset E → ℝ} (_hf : IsRankFunction f) {m : E → ℝ}
     (_hm : ∀ e, 0 ≤ m e) {c : (E → ℝ) → ℝ} (_hc : ∀ x : E → ℝ, 0 ≤ x → 0 ≤ c x)
     (_hc0 : c 0 = 0) {α α' : ℝ} (_hα : 0 ≤ α) (h : α < α') {x x' : E → ℝ}

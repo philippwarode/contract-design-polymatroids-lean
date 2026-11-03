@@ -1,11 +1,11 @@
--- stamp r8 2026-11-02
+-- stamp r9 2026-11-03
 import ContractDesignPolymatroids.Hardness.OneLevel
 
 /-!
 # The transition: `lem:twosides` and `thm:transition`
 
 The STOC version's `lem:twosides` and `thm:transition` (Appendix C.6, `sec:D-onelevel`, "The
-transition", `stoc-sections/appD-hardness.tex:989-1163`), for the levels of `def:tower` built by
+transition", `stoc-sections/appD-hardness.tex:988-1161`), for the levels of `def:tower` built by
 the parameter rule:
 
 * `twosides`: `lem:twosides`, by induction on `k` (`twosides_aux`);
@@ -56,8 +56,8 @@ lemma ψ_nonneg (k : ℕ) : 0 ≤ (lvl μin k).ψ := by
 /-! ### `lem:twosides` -/
 
 /-- `lem:twosides` under the weaker hypothesis `μ^in_1 > 0` instead of `μ^in ∈ 𝔉` of length at
-least `k + 1`, which is what the proofs below use (`stoc-sections/appD-hardness.tex:999-1011`,
-proof lines 1013-1041): let `k ≥ 0`, and assume the hypotheses of `lem:onelevel` at the steps
+least `k + 1`, which is what the proofs below use (`stoc-sections/appD-hardness.tex:997-1009`,
+proof lines 1011-1039): let `k ≥ 0`, and assume the hypotheses of `lem:onelevel` at the steps
 `0 → 1, …, k − 1 → k`. Then
 (a) on `[R_1^{(k)}, ∞)` the gap `L_k(α) − r(ξ^{(k)}(α))` of level `k` is nondecreasing, with the
 value `7ε_0` at `R_1^{(k)}`, as for the base at `R_1^{(0)}`, so
@@ -169,8 +169,8 @@ theorem twosides_aux (h0 : 0 < μin 0) (k : ℕ) (hyp : ∀ i < k, OneLevelHyp �
       obtain ⟨hc, -, -⟩ := leftwindows_c_aux hj α hα.2 hu
       rw [gapT_config_τ₁ j hμ hc.weak, ihb α hα]
 
-/-- **`lem:twosides`** (Lemma C.17, `stoc-sections/appD-hardness.tex:999-1011`, proof lines
-1013-1041): let `μ^in ∈ 𝔉` have length at least `k + 1` (`def:tower`, so that level `k` is built),
+/-- **`lem:twosides`** (Lemma C.17, `stoc-sections/appD-hardness.tex:997-1009`, proof lines
+1011-1039): let `μ^in ∈ 𝔉` have length at least `k + 1` (`def:tower`, so that level `k` is built),
 let `k ≥ 0`, and assume the hypotheses of `lem:onelevel` at the steps `0 → 1, …, k − 1 → k`. Then
 (a) on `[R_1^{(k)}, ∞)` the gap `L_k(α) − r(ξ^{(k)}(α))` of level `k` is nondecreasing, with the
 value `7ε_0` at `R_1^{(k)}`, as for the base at `R_1^{(0)}`, so
@@ -191,16 +191,16 @@ theorem twosides {K : ℕ} (hF : InF μin K) (k : ℕ) (_hK : k + 1 ≤ K)
 variable (μin)
 
 /-- The hypotheses (T1)–(T3) of `thm:transition` at the step `k → k + 1`, for old elements
-`e_t, e_l ∈ E_k` (`stoc-sections/appD-hardness.tex:1053-1061`). The elements of level `k + 1` are
-`b = none`, `τ_2 = some none`, `τ_1 = some (some none)` and the old `some (some (some e))`; `SSq` is
+`e_t, e_l ∈ E_k` (`stoc-sections/appD-hardness.tex:1051-1059`). The elements of level `k + 1` are
+`b = none`, `τ_2 = some none`, `τ_1 = some (some none)` and the old `some (some (some e))`; `S_2` is
 `SS` of level `k + 1`; the transition is `[R_1, R_0 + μ]`. -/
 structure TransitionHyp (k : ℕ) (et el : Gr k) : Prop where
-  /-- (T1), first part: `ψ_{k+1} ≥ SSq((E_k ∖ {e_t}) ∪ {b})` -/
+  /-- (T1), first part: `ψ_{k+1} ≥ S_2((E_k ∖ {e_t}) ∪ {b})` -/
   T1a : SS (mT μin (k + 1)) (βT μin (k + 1))
     (insert none ((univ.erase et).image fun c => some (some (some c)))) ≤ (lvl μin k).ψ
-  /-- (T1), second part: `SSq({b, e_t}) ≥ q_{k+1}` -/
+  /-- (T1), second part: `S_2({b, e_t}) ≥ q_{k+1}` -/
   T1b : (lvl μin (k + 1)).q ≤ SS (mT μin (k + 1)) (βT μin (k + 1)) {none, some (some (some et))}
-  /-- (T1), third part: if `e_l ≠ e_t`, also `SSq({b, τ_2, e_l}) ≥ q_{k+1}` -/
+  /-- (T1), third part: if `e_l ≠ e_t`, also `S_2({b, τ_2, e_l}) ≥ q_{k+1}` -/
   T1c : el ≠ et → (lvl μin (k + 1)).q ≤
     SS (mT μin (k + 1)) (βT μin (k + 1)) {none, some none, some (some (some el))}
   /-- (T2): on the transition, `ρ^h_{τ_1} < ρ^f_e < ρ^f_{τ_2} < ρ^h_{e'} ≤ ρ^h_{e_l}` for all
@@ -252,7 +252,7 @@ lemma mem_cuts_h {k : ℕ} (h6 : (lvl μin k).M < cfast μin k) {x : ℝ} {e : O
 /-! ### The pieces -/
 
 /-- Signs on a piece (not in the paper: step (1) of the proof of `thm:transition`,
-`stoc-sections/appD-hardness.tex:1070-1075`, leaves this implicit in "are constant", "As the
+`stoc-sections/appD-hardness.tex:1068-1073`, leaves this implicit in "are constant", "As the
 differences increase" and "by continuity"): let `φ` be continuous and strictly increasing without
 zeros in `(c, c')`, and `x₀ ∈ (c, c')`. If `φ(x₀) < 0`, then `φ < 0` on `[c, c')` and
 `φ(c') ≤ 0`; if `φ(x₀) > 0`, then `φ > 0` on `(c, c']` and `φ(c) ≥ 0` (by the monotonicity and the
@@ -346,7 +346,7 @@ lemma isWeakConfigT_of_levelSets {k : ℕ} {α : ℝ} {U W : Finset (Option (Opt
         exact hW e⟩
   exact ⟨hU1, fun e he => ⟨hU2 e (mem_sdiff.1 he).2, hW1 e (mem_sdiff.1 he).1⟩, hW2, ht⟩
 
-/-- **Step (1) of the proof of `thm:transition`** (`stoc-sections/appD-hardness.tex:1067-1079`),
+/-- **Step (1) of the proof of `thm:transition`** (`stoc-sections/appD-hardness.tex:1065-1077`),
 under (W6): let `[c, c']` be a piece, that is, `c < c'` and no zero of the differences
 `θ_b − ρ^f_e` and `θ_b − ρ^h_e`, `e ∈ E`, lies in `(c, c')`. Let `U := {e : ρ^f_e > θ_b}` and
 `W := {e : ρ^h_e > θ_b}` at an interior point `x₀` (the midpoint). Then `U ⊆ W`
@@ -521,7 +521,7 @@ lemma antitoneOn_of_pieces (Z : Finset ℝ) {φ : ℝ → ℝ} {a b : ℝ}
 /-! ### `thm:transition` -/
 
 /-- `lem:fullplane`(f) at the step (as used in the proof of `thm:transition`,
-`stoc-sections/appD-hardness.tex:1087-1088`): `r(ξ^f(α)) = r(ξ^{(k)}(α)) + m_δ(F_{τ_1} + F_{τ_2})`,
+`stoc-sections/appD-hardness.tex:1085-1086`): `r(ξ^f(α)) = r(ξ^{(k)}(α)) + m_δ(F_{τ_1} + F_{τ_2})`,
 as `ξ^f(α) = (ξ^{(k)}(α), F_{τ_1}, F_{τ_2})` (`StepData.xi_f_old`, `xi_f_τ₁`, `xi_f_τ₂`). -/
 lemma reward_xi_f (k : ℕ) (α : ℝ) :
     reward ((stepD μin k).mf (mT μin k)) (xi ((stepD μin k).fStep (gT μin k))
@@ -536,8 +536,8 @@ lemma reward_xi_f (k : ℕ) (α : ℝ) :
   ring
 
 /-- `thm:transition` under the weaker hypothesis `μ^in_1 > 0` instead of `μ^in ∈ 𝔉` of length at
-least `k + 2`, which is what the proofs below use (`stoc-sections/appD-hardness.tex:1050-1064`,
-proof lines 1066-1156): let `k ≥ 0` and `e_t, e_l ∈ E_k`; assume the hypotheses of
+least `k + 2`, which is what the proofs below use (`stoc-sections/appD-hardness.tex:1048-1062`,
+proof lines 1064-1154): let `k ≥ 0` and `e_t, e_l ∈ E_k`; assume the hypotheses of
 `lem:onelevel` at the steps `0 → 1, …, k → k + 1` and (T1)–(T3) (`TransitionHyp`). Then the gap
 `L_{k+1}(α) − r(ξ^{(k+1)}(α))` of level `k + 1` is at least `ε_0` for every `α` in the transition
 `[R_1, R_0 + μ]`.
@@ -545,17 +545,17 @@ proof lines 1066-1156): let `k ≥ 0` and `e_t, e_l ∈ E_k`; assume the hypothe
 The proof's steps: (1) the pieces (`transition_piece`), and on every piece the increment
 (`eq:D-increment`) of `lem:windows`(c), whose second bracket is nonnegative and whose first lies in
 `[0, r(ξ^{(k)}(a')) − r(ξ^{(k)}(a))] ⊆ [0, q_k(a' − a)]` by `lem:fullplane`(f) (`reward_xi_f`) and
-`lem:twosides`(a); (2) by `lem:onelevel`(a), (W1) and (W2), `ρ^f_{τ_1} < θ_b` at `R_1` and
+`lem:twosides`(a); (2) by `lem:onelevel`(a), (W1), and (W2), `ρ^f_{τ_1} < θ_b` at `R_1` and
 `θ_b < ρ^h_{τ_2}` at `R_0 + μ`, so `ρ^f_{τ_1} < θ_b < ρ^h_{τ_2}` on the whole transition; (3) by
 (W4) and (T2), `θ_b ≥ ρ^h_{e_l} ≥ ρ^h_{e_t} ≥ ρ^f_{e_t}` at `R_0 + μ`, while
 `θ_b < ρ^f_{e_t} ≤ ρ^h_{e_l}` at `R_1`; the zeros `α̌` of `θ_b − ρ^f_{e_t}` and `α̂` of
 `θ_b − ρ^h_{e_l}` exist by continuity, and `α̌ < α̂`; (4) "We first show that the gap of level
 `k + 1` is nondecreasing on `[R_1, α̌]`, before `e_t` arrives in the block of `b`": there, `e_t` and
 `τ_2` lie in `U`, only `τ_1` can lie outside `W`, and as `ξ^h_{τ_1}` is constant, the second bracket
-vanishes; the block is `{b, τ_1}` or lies in `(E_k ∖ {e_t}) ∪ {b}`, so `SSq(D) ≤ ψ_{k+1}` and the
+vanishes; the block is `{b, τ_1}` or lies in `(E_k ∖ {e_t}) ∪ {b}`, so `S_2(D) ≤ ψ_{k+1}` and the
 gap is nondecreasing; (5) "Next we show that the gap is nonincreasing on `[α̌, α̂]`, from the
 arrival of `e_t` in the block until `e_l` leaves it": `e_t`, or `τ_2` and `e_l ≠ e_t`, are in the
-block, so `SSq(D) ≥ q_{k+1}` and the gap is nonincreasing; (6) "Finally, we show that the gap is at
+block, so `S_2(D) ≥ q_{k+1}` and the gap is nonincreasing; (6) "Finally, we show that the gap is at
 least `ε_0` on `[α̂, R_0 + μ]`, where `b` has passed every old element": `(∅, {τ_2})` is a weak
 configuration there, the gap is `L_k(α − μ) − r(ξ^{(k)}(α − μ))` (as in the proof of
 `lem:onelevel`(b), by `lem:dmt`(b), (c)), `θ_b = θ_2` (`lem:windows`(a)), and (T3) gives
@@ -585,7 +585,7 @@ theorem transition_aux (h0 : 0 < μin 0) {k : ℕ} {et el : Gr k}
   -- (1) "We cut the transition at these finitely many zeros into pieces. … By `lem:windows`(c),
   -- with `D = (W ∖ U) ∪ {b}`, the increment `r(ξ^{(k+1)}(a')) − r(ξ^{(k+1)}(a))` over every
   -- interval `[a, a'] ⊆ [c, c']` is
-  -- `[∑_{e∈U} m_eξ^f_e]_a^{a'} + [∑_{e∈E∖W} m_eξ^h_e]_a^{a'} + (a' − a)SSq(D)` (`eq:D-increment`).
+  -- `[∑_{e∈U} m_eξ^f_e]_a^{a'} + [∑_{e∈E∖W} m_eξ^h_e]_a^{a'} + (a' − a)S_2(D)` (`eq:D-increment`).
   -- Here the second bracket is nonnegative, and the first lies in
   -- `[0, r(ξ^{(k)}(a')) − r(ξ^{(k)}(a))] ⊆ [0, q_k(a' − a)]`, by `lem:fullplane`(f), which gives
   -- `r(ξ^f(α)) = r(ξ^{(k)}(α)) + m_δ(F_{τ_1} + F_{τ_2})`, and by `lem:twosides`(a), as `a ≥ R_1`."
@@ -621,7 +621,7 @@ theorem transition_aux (h0 : 0 < μin 0) {k : ℕ} {et el : Gr k}
         reward ((stepD μin k).mf (mT μin k)) (xi ((stepD μin k).fStep (gT μin k))
           ((stepD μin k).mf (mT μin k)) ((stepD μin k).βf (βT μin k)) a) at hB1''
     linarith
-  -- (2) "By `lem:onelevel`(a), (W1) and (W2), `ρ^f_{τ_1} < θ_b` at `R_1` and `θ_b < ρ^h_{τ_2}` at
+  -- (2) "By `lem:onelevel`(a), (W1), and (W2), `ρ^f_{τ_1} < θ_b` at `R_1` and `θ_b < ρ^h_{τ_2}` at
   -- `R_0 + μ`. As the differences increase, `ρ^f_{τ_1} < θ_b < ρ^h_{τ_2}` on the whole transition."
   obtain ⟨hατ₂, ha1, ha2, -⟩ := onelevel_a_aux h
   have hR1R : R1 ∈ Set.Icc R0 R1 := ⟨hR0R1.le, le_rfl⟩
@@ -735,8 +735,8 @@ theorem transition_aux (h0 : 0 < μin 0) {k : ℕ} {et el : Gr k}
       rw [StepData.xi_f_τ₁ H] at h1 h2
       rw [h1, h2]
     -- "If `τ_1` is in the block, no old element `e` is, since `ρ^f_e > ρ^h_{τ_1} ≥ θ_b`. So the
-    -- block is `{b, τ_1}` or lies in `(E_k ∖ {e_t}) ∪ {b}`, and `SSq(D) ≤ ψ_{k+1}`, as
-    -- `SSq({b, τ_1}) = ψ_{k+1}`, by (T1) and the monotonicity of `SSq`."
+    -- block is `{b, τ_1}` or lies in `(E_k ∖ {e_t}) ∪ {b}`, and `S_2(D) ≤ ψ_{k+1}`, as
+    -- `S_2({b, τ_1}) = ψ_{k+1}`, by (T1) and the monotonicity of `S_2`."
     have hSS : SS (mT μin (k + 1)) (βT μin (k + 1)) (insertNone (W \ U)) ≤ (lvl μin k).ψ := by
       by_cases hτ₁ : some none ∈ W \ U
       · have hτ₁W : θb μin k x₀ < ρh μin k x₀ (some none) := (mem_filter.1 (mem_sdiff.1 hτ₁).1).2
@@ -787,7 +787,7 @@ theorem transition_aux (h0 : 0 < μin 0) {k : ℕ} {et el : Gr k}
   -- block until `e_l` leaves it. In the interior of each piece, `ρ^f_{e_t} < θ_b < ρ^h_{e_l}`. If
   -- `θ_b < ρ^h_{e_t}` there, then `e_t` is in the block. Otherwise
   -- `ρ^f_{e_l} < ρ^f_{τ_2} < ρ^h_{e_t} < θ_b < ρ^h_{e_l}` and `θ_b < ρ^h_{τ_2}`, so `τ_2` and
-  -- `e_l ≠ e_t` are in the block. By (T1) and the monotonicity of `SSq`, `SSq(D) ≥ q_{k+1}` in both
+  -- `e_l ≠ e_t` are in the block. By (T1) and the monotonicity of `S_2`, `S_2(D) ≥ q_{k+1}` in both
   -- cases. So, by (`eq:D-increment`), whose two brackets are nonnegative, the reward
   -- `r(ξ^{(k+1)}(α))` grows by at least `q_{k+1}(a' − a)` on every interval `[a, a']` in a piece,
   -- and the gap of level `k + 1` is nonincreasing on `[α̌, α̂]`."
@@ -931,8 +931,8 @@ theorem transition_aux (h0 : 0 < μin 0) {k : ℕ} {et el : Gr k}
       linarith
     · exact hright α ⟨h2.le, hα.2⟩
 
-/-- **`thm:transition`** (Theorem C.18, `stoc-sections/appD-hardness.tex:1050-1064`, proof lines
-1066-1156): let `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`), let `k ≥ 0` and
+/-- **`thm:transition`** (Theorem C.18, `stoc-sections/appD-hardness.tex:1048-1062`, proof lines
+1064-1154): let `μ^in ∈ 𝔉` have length at least `k + 2` (`def:tower`), let `k ≥ 0` and
 `e_t, e_l ∈ E_k`, and assume the hypotheses of `lem:onelevel` at the steps `0 → 1, …, k → k + 1` and
 (T1)–(T3) (`TransitionHyp`). Then the gap `L_{k+1}(α) − r(ξ^{(k+1)}(α))` of level `k + 1` is at
 least `ε_0` for every `α` in the transition `[R_1, R_0 + μ]`. The proof (steps (1)–(7)) is that of

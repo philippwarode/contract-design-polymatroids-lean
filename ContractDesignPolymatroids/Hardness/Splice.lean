@@ -1,4 +1,4 @@
--- stamp r8 2026-11-02
+-- stamp r9 2026-11-03
 import ContractDesignPolymatroids.Hardness.Translation
 
 /-!
@@ -635,8 +635,8 @@ theorem splice_aux (H : FPHyp f fun e => β' (some e)) (hd : ∀ e, 0 ≤ d e) (
 
 /-- **`thm:splice`** (Theorem B.12, `appB-tools.tex:326-342`, proof
 `appB-tools.tex:344-395`): let `f` be submodular with `f(∅) = 0`, `m, β > 0`, `d ≥ 0`, `K ∈ ℝ`,
-`b ∉ E` with `m_b, β_b > 0`, `h = f − d` and `f'` the extension of `f` by `b`; fix `α ∈ ℝ`. Then (a)
-`ρ^f_e ≤ ρ^h_e` for every `e ∈ E`, and `∑_{e∈E} (ρ^h_e − ρ^f_e)/β_e = d(E)`; (b)
+`b ∉ E` with `m_b, β_b > 0`, `h = f − d`, and `f'` the extension of `f` by `b`; fix `α ∈ ℝ`. Then
+(a) `ρ^f_e ≤ ρ^h_e` for every `e ∈ E`, and `∑_{e∈E} (ρ^h_e − ρ^f_e)/β_e = d(E)`; (b)
 `ρ'_e = med(ρ^f_e, θ_b, ρ^h_e)` for every `e ∈ E`; (c) `θ_b` is the unique solution `θ` of
 (`eq:splice`) `(α m_b − θ)/β_b = K − d(E) + Y(θ)` (`IsF1`), where
 `Y(θ) = ∑_{e∈E} clamp(θ − ρ^f_e, 0, ρ^h_e − ρ^f_e)/β_e ∈ [0, d(E)]`. Steps (in `splice_aux`): the
@@ -688,7 +688,7 @@ def blockUW (U W : Finset E) : Finset (Option E) :=
 variable {f d K m' β'}
 
 /-- The paragraph "Configurations" (`appB-tools.tex:397-400`), for the configuration `(U, W)` at
-`α`: by `thm:splice`, `U ⊆ W`, and `ρ' = ρ^f > θ_b` on `U`, `ρ' = θ_b` on `W ∖ U` and
+`α`: by `thm:splice`, `U ⊆ W`, and `ρ' = ρ^f > θ_b` on `U`, `ρ' = θ_b` on `W ∖ U`, and
 `ρ' = ρ^h < θ_b` on `E ∖ W`; so the block of `b`, the set of elements of `E ∪ {b}` with the
 marginal `θ_b`, is `D = (W ∖ U) ∪ {b}`. (For `f` submodular with `f(∅) = 0`, `m, β > 0` and
 `d ≥ 0`; the hypothesis `m > 0` is not used.) -/
@@ -719,7 +719,7 @@ theorem config_spec (hf : Submodular f) (hf0 : f ∅ = 0) (_hm : ∀ o, 0 < m' o
   -- `U ⊆ W`, as `ρ^f ≤ ρ^h`
   have hUW : configU f d K m' β' α ⊆ configW f d K m' β' α := fun e he =>
     (hW e).2 (((hU e).1 he).le.trans (hle e))
-  -- `ρ' = ρ^f > θ_b` on `U`, `ρ' = θ_b` on `W ∖ U` and `ρ' = ρ^h < θ_b` on `E ∖ W`
+  -- `ρ' = ρ^f > θ_b` on `U`, `ρ' = θ_b` on `W ∖ U`, and `ρ' = ρ^h < θ_b` on `E ∖ W`
   have honU : ∀ e ∈ configU f d K m' β' α, rhoPrime f d K m' β' α (some e) =
       rho f (fun e => m' (some e)) (fun e => β' (some e)) α e := fun e he => by
     rw [hmed e, med_eq_left (hle e) ((hU e).1 he).le]
@@ -771,8 +771,8 @@ def thetaUW (α : ℝ) (U W : Finset E) : ℝ :=
   (α * ∑ o ∈ blockUW U W, m' o / β' o - bigX f d K U W) / ∑ o ∈ blockUW U W, 1 / β' o
 
 /-- `(U, W)` is a weak configuration at `α` (`lem:windows`, `appB-tools.tex:408`): at `α`,
-`ρ^f_e ≥ θ_b` for `e ∈ U`, `ρ^f_e ≤ θ_b ≤ ρ^h_e` for `e ∈ W ∖ U` and `ρ^h_e ≤ θ_b` for `e ∈ E ∖ W`,
-and `U` is tight for `ξ^f(α)` and `W` is tight for `ξ^h(α)`. -/
+`ρ^f_e ≥ θ_b` for `e ∈ U`, `ρ^f_e ≤ θ_b ≤ ρ^h_e` for `e ∈ W ∖ U`, and `ρ^h_e ≤ θ_b` for
+`e ∈ E ∖ W`, and `U` is tight for `ξ^f(α)` and `W` is tight for `ξ^h(α)`. -/
 def IsWeakConfig (α : ℝ) (U W : Finset E) : Prop :=
   (∀ e ∈ U, thetaB f d K m' β' α ≤ rho f (fun e => m' (some e)) (fun e => β' (some e)) α e) ∧
     (∀ e ∈ W \ U, rho f (fun e => m' (some e)) (fun e => β' (some e)) α e ≤
@@ -838,7 +838,7 @@ theorem isWeakConfig_config (hf : Submodular f) (hf0 : f ∅ = 0) (hm : ∀ o, 0
 `D = (W ∖ U) ∪ {b}`, then `ξ'(α) = ξ^f(α)` on `U`, `ξ'(α) = ξ^h(α)` on `E ∖ W`, all elements of `D`
 have the marginal `θ_b`, `ξ'(D) = X_{U,W}` and `θ_b = θ_{U,W}`. Steps: (1) by `thm:splice`(b),
 `ρ'_e = med(ρ^f_e, θ_b, ρ^h_e)`, which by the inequalities of a weak configuration and `ρ^f ≤ ρ^h`
-is `ρ^f_e` on `U`, `θ_b` on `W ∖ U` and `ρ^h_e` on `E ∖ W`; as `ξ_e = α t_e − ρ_e/β_e` for each of
+is `ρ^f_e` on `U`, `θ_b` on `W ∖ U`, and `ρ^h_e` on `E ∖ W`; as `ξ_e = α t_e − ρ_e/β_e` for each of
 `ξ'`, `ξ^f`, `ξ^h`, `ξ' = ξ^f` on `U` and `ξ' = ξ^h` on `E ∖ W`; (2) `E ∪ {b}` is tight for `ξ'`,
 `U` for `ξ^f`, `W` and `E` for `ξ^h`, so
 `ξ'(D) = f'(E ∪ {b}) − ξ^f(U) − ξ^h(E ∖ W) = K + h(E) − f(U) − h(E) + h(W) = X_{U,W}`; all elements
@@ -864,7 +864,7 @@ theorem windows_a_block (H : FPHyp f fun e => β' (some e)) (hd : ∀ e, 0 ≤ d
   have H' := H.extend hd hb K
   have hβ' := H'.pos
   -- (1) "By `thm:splice`(b), `ρ'_e = med(ρ^f_e, θ_b, ρ^h_e)`. By the inequalities of a weak
-  -- configuration and as `ρ^f ≤ ρ^h`, this is `ρ^f_e` for `e ∈ U`, `θ_b` for `e ∈ W ∖ U` and
+  -- configuration and as `ρ^f ≤ ρ^h`, this is `ρ^f_e` for `e ∈ U`, `θ_b` for `e ∈ W ∖ U`, and
   -- `ρ^h_e` for `e ∈ E ∖ W`."
   obtain ⟨⟨hle, -⟩, hmed, -⟩ := splice_aux (K := K) H hd hb α
   have hρU : ∀ e ∈ U, rhoPrime f d K m' β' α (some e) = rho f m β α e := fun e he => by
@@ -957,11 +957,11 @@ theorem windows_mass_marginal (hf : Submodular f) (hf0 : f ∅ = 0) (hm : ∀ o,
 /-- `lem:windows`(a), auxiliary form (`appB-tools.tex:427-436`, under `FPHyp`, `d ≥ 0`, `β_b > 0`):
 if `(U, W)` is a weak configuration at `α`, `U ⊆ W`, then `θ_b(α) = θ_{U,W}`, `ξ'(α) = ξ^f(α)` on
 `U`, `ξ'(α) = ξ^h(α)` on `E ∖ W`, and (`eq:windows`)
-`r(ξ'(α)) = ∑_{e∈U} m_e ξ^f_e + ∑_{e∈E∖W} m_e ξ^h_e + α SS(D) + X_{U,W} m̄_D`. Steps: (1), (2) of
+`r(ξ'(α)) = ∑_{e∈U} m_e ξ^f_e + ∑_{e∈E∖W} m_e ξ^h_e + α S_2(D) + X_{U,W} m̄_D`. Steps: (1), (2) of
 `windows_a_block`: by `thm:splice`(b) and the inequalities of a weak configuration, `ξ' = ξ^f` on
 `U` and `ξ' = ξ^h` on `E ∖ W`; by the tightness of `E ∪ {b}`, `U`, `W` and `E`, `ξ'(D) = X_{U,W}`,
 and as all elements of `D` have the marginal `θ_b`, `θ_b = θ_{U,W}`; (3) by `lem:fullplane`(e),
-`∑_{e∈D} m_e ξ'_e = α SS(D) + X_{U,W} m̄_D`, and adding the sums of `m_e ξ'_e` over `U` and over
+`∑_{e∈D} m_e ξ'_e = α S_2(D) + X_{U,W} m̄_D`, and adding the sums of `m_e ξ'_e` over `U` and over
 `E ∖ W` gives (`eq:windows`). -/
 theorem windows_a_aux (H : FPHyp f fun e => β' (some e)) (hd : ∀ e, 0 ≤ d e)
     (hb : 0 < β' none) {α : ℝ} {U W : Finset E} (hUW : U ⊆ W)
@@ -987,7 +987,7 @@ theorem windows_a_aux (H : FPHyp f fun e => β' (some e)) (hd : ∀ e, 0 ≤ d e
   set ξ' := xiPrime f d K m' β' α
   set D := blockUW U W
   have hβ' := (H.extend hd hb K).pos
-  -- (3) "By `lem:fullplane`(e), `∑_{e∈D} m_e ξ'_e = α SS(D) + X_{U,W} m̄_D`, and adding the sums
+  -- (3) "By `lem:fullplane`(e), `∑_{e∈D} m_e ξ'_e = α S_2(D) + X_{U,W} m̄_D`, and adding the sums
   -- of `m_e ξ'_e` over `U` and over `E ∖ W` gives (`eq:windows`)."
   have hsplit : ∀ y : E → ℝ, ∑ e, y e = ∑ e ∈ U, y e + ∑ e ∈ W \ U, y e + ∑ e ∈ Wᶜ, y e := by
     intro y
@@ -1014,12 +1014,12 @@ the setting of `thm:splice` (`f` submodular with `f(∅) = 0`, `m, β > 0`, `d �
 `m_b, β_b > 0`), for `α ∈ ℝ`, `U ⊆ W ⊆ E` and `D = (W ∖ U) ∪ {b}`: if `(U, W)` is a weak
 configuration at `α`, then `θ_b(α) = θ_{U,W}`, `ξ'(α) = ξ^f(α)` on `U`, `ξ'(α) = ξ^h(α)` on
 `E ∖ W`, and (`eq:windows`)
-`r(ξ^{f'}(α)) = ∑_{e∈U} m_e ξ^f_e(α) + ∑_{e∈E∖W} m_e ξ^h_e(α) + α SS(D) + X_{U,W} m̄_D`. Steps (in
+`r(ξ^{f'}(α)) = ∑_{e∈U} m_e ξ^f_e(α) + ∑_{e∈E∖W} m_e ξ^h_e(α) + α S_2(D) + X_{U,W} m̄_D`. Steps (in
 `windows_a_block` and `windows_a_aux`): (1) by `thm:splice`(b) and the inequalities of a weak
-configuration, `ρ' = ρ^f` on `U`, `θ_b` on `W ∖ U` and `ρ^h` on `E ∖ W`, and as
+configuration, `ρ' = ρ^f` on `U`, `θ_b` on `W ∖ U`, and `ρ^h` on `E ∖ W`, and as
 `ξ_e = α t_e − ρ_e/β_e`, `ξ' = ξ^f` on `U` and `ξ' = ξ^h` on `E ∖ W`; (2) by the tightness of
 `E ∪ {b}`, `U`, `W` and `E`, `ξ'(D) = X_{U,W}`, and as all elements of `D` have the marginal `θ_b`,
-`θ_b = θ_{U,W}`; (3) by `lem:fullplane`(e), `∑_{e∈D} m_e ξ'_e = α SS(D) + X_{U,W} m̄_D`, which with
+`θ_b = θ_{U,W}`; (3) by `lem:fullplane`(e), `∑_{e∈D} m_e ξ'_e = α S_2(D) + X_{U,W} m̄_D`, which with
 the sums over `U` and over `E ∖ W` gives (`eq:windows`). The hypothesis `m > 0` is not used. -/
 theorem windows_a (hf : Submodular f) (hf0 : f ∅ = 0) (_hm : ∀ o, 0 < m' o)
     (hβ : ∀ o, 0 < β' o) (hd : ∀ e, 0 ≤ d e) {α : ℝ} {U W : Finset E} (hUW : U ⊆ W)
@@ -1039,11 +1039,11 @@ theorem windows_a (hf : Submodular f) (hf0 : f ∅ = 0) (_hm : ∀ o, 0 < m' o)
 for `U ⊆ W ⊆ E` (the standing assumption of `lem:windows`, `appB-tools.tex:404`) and
 `θ = θ_{U,W}`, if `U = {ρ^f > θ}` and `W = {ρ^h ≥ θ}`, then `θ` solves (`eq:splice`), so
 `θ_b = θ` by the uniqueness in `thm:splice`(c). Steps: (1) the clamp of `e` in `Y(θ)` is `0` for
-`e ∈ U`, `θ − ρ^f_e` for `e ∈ W ∖ U` and `ρ^h_e − ρ^f_e` for `e ∈ E ∖ W`; with
+`e ∈ U`, `θ − ρ^f_e` for `e ∈ W ∖ U`, and `ρ^h_e − ρ^f_e` for `e ∈ E ∖ W`; with
 `ρ^f_e/β_e = α t_e − ξ^f_e`,
 `ρ^h_e/β_e = α t_e − ξ^h_e` and `(W ∖ U) ∪ (E ∖ W) = E ∖ U`,
-`Y(θ) = θ β⁻¹(W ∖ U) − α t(W ∖ U) + ξ^f(E ∖ U) − ξ^h(E ∖ W)`; (2) `E`, `U` and `W` are upper level
-sets, so `ξ^f(E ∖ U) = f(E) − f(U)` and `ξ^h(E ∖ W) = h(E) − h(W)` by `lem:fullplane`(a), and
+`Y(θ) = θ β⁻¹(W ∖ U) − α t(W ∖ U) + ξ^f(E ∖ U) − ξ^h(E ∖ W)`; (2) `E`, `U`, and `W` are upper
+level sets, so `ξ^f(E ∖ U) = f(E) − f(U)` and `ξ^h(E ∖ W) = h(E) − h(W)` by `lem:fullplane`(a), and
 `f(E) − h(E) = d(E)`; hence `K − d(E) + Y(θ) = X_{U,W} + θ β⁻¹(W ∖ U) − α t(W ∖ U)`; (3) the
 left-hand side of (`eq:splice`) is `α t_b − θ/β_b`, so (`eq:splice`) becomes
 `α t(D) − θ β⁻¹(D) = X_{U,W}`, the definition of `θ_{U,W}`; (4) so `θ_b = θ` by the uniqueness in
@@ -1065,7 +1065,7 @@ theorem windows_b_aux (H : FPHyp f fun e => β' (some e)) (hd : ∀ e, 0 ≤ d e
   have hβ := H.pos
   have hle : ∀ e, ρf e ≤ ρh e := rho_le_rho_subMod H hd α
   -- (1) "We show that `θ := θ_{U,W}` solves (`eq:splice`). … By the hypotheses, the clamp of `e`
-  -- in `Y(θ)` is `0` for `e ∈ U`, `θ − ρ^f_e` for `e ∈ W ∖ U` and `ρ^h_e − ρ^f_e` for `e ∈ E ∖ W`.
+  -- in `Y(θ)` is `0` for `e ∈ U`, `θ − ρ^f_e` for `e ∈ W ∖ U`, and `ρ^h_e − ρ^f_e` for `e ∈ E ∖ W`.
   -- With `ρ^f_e/β_e = α t_e − ξ^f_e` and `ρ^h_e/β_e = α t_e − ξ^h_e`, …"
   -- The omitted sentence (`appB-tools.tex:439`) is step (4), which the Lean takes last.
   have hc : ∀ e, clampTerm (ρf e) (ρh e) θ / β e =
@@ -1113,7 +1113,7 @@ theorem windows_b_aux (H : FPHyp f fun e => β' (some e)) (hd : ∀ e, 0 ≤ d e
     have : ∀ e ∈ W \ U, θ / β e = θ * (1 / β e) := fun e _ => by ring
     rw [sum_congr rfl this]
     ring
-  -- (2) "The sets `E`, `U = {e ∈ E : ρ^f_e > θ}` and `W = {e ∈ E : ρ^h_e ≥ θ}` are upper level
+  -- (2) "The sets `E`, `U = {e ∈ E : ρ^f_e > θ}`, and `W = {e ∈ E : ρ^h_e ≥ θ}` are upper level
   -- sets, so `ξ^f(E ∖ U) = f(E) − f(U)` and `ξ^h(E ∖ W) = h(E) − h(W)` by `lem:fullplane`(a), …"
   have htU : ∑ e ∈ U, ξf e = f U := by
     have h := xi_strictLevelSet_tight H m α θ
@@ -1171,7 +1171,7 @@ theorem windows_b_aux (H : FPHyp f fun e => β' (some e)) (hd : ∀ e, 0 ≤ d e
 /-- **`lem:windows`(b)** (`appB-tools.tex:417`, proof `appB-tools.tex:438-447`): in the setting of
 `thm:splice` (`f` submodular with `f(∅) = 0`, `m, β > 0`, `d ≥ 0`, `K`, `b` with `m_b, β_b > 0`),
 for `α ∈ ℝ` and `U ⊆ W ⊆ E`: if `ρ^f_e(α) > θ_{U,W}` for `e ∈ U`, `ρ^f_e(α) ≤ θ_{U,W}` for
-`e ∈ E ∖ U`, `ρ^h_e(α) ≥ θ_{U,W}` for `e ∈ W` and `ρ^h_e(α) < θ_{U,W}` for `e ∈ E ∖ W`, then
+`e ∈ E ∖ U`, `ρ^h_e(α) ≥ θ_{U,W}` for `e ∈ W`, and `ρ^h_e(α) < θ_{U,W}` for `e ∈ E ∖ W`, then
 `(U, W)` is the configuration at `α`. Steps: (1)–(3) `θ = θ_{U,W}` solves (`eq:splice`): the
 clamps of `Y(θ)`, the tight sets `E`, `U`, `W` (`lem:fullplane`(a)), and the left-hand side
 `α t_b − θ/β_b` (`windows_b_aux`); (4) so `θ_b = θ` by the uniqueness in `thm:splice`(c), and the
@@ -1210,7 +1210,8 @@ theorem windows_b (hf : Submodular f) (hf0 : f ∅ = 0) (_hm : ∀ o, 0 < m' o)
 
 /-- `lem:windows`(c), auxiliary form (`appB-tools.tex:449-455`): if `(U, W)` is a weak
 configuration at `a` and at `a' ≥ a`, then
-`r(ξ'(a')) − r(ξ'(a)) = [∑_{e∈U} m_e ξ^f_e]_a^{a'} + [∑_{e∈E∖W} m_e ξ^h_e]_a^{a'} + (a' − a) SS(D)`,
+`r(ξ'(a')) − r(ξ'(a))`
+`= [∑_{e∈U} m_e ξ^f_e]_a^{a'} + [∑_{e∈E∖W} m_e ξ^h_e]_a^{a'} + (a' − a) S_2(D)`,
 the first bracket in `[0, r(ξ^f(a')) − r(ξ^f(a))]` and the second in
 `[0, r(ξ^h(a')) − r(ξ^h(a))]`. Steps: (1) subtract (`eq:windows`) at `a` from (`eq:windows`) at
 `a'`; `X_{U,W}` and `m̄_D` do not depend on the share; (2) `U` is tight for `ξ^f(a)` and `ξ^f(a')`,
@@ -1248,7 +1249,7 @@ theorem windows_c_aux (H : FPHyp f fun e => β' (some e)) (hd : ∀ e, 0 ≤ d e
   set m : E → ℝ := fun e => m' (some e)
   set β : E → ℝ := fun e => β' (some e)
   -- (1) "Subtract (`eq:windows`) at `a` from (`eq:windows`) at `a'`. The numbers `X_{U,W}` and
-  -- `m̄_D` do not depend on the share, so the last two terms give `(a' − a) SS(D)`."
+  -- `m̄_D` do not depend on the share, so the last two terms give `(a' − a) S_2(D)`."
   have hra := (windows_a_aux H hd hb hUW ha).2.2.2
   have hra' := (windows_a_aux H hd hb hUW ha').2.2.2
   refine ⟨by rw [hra, hra']; ring, ?_, ?_⟩
@@ -1278,7 +1279,7 @@ of `thm:splice` (`f` submodular with `f(∅) = 0`, `m, β > 0`, `d ≥ 0`, `K`, 
 `m_b, β_b > 0`), for `U ⊆ W ⊆ E` and `D = (W ∖ U) ∪ {b}`: if `(U, W)` is a weak configuration at `a`
 and at `a' ≥ a`, then
 `r(ξ^{f'}(a')) − r(ξ^{f'}(a))`
-`= [∑_{e∈U} m_e ξ^f_e]_a^{a'} + [∑_{e∈E∖W} m_e ξ^h_e]_a^{a'} + (a' − a) SS(D)`,
+`= [∑_{e∈U} m_e ξ^f_e]_a^{a'} + [∑_{e∈E∖W} m_e ξ^h_e]_a^{a'} + (a' − a) S_2(D)`,
 where the first bracket lies in `[0, r(ξ^f(a')) − r(ξ^f(a))]` and the second in
 `[0, r(ξ^h(a')) − r(ξ^h(a))]`. Steps (in `windows_c_aux`): (1) subtract (`eq:windows`) at `a`
 from (`eq:windows`) at `a'`; `X_{U,W}` and `m̄_D` do not depend on the share; (2) `U` is tight for
@@ -1322,19 +1323,19 @@ of `thm:splice` (`f` submodular with `f(∅) = 0`, `m, β > 0`, `d ≥ 0`, `K`, 
 fix `α ∈ ℝ`, let `U ⊆ W ⊆ E` and `D := (W ∖ U) ∪ {b}` (`blockUW U W`), and let
 `X_{U,W} := K + h(W) − f(U)` (`bigX`) and `θ_{U,W} := (α t(D) − X_{U,W})/β⁻¹(D)` (`thetaUW`). We
 call `(U, W)` a weak configuration at `α` (`IsWeakConfig`) if, at `α`, `ρ^f_e ≥ θ_b` for `e ∈ U`,
-`ρ^f_e ≤ θ_b ≤ ρ^h_e` for `e ∈ W ∖ U` and `ρ^h_e ≤ θ_b` for `e ∈ E ∖ W`, and if `U` is tight for
+`ρ^f_e ≤ θ_b ≤ ρ^h_e` for `e ∈ W ∖ U`, and `ρ^h_e ≤ θ_b` for `e ∈ E ∖ W`, and if `U` is tight for
 `ξ^f(α)` and `W` is tight for `ξ^h(α)`. The last two conditions hold if `U` is an upper level set of
 `ρ^f(α)` and `W` one of `ρ^h(α)`, strict or not (`lem:fullplane`(a)). In particular, the
 configuration at `α` is a weak configuration. At a weak configuration, `X_{U,W} = ξ'(D)` is the mass
 of `D` and `θ_{U,W} = θ_b` is the common marginal of its elements, by (a), and for the
 configuration, `D` is the block of `b`. (a) If `(U, W)` is a weak configuration at `α`, then
 `θ_b(α) = θ_{U,W}`, `ξ'(α) = ξ^f(α)` on `U`, `ξ'(α) = ξ^h(α)` on `E ∖ W`, and (`eq:windows`)
-`r(ξ^{f'}(α)) = ∑_{e∈U} m_e ξ^f_e(α) + ∑_{e∈E∖W} m_e ξ^h_e(α) + α SS(D) + X_{U,W} m̄_D`. (b)
+`r(ξ^{f'}(α)) = ∑_{e∈U} m_e ξ^f_e(α) + ∑_{e∈E∖W} m_e ξ^h_e(α) + α S_2(D) + X_{U,W} m̄_D`. (b)
 Conversely, if `ρ^f_e(α) > θ_{U,W}` for `e ∈ U`, `ρ^f_e(α) ≤ θ_{U,W}` for `e ∈ E ∖ U`,
-`ρ^h_e(α) ≥ θ_{U,W}` for `e ∈ W` and `ρ^h_e(α) < θ_{U,W}` for `e ∈ E ∖ W`, then `(U, W)` is the
+`ρ^h_e(α) ≥ θ_{U,W}` for `e ∈ W`, and `ρ^h_e(α) < θ_{U,W}` for `e ∈ E ∖ W`, then `(U, W)` is the
 configuration at `α`. (c) If `(U, W)` is a weak configuration at `a` and at `a' ≥ a`, then
 `r(ξ^{f'}(a')) − r(ξ^{f'}(a))`
-`= [∑_{e∈U} m_e ξ^f_e]_a^{a'} + [∑_{e∈E∖W} m_e ξ^h_e]_a^{a'} + (a' − a) SS(D)`, where the first
+`= [∑_{e∈U} m_e ξ^f_e]_a^{a'} + [∑_{e∈E∖W} m_e ξ^h_e]_a^{a'} + (a' − a) S_2(D)`, where the first
 bracket lies in `[0, r(ξ^f(a')) − r(ξ^f(a))]` and the second in `[0, r(ξ^h(a')) − r(ξ^h(a))]`.
 
 The share and the sets are quantified in each claim, as the parts take them: the first claim before

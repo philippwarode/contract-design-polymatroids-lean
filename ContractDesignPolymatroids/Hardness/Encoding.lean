@@ -1,15 +1,15 @@
--- stamp r5 2026-11-02
+-- stamp r6 2026-11-03
 import ContractDesignPolymatroids.Hardness.CutForms
 
 /-!
 # Encoding lengths: the bit model of Appendix C
 
 The bit model of the STOC version's hardness appendix. `def:cutform` (`stoc-sections/
-appD-hardness.tex:98-104`) defines `𝒞_cut` as "the class of instances `(f, m, β)` with
+appD-hardness.tex:96-102`) defines `𝒞_cut` as "the class of instances `(f, m, β)` with
 `m, β ∈ ℚ^E_{>0}` for which `f` is a rank function given by a cut form, encoded by the cut form,
-`m` and `β` in binary", and the opening of Appendix C.8 (`sec:D-npcomplete`) before `lem:exactbr`
-(lines 1791-1797) defines the encoding lengths, with the rules at the start of the proof of
-`lem:exactbr` (lines 1810-1812).
+`m`, and `β` in binary", and the opening of Appendix C.8 (`sec:D-npcomplete`) before `lem:exactbr`
+(lines 1788-1794) defines the encoding lengths, with the rules at the start of the proof of
+`lem:exactbr` (lines 1807-1809).
 
 * `InZ N x` (`x ∈ (1/N)ℤ`) and `Bits B x` (magnitude and a denominator at most `2^B`): the notation
   of the proof of `lem:sizes`, with the rules for sums, products and quotients.
@@ -24,7 +24,7 @@ appD-hardness.tex:98-104`) defines `𝒞_cut` as "the class of instances `(f, m,
   weights (the cut form `(D, cap, ω)`), and rational rewards and curvatures; `RatInst.f`: the
   function `cut_D + ω` of the data (`eq:cutform`); `RatInst.IsCutForm`: the data is a cut form (no
   loops, nonnegative capacities), and `RatInst.form` is that cut form; `RatInst.encI` is `⟨I⟩`,
-  "the sum of the encoding lengths of the capacities, weights, rewards and curvatures of `I`, which
+  "the sum of the encoding lengths of the capacities, weights, rewards, and curvatures of `I`, which
   is at most the encoding length of `I`" (the encoding length of `I` itself, with its digraph, is
   not defined); `RatInst.InCcut`: the encoded instance lies in `𝒞_cut`, and `RatInst.inCcut_iff`:
   `lem:cutforms`(b) for the data, the paper's checks in its order, `|D|` tests of end points and
@@ -222,7 +222,7 @@ end Bits
 /-! ### Encoding lengths of rationals -/
 
 /-- The encoding length of a rational number `u/v`, with coprime `u ∈ ℤ` and `v ∈ ℤ_{>0}`:
-`⟨u/v⟩ := 1 + ⌈log₂(|u| + 1)⌉ + ⌈log₂(v + 1)⌉` (`stoc-sections/appD-hardness.tex:1791-1794`; "This
+`⟨u/v⟩ := 1 + ⌈log₂(|u| + 1)⌉ + ⌈log₂(v + 1)⌉` (`stoc-sections/appD-hardness.tex:1788-1791`; "This
 is one bit less than the encoding length of [GLS88, §1.3], which changes only constants"). Here
 `x.num` and `x.den` are the coprime numerator and the positive denominator of `x`, and
 `⌈log₂ n⌉ = Nat.clog 2 n`. -/
@@ -257,14 +257,14 @@ lemma two_le_enc (x : ℚ) : 2 ≤ enc x := by
   omega
 
 /-- "Every rational `u/v` as above satisfies `|u| < 2^{⟨u/v⟩}` …" (the proof of `lem:exactbr`,
-`stoc-sections/appD-hardness.tex:1811`). -/
+`stoc-sections/appD-hardness.tex:1808`). -/
 lemma natAbs_num_lt (x : ℚ) : x.num.natAbs < 2 ^ enc x := by
   have h := Nat.le_pow_clog (b := 2) (by norm_num) (x.num.natAbs + 1)
   have h2 : 2 ^ Nat.clog 2 (x.num.natAbs + 1) ≤ 2 ^ enc x :=
     Nat.pow_le_pow_right (by norm_num) (by unfold enc; omega)
   omega
 
-/-- "… and `v < 2^{⟨u/v⟩}`." (the proof of `lem:exactbr`, line 1811). -/
+/-- "… and `v < 2^{⟨u/v⟩}`." (the proof of `lem:exactbr`, line 1808). -/
 lemma den_lt (x : ℚ) : x.den < 2 ^ enc x := by
   have h := Nat.le_pow_clog (b := 2) (by norm_num) (x.den + 1)
   have h2 : 2 ^ Nat.clog 2 (x.den + 1) ≤ 2 ^ enc x :=
@@ -321,7 +321,7 @@ lemma enc_inv (x : ℚ) : enc x⁻¹ = enc x := by
     omega
 
 /-- "A product … of rationals has encoding length at most the sum of their encoding lengths …"
-(the proof of `lem:exactbr`, line 1810). -/
+(the proof of `lem:exactbr`, line 1807). -/
 lemma enc_mul (x y : ℚ) : enc (x * y) ≤ enc x + enc y := by
   have h := enc_le_of_eq_div (x := x * y) (a := x.num * y.num) (b := x.den * y.den)
     (Nat.mul_pos x.den_pos y.den_pos) (by
@@ -338,7 +338,7 @@ lemma enc_mul (x y : ℚ) : enc (x * y) ≤ enc x + enc y := by
   unfold enc at h ⊢
   omega
 
-/-- "… or a quotient …" (the proof of `lem:exactbr`, line 1810). -/
+/-- "… or a quotient …" (the proof of `lem:exactbr`, line 1807). -/
 lemma enc_div (x y : ℚ) : enc (x / y) ≤ enc x + enc y := by
   rw [div_eq_mul_inv]
   exact (enc_mul _ _).trans (by rw [enc_inv])
@@ -374,7 +374,7 @@ lemma enc_le_of_le (x : ℚ) {P Q : ℕ} (hP : x.num.natAbs + x.den ≤ P) (hQ :
 
 /-- Writing a sum over the product of the denominators: `|u| + v` of `x + y` is at most the product
 of those of `x` and `y`, and the denominator of `x + y` at most the product of theirs (not in the
-paper: the argument of the rule for sums, `stoc-sections/appD-hardness.tex:1810`). -/
+paper: the argument of the rule for sums, `stoc-sections/appD-hardness.tex:1807`). -/
 lemma add_numDen_le (x y : ℚ) :
     (x + y).num.natAbs + (x + y).den ≤ (x.num.natAbs + x.den) * (y.num.natAbs + y.den) ∧
     (x + y).den ≤ x.den * y.den := by
@@ -423,7 +423,7 @@ theorem enc_sum_le {ι : Type*} (s : Finset ι) (x : ι → ℚ) :
   omega
 
 /-- "…, and a sum at most twice the sum of their encoding lengths, as one sees by writing the terms
-over the product of their denominators." (the proof of `lem:exactbr`, line 1810), for a nonempty
+over the product of their denominators." (the proof of `lem:exactbr`, line 1807), for a nonempty
 finite sum. -/
 theorem enc_sum_le_two_mul {ι : Type*} {s : Finset ι} (hs : s.Nonempty) (x : ι → ℚ) :
     enc (∑ i ∈ s, x i) ≤ 2 * ∑ i ∈ s, enc (x i) := by
@@ -435,7 +435,7 @@ theorem enc_sum_le_two_mul {ι : Type*} {s : Finset ι} (hs : s.Nonempty) (x : �
   omega
 
 /-- The rule for sums for two terms: `⟨x + y⟩ ≤ 2(⟨x⟩ + ⟨y⟩)` (the proof of `lem:exactbr`, line
-1810). -/
+1807). -/
 theorem enc_add (x y : ℚ) : enc (x + y) ≤ 2 * (enc x + enc y) := by
   obtain ⟨h1, h2⟩ := add_numDen_le x y
   refine (enc_le_of_le _ h1 h2).trans ?_
@@ -452,7 +452,7 @@ theorem enc_sub (x y : ℚ) : enc (x - y) ≤ 2 * (enc x + enc y) := by
   exact enc_add x (-y)
 
 /-- The rule for sums of three terms: `⟨x + y + z⟩ ≤ 2(⟨x⟩ + ⟨y⟩ + ⟨z⟩)` (the proof of
-`lem:exactbr`, line 1835: "a sum of three terms"). -/
+`lem:exactbr`, line 1832: "a sum of three terms"). -/
 theorem enc_add₃ (x y z : ℚ) : enc (x + y + z) ≤ 2 * (enc x + enc y + enc z) := by
   have h := enc_sum_le_two_mul (s := (univ : Finset (Fin 3))) univ_nonempty ![x, y, z]
   simp only [Fin.sum_univ_three, Matrix.cons_val_zero, Matrix.cons_val_one,
@@ -513,7 +513,7 @@ theorem exists_rat_of_bits {B : ℕ} {x : ℝ} (h : Bits B x) :
 
 /-! ### Instances of `𝒞_cut` with rational data -/
 
-/-- An encoded instance (`def:cutform`: "encoded by the cut form, `m` and `β` in binary"), by its
+/-- An encoded instance (`def:cutform`: "encoded by the cut form, `m`, and `β` in binary"), by its
 data: a finite set `D` of arcs `(u, v)` on `E`, rational capacities `cap` on them and rational
 weights `ω` (the cut form), and rational rewards `m` and curvatures `β`. That the data is a cut
 form, a loopless digraph with nonnegative capacities, is `RatInst.IsCutForm`; that the encoded
@@ -535,7 +535,7 @@ namespace RatInst
 variable {E : Type*} (I : RatInst E)
 
 /-- The data `(D, cap, ω)` of `I` is a cut form (`def:cutform`: "a loopless digraph `D` on `E`,
-capacities `cap : D → ℚ_{≥0}` and weights `ω ∈ ℚ^E`"): `D` has no loops, and the capacities of its
+capacities `cap : D → ℚ_{≥0}`, and weights `ω ∈ ℚ^E`"): `D` has no loops, and the capacities of its
 arcs are nonnegative. -/
 def IsCutForm : Prop := (∀ a ∈ I.D, a.1 ≠ a.2) ∧ ∀ a ∈ I.D, 0 ≤ I.cap a
 
@@ -561,8 +561,8 @@ function of `I.form` (by definition). -/
 def f (S : Finset E) : ℝ :=
   ∑ a ∈ I.D with a.1 ∈ S ∧ a.2 ∉ S, (I.cap a : ℝ) + ∑ e ∈ S, (I.ω e : ℝ)
 
-/-- `⟨I⟩`, "the sum of the encoding lengths of the capacities, weights, rewards and curvatures of
-`I`" (`stoc-sections/appD-hardness.tex:1796`). -/
+/-- `⟨I⟩`, "the sum of the encoding lengths of the capacities, weights, rewards, and curvatures of
+`I`" (`stoc-sections/appD-hardness.tex:1793`). -/
 def encI : ℕ :=
   ∑ a ∈ I.D, enc (I.cap a) + ∑ e, enc (I.ω e) + ∑ e, enc (I.m e) + ∑ e, enc (I.β e)
 
@@ -596,7 +596,7 @@ lemma binvQ_cast (S : Finset E) : (I.binvQ S : ℝ) = ∑ e ∈ S, 1 / I.βR e :
 
 omit [DecidableEq E] in
 /-- "Moreover, `n ≤ ⟨I⟩`, as every reward has encoding length at least `1`" (the proof of
-membership in NP, `stoc-sections/appD-hardness.tex:1901`). -/
+membership in NP, `stoc-sections/appD-hardness.tex:1898`). -/
 lemma card_le_encI : Fintype.card E ≤ I.encI := by
   have h : ∑ e : E, 1 ≤ ∑ e, enc (I.m e) := sum_le_sum fun e _ => by
     have := two_le_enc (I.m e)
@@ -645,7 +645,7 @@ lemma two_le_sum_enc [Nonempty E] (y : E → ℚ) : 2 ≤ ∑ e, enc (y e) := by
 
 /-- "Every value `f(S) = cut_D(S) + ω(S)` is a sum of distinct capacities and weights, … so all
 three have encoding length at most `2⟨I⟩`" (the proof of `lem:exactbr`,
-`stoc-sections/appD-hardness.tex:1812`), here for `f(S)`, for `E ≠ ∅` (§2 assumes a nonempty ground
+`stoc-sections/appD-hardness.tex:1809`), here for `f(S)`, for `E ≠ ∅` (§2 assumes a nonempty ground
 set). -/
 theorem enc_fQ_le [Nonempty E] (S : Finset E) : enc (I.fQ S) ≤ 2 * I.encI := by
   have h := enc_add_sum_le (I.D.filter fun a => a.1 ∈ S ∧ a.2 ∉ S) S I.cap I.ω
@@ -661,7 +661,7 @@ theorem enc_fQ_le [Nonempty E] (S : Finset E) : enc (I.fQ S) ≤ 2 * I.encI := b
 
 omit [DecidableEq E] in
 /-- "… and `t(S)` and `β⁻¹(S)` are sums of distinct quotients `m_e/β_e` and `1/β_e`, so all three
-have encoding length at most `2⟨I⟩`" (the proof of `lem:exactbr`, line 1812), here for `t(S)`, for
+have encoding length at most `2⟨I⟩`" (the proof of `lem:exactbr`, line 1809), here for `t(S)`, for
 `E ≠ ∅`. -/
 theorem enc_tQ_le [Nonempty E] (S : Finset E) : enc (I.tQ S) ≤ 2 * I.encI := by
   have h := enc_sum_le S fun e => I.m e / I.β e
@@ -680,7 +680,7 @@ theorem enc_tQ_le [Nonempty E] (S : Finset E) : enc (I.tQ S) ≤ 2 * I.encI := b
 
 omit [DecidableEq E] in
 /-- "… and `t(S)` and `β⁻¹(S)` are sums of distinct quotients `m_e/β_e` and `1/β_e`, so all three
-have encoding length at most `2⟨I⟩`" (the proof of `lem:exactbr`, line 1812), here for `β⁻¹(S)`,
+have encoding length at most `2⟨I⟩`" (the proof of `lem:exactbr`, line 1809), here for `β⁻¹(S)`,
 for `E ≠ ∅`. -/
 theorem enc_binvQ_le [Nonempty E] (S : Finset E) : enc (I.binvQ S) ≤ 2 * I.encI := by
   have h := enc_sum_le S fun e => 1 / I.β e
@@ -701,8 +701,8 @@ theorem enc_binvQ_le [Nonempty E] (S : Finset E) : enc (I.binvQ S) ≤ 2 * I.enc
 function given by a cut form). -/
 def InCcut : Prop := I.IsCutForm ∧ Ccut I.f I.mR I.βR
 
-/-- `lem:cutforms`(b) for the data of `I` (`stoc-sections/appD-hardness.tex:109`, the check at lines
-140-141): the encoded instance `I` lies in `𝒞_cut` if and only if `D` has no loops, all capacities
+/-- `lem:cutforms`(b) for the data of `I` (`stoc-sections/appD-hardness.tex:107`, the check at lines
+138-139): the encoded instance `I` lies in `𝒞_cut` if and only if `D` has no loops, all capacities
 are nonnegative, `m` and `β` are positive, and every weight `ω_e` is at least the total capacity
 of the arcs of `D` that enter `e`. These are `|D|` tests of the end points of arcs and
 `|D| + 3|E|` comparisons of rationals ("In particular, membership in `𝒞_cut` is decided in
@@ -717,7 +717,7 @@ theorem inCcut_iff :
     I.InCcut ↔ (∀ a ∈ I.D, a.1 ≠ a.2) ∧ (∀ a ∈ I.D, 0 ≤ I.cap a) ∧ (∀ e, 0 < I.m e) ∧
       (∀ e, 0 < I.β e) ∧ ∀ e, ∑ a ∈ I.D with a.2 = e, I.cap a ≤ I.ω e := by
   -- (5) "To decide whether an encoded instance `(f, m, β)` lies in `𝒞_cut`, it therefore suffices
-  -- to check that `D` has no loops, that all capacities are nonnegative and that `m` and `β` are
+  -- to check that `D` has no loops, that all capacities are nonnegative, and that `m` and `β` are
   -- positive, and to compare, for each `e ∈ E`, the weight `ω_e` with the sum of the capacities of
   -- the arcs entering `e`. These are polynomially many additions and comparisons of input
   -- numbers."

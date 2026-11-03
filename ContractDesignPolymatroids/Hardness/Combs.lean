@@ -1,13 +1,13 @@
--- stamp r6 2026-11-02
+-- stamp r7 2026-11-03
 import ContractDesignPolymatroids.Hardness.Operations
 
 /-!
 # Combs, and their sums and dilations
 
 The STOC version's `def:comb` (Appendix C.1, `sec:D-ideas`, "Combs",
-`stoc-sections/appD-hardness.tex:19-25`) and `lem:combsum` (Appendix C.2, `sec:D-cutforms`,
-"Cut forms", `stoc-sections/appD-hardness.tex:155-177`: the statement at lines 155-160, one proof
-of (a) and (b) at lines 162-177).
+`stoc-sections/appD-hardness.tex:17-23`) and `lem:combsum` (Appendix C.2, `sec:D-cutforms`,
+"Cut forms", `stoc-sections/appD-hardness.tex:153-175`: the statement at lines 153-158, one proof
+of (a) and (b) at lines 160-175).
 
 * `distTo`: `dist(α, Γ) = min_{γ ∈ Γ} |α − γ|` for a finite `Γ ⊆ ℝ`, with `dist(α, ∅) = ∞`, in
   `WithTop ℝ = ℝ ∪ {∞}`; `minDist α Γ δ` is the real number `min(dist(α, Γ), δ)`.
@@ -147,9 +147,9 @@ section Comb
 
 variable {E : Type*} [Fintype E] [DecidableEq E]
 
-/-- **`def:comb`** (Definition C.1, `stoc-sections/appD-hardness.tex:19-25`): for a finite
-`Γ ⊆ [0, ∞)`, an affine `L(α) = p + qα` and `κ, δ > 0`, the instance `(f, m, β)` is a comb with
-contact set `Γ`, line `L`, dip `κ` and width `δ` if `r(x*(γ)) = L(γ)` for `γ ∈ Γ` and
+/-- **`def:comb`** (Definition C.1, `stoc-sections/appD-hardness.tex:17-23`): for a finite
+`Γ ⊆ [0, ∞)`, an affine `L(α) = p + qα`, and `κ, δ > 0`, the instance `(f, m, β)` is a comb with
+contact set `Γ`, line `L`, dip `κ`, and width `δ` if `r(x*(γ)) = L(γ)` for `γ ∈ Γ` and
 `L(α) − r(x*(α)) ≥ κ min(dist(α, Γ), δ)` for all `α ≥ 0`, where `dist(α, ∅) = ∞` (`distTo`,
 `minDist`). The reward under the best response is `r(x*(α)) = grossValue f m β α`. -/
 structure IsComb (f : Finset E → ℝ) (m β : E → ℝ) (Γ : Finset ℝ) (p q κ δ : ℝ) : Prop where
@@ -163,9 +163,9 @@ structure IsComb (f : Finset E → ℝ) (m β : E → ℝ) (Γ : Finset ℝ) (p 
   gap : ∀ α, 0 ≤ α → κ * minDist α Γ δ ≤ p + q * α - grossValue f m β α
 
 omit [DecidableEq E] in
-/-- **`lem:combsum`(a)** (Lemma C.4, `stoc-sections/appD-hardness.tex:157`, proof lines 163-174):
-replacing `m` by `m/σ`, `σ > 0`, in a comb with contact set `Γ`, line `p + qα`, dip `κ` and width
-`δ` gives a comb with contact set `σΓ`, line `p/σ + qα/σ²`, dip `κ/σ²` and width `σδ`.
+/-- **`lem:combsum`(a)** (Lemma C.4, `stoc-sections/appD-hardness.tex:155`, proof lines 161-172):
+replacing `m` by `m/σ`, `σ > 0`, in a comb with contact set `Γ`, line `p + qα`, dip `κ`, and width
+`δ` gives a comb with contact set `σΓ`, line `p/σ + qα/σ²`, dip `κ/σ²`, and width `σδ`.
 
 The proof's steps: (1) by `lem:ops`(b), the reward of the new instance at `α` is
 `r(x*(α/σ))/σ`; (2) the new line is `L'(α) = L(α/σ)/σ = p/σ + qα/σ²`; (3) as
@@ -173,7 +173,7 @@ The proof's steps: (1) by `lem:ops`(b), the reward of the new instance at `α` i
 gives `L'(α) − r(x*(α/σ))/σ = (L(α/σ) − r(x*(α/σ)))/σ ≥ (κ/σ) min(dist(α, σΓ)/σ, δ)
 = (κ/σ²) min(dist(α, σΓ), σδ)` (`minDist_div`); (4) at a contact `σγ` the left-hand side is
 `(L(γ) − r(x*(γ)))/σ = 0`; (5) so the new instance is a comb with contact set `σΓ`, line `L'`,
-dip `κ/σ²` and width `σδ`. -/
+dip `κ/σ²`, and width `σδ`. -/
 theorem combsum_a {f : Finset E → ℝ} {m β : E → ℝ} {Γ : Finset ℝ} {p q κ δ : ℝ}
     (h : IsComb f m β Γ p q κ δ) {σ : ℝ} (hσ : 0 < σ) :
     IsComb f (fun e => m e / σ) β (Γ.image (σ * ·)) (p / σ) (q / σ ^ 2) (κ / σ ^ 2)
@@ -208,16 +208,16 @@ theorem combsum_a {f : Finset E → ℝ} {m β : E → ℝ} {Γ : Finset ℝ} {p
     obtain ⟨γ₀, hγ₀, rfl⟩ := mem_image.1 hγ
     rw [hr _ (mul_nonneg hσ.le (h.nonneg γ₀ hγ₀)), hL, mul_div_cancel_left₀ _ hσ.ne',
       h.contact γ₀ hγ₀]
-  -- (5) "So the new instance is a comb with contact set `σΓ`, line `L'`, dip `κ/σ²` and width
+  -- (5) "So the new instance is a comb with contact set `σΓ`, line `L'`, dip `κ/σ²`, and width
   -- `σδ`."
   refine ⟨fun γ hγ => ?_, div_pos h.κ_pos (by positivity), mul_pos hσ h.δ_pos, hcont, hgap⟩
   obtain ⟨γ₀, hγ₀, rfl⟩ := mem_image.1 hγ
   exact mul_nonneg hσ.le (h.nonneg γ₀ hγ₀)
 
-/-- **`lem:combsum`(b)** (`stoc-sections/appD-hardness.tex:158`, proof line 176): if `I_1`
+/-- **`lem:combsum`(b)** (`stoc-sections/appD-hardness.tex:156`, proof line 174): if `I_1`
 and `I_2` are combs on disjoint ground sets with the same width `δ`, contact sets
-`Γ_1, Γ_2 ⊆ δℤ`, lines `L_1, L_2` and dips `κ_1, κ_2`, then `I_1 ⊕ I_2` is a comb with contact set
-`Γ_1 ∩ Γ_2`, line `L_1 + L_2`, dip `min(κ_1, κ_2)` and width `δ/2`.
+`Γ_1, Γ_2 ⊆ δℤ`, lines `L_1, L_2`, and dips `κ_1, κ_2`, then `I_1 ⊕ I_2` is a comb with contact set
+`Γ_1 ∩ Γ_2`, line `L_1 + L_2`, dip `min(κ_1, κ_2)`, and width `δ/2`.
 
 The proof's steps: (1) by `lem:ops`(a), the reward of `I_1 ⊕ I_2` is the sum of the rewards, so
 the gaps add; (2) for `α ≥ 0`, `d_i = dist(α, Γ_i)` and `κ = min(κ_1, κ_2)`, the gap of the sum is
@@ -341,12 +341,12 @@ theorem combsum_b {E₂ : Type*} [Fintype E₂] [DecidableEq E₂] {f₁ : Finse
   exact ⟨fun γ hγ => h₁.nonneg γ (mem_inter.1 hγ).1, lt_min h₁.κ_pos h₂.κ_pos, by positivity,
     hcont, hgap⟩
 
-/-- **`lem:combsum`** (Lemma C.4, `stoc-sections/appD-hardness.tex:155-160`): (a) replacing `m` by
-`m/σ`, `σ > 0`, in a comb with contact set `Γ`, line `p + qα`, dip `κ` and width `δ` gives a comb
-with contact set `σΓ`, line `p/σ + qα/σ²`, dip `κ/σ²` and width `σδ`. (b) If `I_1` and `I_2` are
+/-- **`lem:combsum`** (Lemma C.4, `stoc-sections/appD-hardness.tex:153-158`): (a) replacing `m` by
+`m/σ`, `σ > 0`, in a comb with contact set `Γ`, line `p + qα`, dip `κ`, and width `δ` gives a comb
+with contact set `σΓ`, line `p/σ + qα/σ²`, dip `κ/σ²`, and width `σδ`. (b) If `I_1` and `I_2` are
 combs on disjoint ground sets with the same width `δ`, contact sets `Γ_1, Γ_2 ⊆ δℤ`, lines
-`L_1, L_2` and dips `κ_1, κ_2`, then `I_1 ⊕ I_2` is a comb with contact set `Γ_1 ∩ Γ_2`, line
-`L_1 + L_2`, dip `min(κ_1, κ_2)` and width `δ/2`.
+`L_1, L_2`, and dips `κ_1, κ_2`, then `I_1 ⊕ I_2` is a comb with contact set `Γ_1 ∩ Γ_2`, line
+`L_1 + L_2`, dip `min(κ_1, κ_2)`, and width `δ/2`.
 
 Each part has its own ground sets; in (b) the combs `I_1`, `I_2` are instances (rank functions,
 `β > 0`). Its parts are `combsum_a` and `combsum_b`; their docstrings give the paper's steps. -/

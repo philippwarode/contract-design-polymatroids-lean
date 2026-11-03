@@ -1,11 +1,11 @@
--- stamp r9 2026-11-02
+-- stamp r10 2026-11-03
 import ContractDesignPolymatroids.Hardness.OneStep
 
 /-!
 # All levels: `thm:alllevels`
 
 The STOC version's `thm:alllevels` (Appendix C.7, `sec:D-alllevels`, "Every level works",
-`stoc-sections/appD-hardness.tex:1494-1505`, proof lines 1507-1539), for the levels of `def:tower`
+`stoc-sections/appD-hardness.tex:1492-1503`, proof lines 1505-1537), for the levels of `def:tower`
 built by the parameter rule.
 
 * `κT`: `κ = min(1, ε_0/δ)`; `HypH`: the property `(H_j)` of a level;
@@ -99,7 +99,7 @@ lemma gapT_eq_zero_iff {j : ℕ} {γ : ℝ} :
   unfold gapT gap
   constructor <;> intro h <;> linarith
 
-/-- `(H_0)` (the proof of `thm:alllevels`, `stoc-sections/appD-hardness.tex:1508-1509`):
+/-- `(H_0)` (the proof of `thm:alllevels`, `stoc-sections/appD-hardness.tex:1506-1507`):
 "`(H_0)` is (B2) of `prop:base`, since `κ ≤ 1` and `Γ_0 = {ζ_1, ζ_2}`". -/
 theorem alllevels_zero (h0 : 0 < μin 0) : HypH μin 0 := by
   obtain ⟨-, -, -, -, ⟨hB2, -, hdist, -, -⟩, -⟩ := Base.base
@@ -126,7 +126,7 @@ theorem alllevels_zero (h0 : 0 < μin 0) : HypH μin 0 := by
     exact ((hB2 γ hle).2.2 hγ')
 
 /-- The derivation of `(H_{j+1})` from `(H_j)` in the proof of `thm:alllevels`
-(`stoc-sections/appD-hardness.tex:1511-1538`), for `μ^in ∈ 𝔉` of length at least `j + 2`, given
+(`stoc-sections/appD-hardness.tex:1509-1536`), for `μ^in ∈ 𝔉` of length at least `j + 2`, given
 the hypotheses of `lem:onelevel` at the steps `0 → 1, …, j → j + 1` and those of `thm:transition`
 at the step `j → j + 1` for some `(e_t, e_l)`.
 
@@ -210,8 +210,8 @@ theorem alllevels_step {K : ℕ} (hF : InF μin K) {j : ℕ} (hK : j + 2 ≤ K) 
       rw [hb2 _ ⟨by linarith [hw.1], by linarith [hw.2]⟩, add_sub_cancel_right]
       exact gapT_eq_zero_iff.2 (hH.2 γ' hγ')
 
-/-- **`thm:alllevels`** (Theorem C.23, `stoc-sections/appD-hardness.tex:1494-1505`, proof lines
-1507-1539): let `μ^in ∈ 𝔉` have length `k` (here `K`), build the levels `0, …, k − 1` by the
+/-- **`thm:alllevels`** (Theorem C.23, `stoc-sections/appD-hardness.tex:1492-1503`, proof lines
+1505-1537): let `μ^in ∈ 𝔉` have length `k` (here `K`), build the levels `0, …, k − 1` by the
 parameter rule, and let `κ := min(1, ε_0/δ)`. Then every level `j ≤ k − 1` satisfies `(H_j)`
 (`HypH`), and for `j ≥ 1` the hypotheses of `lem:onelevel` hold at the step `j − 1 → j`
 (`OneLevelHyp μin (j − 1)`).
